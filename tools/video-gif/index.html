@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>영상 → GIF · 뚝딱툴</title>
+<meta name="description" content="동영상에서 원하는 구간을 골라 GIF 움짤로 변환. 크기, 프레임 수, 반복 설정. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--vid); }
+  .stage { background: #0b0d10; border-radius: var(--r) var(--r) 0 0; display: grid; place-items: center; overflow: hidden; }
+  .stage video { display: block; width: 100%; max-height: 55vh; background: #0b0d10; }
+  .deck { padding: 14px 16px 16px; display: grid; gap: 12px; }
+  .track { position: relative; height: 44px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--line); cursor: pointer; touch-action: none; user-select: none; }
+  .track .sel { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--vid) 22%, transparent); border-top: 3px solid var(--vid); border-bottom: 3px solid var(--vid); }
+  .track .h { position: absolute; top: -4px; bottom: -4px; width: 14px; margin-left: -7px; background: var(--vid); border-radius: 4px; cursor: ew-resize; display: grid; place-items: center; }
+  .track .h::after { content: ""; width: 2px; height: 14px; background: rgba(255,255,255,.8); border-radius: 1px; }
+  .track .head { position: absolute; top: -6px; bottom: -6px; width: 2px; margin-left: -1px; background: var(--ink); pointer-events: none; }
+  .times { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .times b { color: var(--ink); font-weight: 600; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pair .unit { display: grid; gap: 4px; }
+  .pair .unit span { font-size: 12px; color: var(--muted); }
+  .result { display: grid; gap: 8px; justify-items: center; }
+  .result img { max-width: 100%; border-radius: 8px; border: 1px solid var(--line); }
+  .est { font-size: 12.5px; color: var(--muted); }
+  .est.warn { color: var(--warn); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>영상 → GIF</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="video-gif"></span>
+    <div>
+      <h1>영상 → GIF</h1>
+      <p>빨간 손잡이로 구간을 고르고 GIF로 만들어요. GIF는 용량이 금방 커져서 10초 이내, 가로 480px 정도가 쓰기 좋아요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="영상 파일 선택">
+        <span data-icon="upload"></span>
+        <strong>영상을 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>MP4 · WEBM · MOV 등 이 브라우저에서 재생되는 영상</span>
+        <input type="file" id="file">
+      </div>
+      <div class="panel" id="editor" hidden>
+        <div class="stage"><video id="v" playsinline muted preload="auto"></video></div>
+        <div class="deck">
+          <div class="track" id="track">
+            <div class="sel" id="sel"></div>
+            <div class="h" id="hs" tabindex="0" role="slider" aria-label="시작 지점"></div>
+            <div class="h" id="he" tabindex="0" role="slider" aria-label="끝 지점"></div>
+            <div class="head" id="head"></div>
+          </div>
+          <div class="times num">
+            <span>현재 <b id="tNow">0:00.0</b></span>
+            <span>구간 <b id="tLen">0:00.0</b></span>
+            <span>전체 <b id="tDur">0:00.0</b></span>
+          </div>
+          <div class="controls">
+            <button class="btn" id="playSel" data-icon="play"> 구간 재생</button>
+            <button class="btn btn-sm" id="setS">여기를 시작으로</button>
+            <button class="btn btn-sm" id="setE">여기를 끝으로</button>
+          </div>
+          <div class="drop compact" id="drop2" tabindex="0" role="button" aria-label="다른 영상 고르기">
+            <span data-icon="upload"></span><span>다른 영상 고르기</span><input type="file">
+          </div>
+        </div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>GIF 설정</h2>
+        <div class="pair">
+          <div class="unit"><span>시작 (초)</span><input type="number" id="s" step="0.1" min="0" value="0" disabled></div>
+          <div class="unit"><span>끝 (초)</span><input type="number" id="e" step="0.1" min="0" value="0" disabled></div>
+        </div>
+        <div class="field">
+          <label for="w">가로 크기</label>
+          <select id="w">
+            <option value="320">320px (가볍게)</option>
+            <option value="480" selected>480px (보통)</option>
+            <option value="640">640px</option>
+            <option value="800">800px (크게)</option>
+          </select>
+        </div>
+        <div class="field">
+          <span class="label">초당 프레임</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="fps" id="fps8" value="8"><label for="fps8">8</label>
+            <input type="radio" name="fps" id="fps12" value="12" checked><label for="fps12">12</label>
+            <input type="radio" name="fps" id="fps15" value="15"><label for="fps15">15</label>
+            <input type="radio" name="fps" id="fps20" value="20"><label for="fps20">20</label>
+          </div>
+          <p class="hint">많을수록 부드럽지만 용량이 커져요.</p>
+        </div>
+        <label class="check"><input type="checkbox" id="loop" checked> 계속 반복</label>
+        <p class="est num" id="est"></p>
+        <button class="btn btn-primary btn-block" id="run" disabled>GIF 만들기</button>
+        <button class="btn btn-block" id="cancel" hidden>그만두기</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+        <div class="result" id="result" hidden>
+          <img id="out" alt="만든 GIF 미리보기">
+          <button class="btn btn-block" id="dl" data-icon="download"> 다시 받기</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>영상은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const v = $("#v"), track = $("#track"), hs = $("#hs"), he = $("#he");
+  const inS = $("#s"), inE = $("#e"), runBtn = $("#run"), prog = $("#prog"), bar = prog.firstElementChild;
+  const say = TT.sayTo($("#status"));
+  let file = null, url = null, dur = 0, start = 0, end = 0, stopAt = null, out = null, cancelled = false, gif = null;
+  const MIN = 0.2, MAXLEN = 30;
+  const workerURL = TT.workerBlobURL("https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js");
+
+  TT.dropzone($("#drop"), f => load(f[0]), { accept: "video/*", multiple: false });
+  TT.dropzone($("#drop2"), f => load(f[0]), { accept: "video/*", multiple: false, paste: false });
+
+  function load(f) {
+    if (!f) return;
+    file = f; if (url) URL.revokeObjectURL(url);
+    url = URL.createObjectURL(f); v.src = url;
+    $("#result").hidden = true; say("불러오는 중…");
+  }
+  v.addEventListener("loadedmetadata", () => {
+    dur = v.duration;
+    if (!isFinite(dur)) { say("영상 길이를 읽지 못했어요.", "err"); return; }
+    start = 0; end = Math.min(dur, 5);
+    $("#drop").hidden = true; $("#editor").hidden = false;
+    inS.disabled = inE.disabled = false; runBtn.disabled = !window.GIF;
+    $("#tDur").textContent = TT.time(dur);
+    draw(); say(window.GIF ? `${v.videoWidth}×${v.videoHeight} · 처음 5초를 골라뒀어요.` : "GIF 만들기 기능을 불러오지 못했어요. 새로고침해 주세요.", window.GIF ? "" : "err");
+  });
+  v.addEventListener("error", () => say("이 브라우저에서 재생할 수 없는 영상이에요.", "err"));
+
+  function draw() {
+    const p = t => (t / dur * 100) + "%";
+    hs.style.left = p(start); he.style.left = p(end);
+    $("#sel").style.left = p(start); $("#sel").style.width = ((end - start) / dur * 100) + "%";
+    $("#head").style.left = p(v.currentTime);
+    inS.value = start.toFixed(1); inE.value = end.toFixed(1);
+    $("#tLen").textContent = TT.time(end - start); $("#tNow").textContent = TT.time(v.currentTime);
+    estimate();
+  }
+  function estimate() {
+    if (!v.videoWidth) return;
+    const w = Math.min(+$("#w").value, v.videoWidth), h = Math.round(w * v.videoHeight / v.videoWidth);
+    const fps = +document.querySelector("input[name=fps]:checked").value;
+    const frames = Math.max(1, Math.round((end - start) * fps));
+    const mb = frames * w * h * 0.2 / 1048576; // 대략적인 추정치
+    const el = $("#est");
+    el.textContent = `${w}×${h}px · ${frames}프레임 · 예상 약 ${mb < 1 ? Math.round(mb * 1024) + " KB" : mb.toFixed(1) + " MB"}`;
+    el.className = "est num" + (mb > 8 || end - start > MAXLEN ? " warn" : "");
+    if (end - start > MAXLEN) el.textContent += ` · 최대 ${MAXLEN}초까지만 돼요`;
+    runBtn.disabled = !window.GIF || end - start > MAXLEN;
+  }
+  ["#w", "#loop"].forEach(s => $(s).addEventListener("change", estimate));
+  document.querySelectorAll("input[name=fps]").forEach(r => r.addEventListener("change", estimate));
+
+  v.addEventListener("timeupdate", () => { draw(); if (stopAt !== null && v.currentTime >= stopAt) { v.pause(); stopAt = null; } });
+  const setStart = t => { start = Math.max(0, Math.min(t, end - MIN)); draw(); };
+  const setEnd = t => { end = Math.min(dur, Math.max(t, start + MIN)); draw(); };
+  const tAt = x => { const r = track.getBoundingClientRect(); return Math.max(0, Math.min(1, (x - r.left) / r.width)) * dur; };
+  function drag(h, setter) {
+    h.addEventListener("pointerdown", e => {
+      e.stopPropagation(); h.setPointerCapture(e.pointerId);
+      const mv = ev => { setter(tAt(ev.clientX)); v.currentTime = h === hs ? start : end; };
+      const up = () => { h.removeEventListener("pointermove", mv); h.removeEventListener("pointerup", up); };
+      h.addEventListener("pointermove", mv); h.addEventListener("pointerup", up);
+    });
+    h.addEventListener("keydown", e => {
+      const step = e.shiftKey ? 1 : 0.1, cur = h === hs ? start : end;
+      if (e.key === "ArrowLeft") { e.preventDefault(); setter(cur - step); }
+      if (e.key === "ArrowRight") { e.preventDefault(); setter(cur + step); }
+    });
+  }
+  drag(hs, setStart); drag(he, setEnd);
+  track.addEventListener("pointerdown", e => { if (dur) v.currentTime = tAt(e.clientX); });
+  inS.addEventListener("change", () => setStart(+inS.value || 0));
+  inE.addEventListener("change", () => setEnd(+inE.value || dur));
+  $("#setS").onclick = () => setStart(v.currentTime);
+  $("#setE").onclick = () => setEnd(v.currentTime);
+  $("#playSel").onclick = () => { v.currentTime = start; stopAt = end; v.play(); };
+
+  const seek = t => new Promise(r => { v.addEventListener("seeked", r, { once: true }); v.currentTime = t; });
+
+  runBtn.onclick = async () => {
+    v.pause(); stopAt = null; cancelled = false;
+    const fps = +document.querySelector("input[name=fps]:checked").value;
+    const w = Math.min(+$("#w").value, v.videoWidth), h = Math.round(w * v.videoHeight / v.videoWidth);
+    const n = Math.max(1, Math.round((end - start) * fps));
+    runBtn.disabled = true; $("#cancel").hidden = false; prog.hidden = false; $("#result").hidden = true;
+    try {
+      gif = new GIF({ workers: 2, quality: 10, width: w, height: h, workerScript: await workerURL, repeat: $("#loop").checked ? 0 : -1 });
+      const c = document.createElement("canvas"); c.width = w; c.height = h;
+      const g = c.getContext("2d", { willReadFrequently: true });
+      for (let i = 0; i < n; i++) {
+        if (cancelled) throw new Error("cancel");
+        await seek(Math.min(end - 0.001, start + i / fps));
+        g.drawImage(v, 0, 0, w, h);
+        gif.addFrame(g, { copy: true, delay: Math.round(1000 / fps) });
+        bar.style.width = ((i + 1) / n * 50) + "%";
+        say(`장면 모으는 중… ${i + 1}/${n}`);
+      }
+      say("GIF로 굽는 중…");
+      const blob = await new Promise((resolve, reject) => {
+        gif.on("progress", p => { bar.style.width = (50 + p * 50) + "%"; if (cancelled) { gif.abort(); reject(new Error("cancel")); } });
+        gif.on("finished", resolve);
+        gif.on("abort", () => reject(new Error("cancel")));
+        gif.render();
+      });
+      out = { blob, name: `${TT.baseName(file.name)}_${start.toFixed(1)}-${end.toFixed(1)}s.gif` };
+      $("#out").src = URL.createObjectURL(blob); $("#result").hidden = false;
+      say(`완료 · ${w}×${h} · ${n}프레임 · ${TT.bytes(blob.size)}`, "ok");
+      TT.download(blob, out.name);
+    } catch (e) {
+      if (e.message === "cancel") say("그만뒀어요.");
+      else { console.error(e); say("GIF를 만들지 못했어요. 크기나 프레임을 줄여 보세요.", "err"); }
+    } finally {
+      gif = null; runBtn.disabled = false; $("#cancel").hidden = true; prog.hidden = true; bar.style.width = 0; estimate();
+    }
+  };
+  $("#cancel").onclick = () => { cancelled = true; if (gif) try { gif.abort(); } catch {} };
+  $("#dl").onclick = () => out && TT.download(out.blob, out.name);
+})();
+</script>
+</body>
+</html>

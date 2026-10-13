@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>이미지 → PDF · 뚝딱툴</title>
+<meta name="description" content="JPG, PNG 사진과 스캔 이미지 여러 장을 PDF 한 파일로. A4 맞춤, 여백, 순서 바꾸기. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--doc); }
+  .file { grid-template-columns: 22px 56px minmax(0, 1fr) auto; }
+  .order { font-family: var(--f-mono); font-weight: 600; color: var(--doc); text-align: center; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>이미지 → PDF</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="image-to-pdf"></span>
+    <div>
+      <h1>이미지 → PDF</h1>
+      <p>사진이나 스캔 이미지를 넣고 순서를 맞추면 한 장에 한 이미지씩 PDF로 묶어요. 서류 제출, 영수증 정리에 쓰세요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="이미지 파일 선택">
+        <span data-icon="upload"></span>
+        <strong>이미지를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>JPG · PNG · WEBP 여러 장 · Ctrl+V로 붙여넣기도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <div id="listWrap" hidden>
+        <div class="list-head">
+          <p id="summary"></p>
+          <button class="btn btn-sm" id="clear">모두 비우기</button>
+        </div>
+        <div class="files" id="files"></div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>PDF 설정</h2>
+        <div class="field">
+          <span class="label">종이 크기</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="size" id="s-a4" value="a4" checked><label for="s-a4">A4</label>
+            <input type="radio" name="size" id="s-fit" value="fit"><label for="s-fit">이미지에 맞춤</label>
+          </div>
+        </div>
+        <div class="field" id="orientField">
+          <span class="label">방향</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="orient" id="o-auto" value="auto" checked><label for="o-auto">자동</label>
+            <input type="radio" name="orient" id="o-p" value="p"><label for="o-p">세로</label>
+            <input type="radio" name="orient" id="o-l" value="l"><label for="o-l">가로</label>
+          </div>
+          <p class="hint">자동은 가로로 긴 사진이면 그 쪽만 가로로 놓아요.</p>
+        </div>
+        <div class="field">
+          <span class="label">여백</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="margin" id="m-0" value="0"><label for="m-0">없음</label>
+            <input type="radio" name="margin" id="m-1" value="10" checked><label for="m-1">좁게</label>
+            <input type="radio" name="margin" id="m-2" value="20"><label for="m-2">보통</label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="q">화질</label>
+          <select id="q">
+            <option value="hi">높게 (인쇄용)</option>
+            <option value="mid" selected>보통 (제출용 · 추천)</option>
+            <option value="lo">가볍게 (메일 첨부용)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="name">파일 이름</label>
+          <input type="text" id="name" value="이미지모음">
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled>PDF 만들기</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>이미지는 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const val = n => document.querySelector(`input[name=${n}]:checked`).value;
+  const filesEl = $("#files"), runBtn = $("#run"), prog = $("#prog"), bar = prog.firstElementChild;
+  const say = TT.sayTo($("#status"));
+  const items = [];
+  const A4 = [595.28, 841.89], MM = 72 / 25.4;
+  const Q = { hi: [3508, 0.92], mid: [2480, 0.85], lo: [1600, 0.72] };
+
+  document.querySelectorAll("input[name=size]").forEach(r => r.onchange = () => $("#orientField").hidden = val("size") !== "a4");
+  TT.dropzone($("#drop"), add, { accept: "image/*" });
+
+  async function add(files) {
+    for (const file of files) {
+      const it = { file, url: URL.createObjectURL(file) };
+      try { const b = await createImageBitmap(file); it.w = b.width; it.h = b.height; b.close(); } catch { it.bad = true; }
+      items.push(it);
+    }
+    render();
+  }
+
+  function render() {
+    filesEl.innerHTML = "";
+    items.forEach((it, i) => {
+      const el = document.createElement("div");
+      el.className = "file";
+      el.innerHTML = `
+        <span class="order">${i + 1}</span>
+        <img class="thumb" alt="" ${it.bad ? "" : `src="${it.url}"`}>
+        <div class="meta"><div class="name"></div><div class="info">${it.bad ? "열 수 없는 형식" : `${it.w}×${it.h} · ${TT.bytes(it.file.size)}`}</div></div>
+        <div class="acts">
+          <button class="icon-btn" data-a="up" title="위로" ${i === 0 ? "disabled" : ""}>${TT.icon("up")}</button>
+          <button class="icon-btn" data-a="down" title="아래로" ${i === items.length - 1 ? "disabled" : ""}>${TT.icon("down")}</button>
+          <button class="icon-btn" data-a="rm" title="빼기">${TT.icon("x")}</button>
+        </div>`;
+      el.querySelector(".name").textContent = it.file.name;
+      el.querySelector(".acts").onclick = e => {
+        const a = e.target.closest("button")?.dataset.a; if (!a) return;
+        if (a === "rm") { URL.revokeObjectURL(it.url); items.splice(i, 1); }
+        else TT.move(items, i, a === "up" ? -1 : 1);
+        render();
+      };
+      filesEl.appendChild(el);
+    });
+    const ok = items.filter(i => !i.bad);
+    $("#listWrap").hidden = !items.length;
+    $("#summary").textContent = `${ok.length}장 → PDF ${ok.length}쪽`;
+    runBtn.disabled = !ok.length;
+  }
+  $("#clear").onclick = () => { items.forEach(i => URL.revokeObjectURL(i.url)); items.length = 0; render(); say(""); };
+
+  runBtn.onclick = async () => {
+    const ok = items.filter(i => !i.bad);
+    const [maxSide, q] = Q[$("#q").value];
+    const margin = +val("margin") * MM, size = val("size"), orient = val("orient");
+    runBtn.disabled = true; prog.hidden = false;
+    try {
+      const pdf = await PDFLib.PDFDocument.create();
+      for (let k = 0; k < ok.length; k++) {
+        say(`만드는 중… ${k + 1}/${ok.length}`);
+        const c = await TT.toCanvas(ok[k].file, maxSide);
+        // 투명한 부분은 흰색으로
+        const w = document.createElement("canvas"); w.width = c.width; w.height = c.height;
+        const g = w.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, w.width, w.height); g.drawImage(c, 0, 0);
+        const blob = await TT.canvasBlob(w, "image/jpeg", q);
+        const img = await pdf.embedJpg(await blob.arrayBuffer());
+        let W, H;
+        if (size === "a4") {
+          const land = orient === "l" || (orient === "auto" && c.width > c.height);
+          [W, H] = land ? [A4[1], A4[0]] : A4;
+        } else {
+          W = A4[0]; H = (A4[0] - 2 * margin) * c.height / c.width + 2 * margin;
+        }
+        const s = Math.min((W - 2 * margin) / c.width, (H - 2 * margin) / c.height);
+        const dw = c.width * s, dh = c.height * s;
+        const page = pdf.addPage([W, H]);
+        page.drawImage(img, { x: (W - dw) / 2, y: (H - dh) / 2, width: dw, height: dh });
+        bar.style.width = ((k + 1) / ok.length * 100) + "%";
+      }
+      const out = new Blob([await pdf.save()], { type: "application/pdf" });
+      const name = ($("#name").value.trim() || "이미지모음").replace(/[\\/:*?"<>|]/g, "_");
+      TT.download(out, name.endsWith(".pdf") ? name : name + ".pdf");
+      say(`완료 · ${ok.length}쪽 · ${TT.bytes(out.size)}`, "ok");
+    } catch (e) {
+      console.error(e); say("PDF를 만들지 못했어요.", "err");
+    } finally { runBtn.disabled = false; prog.hidden = true; bar.style.width = 0; }
+  };
+})();
+</script>
+</body>
+</html>

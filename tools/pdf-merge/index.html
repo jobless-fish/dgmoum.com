@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PDF 합치기 · 뚝딱툴</title>
+<meta name="description" content="여러 PDF 파일을 원하는 순서로 하나로 합치기. 업로드 없이 브라우저에서 바로, 무료·횟수 제한 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--doc); }
+  .file .thumb { object-fit: contain; background: #fff; border: 1px solid var(--line); }
+  .order { font-family: var(--f-mono); font-weight: 600; color: var(--doc); width: 22px; text-align: center; }
+  .file { grid-template-columns: 22px 44px minmax(0, 1fr) auto; }
+  .file canvas.thumb { width: 44px; height: 56px; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>PDF 합치기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="pdf-merge"></span>
+    <div>
+      <h1>PDF 합치기</h1>
+      <p>PDF 여러 개를 넣고 화살표로 순서를 맞춘 뒤 하나로 합쳐요. 서류 제출할 때 여러 장을 한 파일로 묶기 좋아요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="PDF 파일 선택">
+        <span data-icon="upload"></span>
+        <strong>PDF를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>여러 개 가능 · 나중에 더 추가할 수도 있어요</span>
+        <input type="file" id="file">
+      </div>
+      <div id="listWrap" hidden>
+        <div class="list-head">
+          <p id="summary"></p>
+          <button class="btn btn-sm" id="clear">모두 비우기</button>
+        </div>
+        <div class="files" id="files"></div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>합치기</h2>
+        <div class="field">
+          <label for="name">저장할 파일 이름</label>
+          <input type="text" id="name" value="합친문서">
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled>PDF 합치기</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status">두 개 이상 넣으면 합칠 수 있어요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>PDF는 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const filesEl = $("#files"), runBtn = $("#run"), prog = $("#prog"), bar = prog.firstElementChild;
+  const say = TT.sayTo($("#status"));
+  const items = []; // { file, bytes, pages, bad }
+
+  TT.dropzone($("#drop"), add, { accept: "application/pdf,.pdf" });
+
+  async function add(files) {
+    const pdfs = files.filter(f => f.type === "application/pdf" || /\.pdf$/i.test(f.name));
+    if (!pdfs.length) { say("PDF 파일이 아니에요.", "err"); return; }
+    for (const file of pdfs) {
+      const it = { file, bytes: new Uint8Array(await file.arrayBuffer()) };
+      try {
+        const doc = await PDFLib.PDFDocument.load(it.bytes, { ignoreEncryption: false });
+        it.pages = doc.getPageCount();
+      } catch (e) { it.bad = /encrypt/i.test(String(e)) ? "암호가 걸린 PDF" : "열 수 없는 PDF"; }
+      items.push(it);
+      thumb(it);
+    }
+    render();
+  }
+
+  async function thumb(it) {
+    if (it.bad) return;
+    try {
+      const lib = await TT.pdfjs();
+      const doc = await lib.getDocument({ data: it.bytes.slice() }).promise;
+      const page = await doc.getPage(1);
+      const vp = page.getViewport({ scale: 1 });
+      const s = 112 / vp.height;
+      const c = document.createElement("canvas");
+      const v2 = page.getViewport({ scale: s });
+      c.width = v2.width; c.height = v2.height;
+      await page.render({ canvasContext: c.getContext("2d"), viewport: v2 }).promise;
+      it.thumb = c; render();
+    } catch {}
+  }
+
+  function render() {
+    filesEl.innerHTML = "";
+    items.forEach((it, i) => {
+      const el = document.createElement("div");
+      el.className = "file";
+      el.innerHTML = `
+        <span class="order">${i + 1}</span>
+        <span class="thumbslot"></span>
+        <div class="meta"><div class="name"></div><div class="info">${it.bad ? it.bad : `${it.pages}쪽 · ${TT.bytes(it.file.size)}`}</div></div>
+        <div class="acts">
+          <button class="icon-btn" data-a="up" title="위로" ${i === 0 ? "disabled" : ""}>${TT.icon("up")}</button>
+          <button class="icon-btn" data-a="down" title="아래로" ${i === items.length - 1 ? "disabled" : ""}>${TT.icon("down")}</button>
+          <button class="icon-btn" data-a="rm" title="빼기">${TT.icon("x")}</button>
+        </div>`;
+      el.querySelector(".name").textContent = it.file.name;
+      const slot = el.querySelector(".thumbslot");
+      if (it.thumb) { const c = it.thumb; c.className = "thumb"; slot.replaceWith(c); }
+      else { const d = document.createElement("div"); d.className = "thumb"; d.style.width = "44px"; d.style.height = "56px"; slot.replaceWith(d); }
+      el.querySelector(".acts").onclick = e => {
+        const a = e.target.closest("button")?.dataset.a; if (!a) return;
+        if (a === "rm") items.splice(i, 1);
+        else TT.move(items, i, a === "up" ? -1 : 1);
+        render();
+      };
+      filesEl.appendChild(el);
+    });
+    const ok = items.filter(i => !i.bad);
+    $("#listWrap").hidden = !items.length;
+    $("#summary").textContent = `${items.length}개 파일 · 모두 ${ok.reduce((s, i) => s + i.pages, 0)}쪽`;
+    runBtn.disabled = ok.length < 2;
+    if (items.some(i => i.bad)) say("암호가 걸렸거나 열 수 없는 PDF는 빼고 합쳐요.", "err");
+    else say(ok.length < 2 ? "두 개 이상 넣으면 합칠 수 있어요." : "");
+  }
+
+  $("#clear").onclick = () => { items.length = 0; render(); };
+
+  runBtn.onclick = async () => {
+    const ok = items.filter(i => !i.bad);
+    runBtn.disabled = true; prog.hidden = false;
+    try {
+      const out = await PDFLib.PDFDocument.create();
+      for (let k = 0; k < ok.length; k++) {
+        say(`합치는 중… ${k + 1}/${ok.length}`);
+        const src = await PDFLib.PDFDocument.load(ok[k].bytes);
+        const pages = await out.copyPages(src, src.getPageIndices());
+        pages.forEach(p => out.addPage(p));
+        bar.style.width = ((k + 1) / ok.length * 100) + "%";
+      }
+      const bytes = await out.save();
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const name = ($("#name").value.trim() || "합친문서").replace(/[\\/:*?"<>|]/g, "_");
+      TT.download(blob, name.endsWith(".pdf") ? name : name + ".pdf");
+      say(`완료 · ${out.getPageCount()}쪽 · ${TT.bytes(blob.size)}`, "ok");
+    } catch (e) {
+      console.error(e); say("합치지 못했어요. 손상된 PDF가 없는지 확인해 주세요.", "err");
+    } finally { runBtn.disabled = false; prog.hidden = true; bar.style.width = 0; }
+  };
+})();
+</script>
+</body>
+</html>

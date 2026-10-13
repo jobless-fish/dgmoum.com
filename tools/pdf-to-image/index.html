@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PDF → 이미지 · 뚝딱툴</title>
+<meta name="description" content="PDF 페이지를 PNG, JPG 이미지로 변환. 해상도 선택, 원하는 페이지만, zip으로 한 번에. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--doc); }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+  .bar p { margin: 0; font-size: 14px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>PDF → 이미지</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="pdf-to-image"></span>
+    <div>
+      <h1>PDF → 이미지</h1>
+      <p>PDF 페이지를 이미지로 뽑아요. 처음엔 모든 페이지가 골라져 있고, 필요 없는 페이지는 눌러서 빼면 돼요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="PDF 파일 선택">
+        <span data-icon="upload"></span>
+        <strong>PDF를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>한 번에 한 파일</span>
+        <input type="file" id="file">
+      </div>
+      <div id="board" hidden style="display:grid; gap:12px">
+        <div class="bar">
+          <p id="summary"></p>
+          <div class="row">
+            <button class="btn btn-sm" id="selAll">전체 선택</button>
+            <button class="btn btn-sm" id="selNone">선택 해제</button>
+          </div>
+        </div>
+        <div class="pages" id="pages"></div>
+        <div class="drop compact" id="drop2" tabindex="0" role="button" aria-label="다른 PDF 고르기">
+          <span data-icon="upload"></span><span>다른 PDF 고르기</span><input type="file">
+        </div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>이미지 설정</h2>
+        <div class="field">
+          <span class="label">형식</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="fmt" id="f-png" value="image/png" checked><label for="f-png">PNG</label>
+            <input type="radio" name="fmt" id="f-jpg" value="image/jpeg"><label for="f-jpg">JPG</label>
+          </div>
+          <p class="hint">글자가 많은 문서는 PNG가 선명하고, 사진이 많으면 JPG가 가벼워요.</p>
+        </div>
+        <div class="field">
+          <label for="dpi">해상도</label>
+          <select id="dpi">
+            <option value="96">96 dpi (화면용)</option>
+            <option value="150" selected>150 dpi (보통)</option>
+            <option value="300">300 dpi (인쇄용 · 파일 큼)</option>
+          </select>
+          <p class="hint num" id="sizeHint"></p>
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled>이미지로 저장</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>PDF는 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const pagesEl = $("#pages"), runBtn = $("#run"), prog = $("#prog"), bar = prog.firstElementChild;
+  const say = TT.sayTo($("#status"));
+  let file = null, doc = null, sel = [], first = null, loadId = 0;
+  const MAX = 8000; // 너무 큰 캔버스는 브라우저가 못 그려요
+
+  TT.dropzone($("#drop"), f => load(f[0]), { accept: "application/pdf,.pdf", multiple: false });
+  TT.dropzone($("#drop2"), f => load(f[0]), { accept: "application/pdf,.pdf", multiple: false, paste: false });
+  $("#dpi").onchange = hint;
+
+  async function load(f) {
+    if (!f || !(f.type === "application/pdf" || /\.pdf$/i.test(f.name))) { say("PDF 파일이 아니에요.", "err"); return; }
+    const my = ++loadId;
+    say("여는 중…");
+    try {
+      const lib = await TT.pdfjs();
+      doc = await lib.getDocument({ data: new Uint8Array(await f.arrayBuffer()) }).promise;
+    } catch (e) {
+      say(e?.name === "PasswordException" ? "암호가 걸린 PDF는 열 수 없어요." : "PDF를 열지 못했어요.", "err"); return;
+    }
+    file = f; sel = Array(doc.numPages).fill(true);
+    first = (await doc.getPage(1)).getViewport({ scale: 1 });
+    $("#drop").hidden = true; $("#board").hidden = false;
+    pagesEl.innerHTML = "";
+    for (let i = 0; i < doc.numPages; i++) {
+      const el = document.createElement("div");
+      el.className = "pg sel"; el.tabIndex = 0;
+      el.innerHTML = `<canvas width="150" height="212"></canvas><span class="no">${i + 1}</span>`;
+      const toggle = () => { sel[i] = !sel[i]; el.classList.toggle("sel", sel[i]); refresh(); };
+      el.onclick = toggle;
+      el.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); toggle(); } };
+      pagesEl.appendChild(el);
+    }
+    refresh(); hint(); say("");
+    for (let i = 0; i < doc.numPages; i++) {
+      if (my !== loadId) return;
+      const p = await doc.getPage(i + 1);
+      const v1 = p.getViewport({ scale: 1 });
+      const vp = p.getViewport({ scale: 220 / Math.max(v1.width, v1.height) });
+      const c = pagesEl.children[i].querySelector("canvas");
+      c.width = vp.width; c.height = vp.height;
+      await p.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+    }
+  }
+
+  function refresh() {
+    const n = sel.filter(Boolean).length;
+    $("#summary").textContent = `${file.name} · ${doc.numPages}쪽 중 ${n}쪽 고름`;
+    runBtn.disabled = !n;
+  }
+  function hint() {
+    if (!first) return;
+    const s = +$("#dpi").value / 72;
+    $("#sizeHint").textContent = `1쪽 기준 약 ${Math.round(first.width * s)} × ${Math.round(first.height * s)} px`;
+  }
+  $("#selAll").onclick = () => { sel.fill(true); [...pagesEl.children].forEach(e => e.classList.add("sel")); refresh(); };
+  $("#selNone").onclick = () => { sel.fill(false); [...pagesEl.children].forEach(e => e.classList.remove("sel")); refresh(); };
+
+  runBtn.onclick = async () => {
+    const type = document.querySelector("input[name=fmt]:checked").value, ext = type === "image/png" ? "png" : "jpg";
+    const idx = sel.map((v, i) => v ? i : -1).filter(i => i >= 0);
+    const scale = +$("#dpi").value / 72;
+    runBtn.disabled = true; prog.hidden = false;
+    const out = [], base = TT.baseName(file.name), pad = String(doc.numPages).length;
+    try {
+      for (let k = 0; k < idx.length; k++) {
+        say(`그리는 중… ${k + 1}/${idx.length}`);
+        const p = await doc.getPage(idx[k] + 1);
+        const v1 = p.getViewport({ scale: 1 });
+        const s = Math.min(scale, MAX / Math.max(v1.width, v1.height));
+        const vp = p.getViewport({ scale: s });
+        const c = document.createElement("canvas");
+        c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+        const g = c.getContext("2d");
+        g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+        await p.render({ canvasContext: g, viewport: vp }).promise;
+        out.push({ blob: await TT.canvasBlob(c, type, 0.92), name: `${base}_${String(idx[k] + 1).padStart(pad, "0")}.${ext}` });
+        c.width = c.height = 0;
+        bar.style.width = ((k + 1) / idx.length * 100) + "%";
+      }
+      if (out.length === 1) TT.download(out[0].blob, out[0].name);
+      else { say("zip으로 묶는 중…"); await TT.downloadZip(out, `${base}_이미지.zip`); }
+      say(`${out.length}장 저장 · ${TT.bytes(out.reduce((s, o) => s + o.blob.size, 0))}`, "ok");
+    } catch (e) {
+      console.error(e); say("변환하지 못했어요. 해상도를 낮춰 다시 시도해 보세요.", "err");
+    } finally { runBtn.disabled = false; prog.hidden = true; bar.style.width = 0; }
+  };
+})();
+</script>
+</body>
+</html>

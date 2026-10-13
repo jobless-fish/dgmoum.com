@@ -4,30 +4,47 @@
 // status: "live" = 사용 가능, "soon" = 준비 중
 window.TT_TOOLS = [
   { id: "image-convert", cat: "img", name: "이미지 포맷 변환", desc: "PNG · JPG · WEBP 사이를 여러 장 한 번에 바꿔요. 화질 조절과 투명 배경 처리까지.", tags: ["png", "jpg", "jpeg", "webp", "변환", "확장자"], status: "live" },
-  { id: "image-resize", cat: "img", name: "이미지 크기 조절", desc: "픽셀이나 퍼센트로 줄이고 늘려요. 비율 유지, 여러 장 일괄 처리.", tags: ["리사이즈", "resize", "크기", "용량", "축소"], status: "live" },
+  { id: "image-resize", cat: "img", name: "이미지 크기 조절", desc: "픽셀이나 퍼센트로 줄이고 늘려요. 비율 유지, 여러 장 일괄 처리.", tags: ["리사이즈", "resize", "크기", "축소"], status: "live" },
+  { id: "image-compress", cat: "img", name: "이미지 압축", desc: "크기는 그대로 두고 용량만 줄여요. 원하는 용량(KB)을 넣으면 거기에 맞춰줘요.", tags: ["용량", "압축", "줄이기", "kb", "compress"], status: "live" },
+  { id: "image-mosaic", cat: "img", name: "모자이크 · 가리기", desc: "캡처나 사진에서 이름, 번호, 얼굴을 드래그해서 모자이크나 검은 박스로 가려요.", tags: ["모자이크", "블러", "가리기", "개인정보", "캡처"], status: "live" },
+  { id: "image-merge", cat: "img", name: "이미지 합치기", desc: "여러 이미지를 가로나 세로로 이어 붙여요.", tags: ["합치기", "이어붙이기", "병합"], status: "soon" },
   { id: "video-trim", cat: "vid", name: "영상 자르기", desc: "원하는 구간만 골라 잘라 저장해요. 소리도 같이 들어가요.", tags: ["동영상", "video", "trim", "컷", "편집", "mp4"], status: "live" },
+  { id: "video-gif", cat: "vid", name: "영상 → GIF", desc: "영상에서 짧은 구간을 골라 움짤(GIF)로 만들어요. 크기와 프레임 수 조절.", tags: ["gif", "움짤", "짤", "동영상", "변환"], status: "live" },
   { id: "audio-edit", cat: "aud", name: "음원 자르기 · 피치 조절", desc: "파형을 보며 구간을 자르고, 키(반음)와 속도를 따로 바꿔 WAV·MP3로 저장해요.", tags: ["오디오", "mp3", "wav", "키", "피치", "속도", "mr", "벨소리"], status: "live" },
-  { id: "pdf-to-png", cat: "doc", name: "PDF → 이미지", desc: "PDF 페이지를 PNG 이미지로 뽑아요.", tags: ["pdf", "png"], status: "soon" },
-  { id: "image-merge", cat: "img", name: "이미지 합치기", desc: "여러 이미지를 가로나 세로로 이어 붙여요.", tags: ["합치기", "이어붙이기", "병합"], status: "soon" }
+  { id: "pdf-merge", cat: "doc", name: "PDF 합치기", desc: "여러 PDF를 원하는 순서대로 하나로 묶어요.", tags: ["pdf", "합치기", "병합", "merge"], status: "live" },
+  { id: "pdf-split", cat: "doc", name: "PDF 나누기 · 정리", desc: "페이지를 보면서 빼고, 돌리고, 순서를 바꾸고, 필요한 페이지만 뽑거나 한 장씩 나눠요.", tags: ["pdf", "나누기", "분할", "추출", "삭제", "회전", "split"], status: "live" },
+  { id: "image-to-pdf", cat: "doc", name: "이미지 → PDF", desc: "사진·스캔 이미지 여러 장을 PDF 한 파일로 만들어요. A4 맞춤 지원.", tags: ["pdf", "jpg", "png", "사진", "스캔", "서류"], status: "live" },
+  { id: "pdf-to-image", cat: "doc", name: "PDF → 이미지", desc: "PDF 페이지를 PNG나 JPG 이미지로 뽑아요. 해상도 선택.", tags: ["pdf", "png", "jpg", "이미지", "변환"], status: "live" }
 ];
 
 window.TT_CATS = {
   img: { label: "이미지", color: "var(--img)" },
+  doc: { label: "PDF", color: "var(--doc)" },
   vid: { label: "영상", color: "var(--vid)" },
-  aud: { label: "오디오", color: "var(--aud)" },
-  doc: { label: "문서", color: "var(--muted)" }
+  aud: { label: "오디오", color: "var(--aud)" }
 };
 
+const S = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
 window.TT_ICONS = {
-  "image-convert": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="11" height="11" rx="2"/><path d="M17 8h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-2"/><path d="m11 17 3-3-3-3" /></svg>',
-  "image-resize": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/></svg>',
-  "video-trim": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9"/><path d="M14.5 14.5 20 20"/><path d="M8.1 8.1 12 12"/></svg>',
-  "audio-edit": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h2"/><path d="M7 8v8"/><path d="M11 4v16"/><path d="M15 7v10"/><path d="M19 10v4"/></svg>',
-  "pdf-to-png": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 15h8"/></svg>',
-  "image-merge": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="8" height="16" rx="1.5"/><rect x="13" y="4" width="8" height="16" rx="1.5"/></svg>',
-  upload: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>',
-  download: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>',
-  x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>',
+  "image-convert": `<svg ${S}><rect x="3" y="3" width="11" height="11" rx="2"/><path d="M17 8h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2v-2"/><path d="m11 17 3-3-3-3"/></svg>`,
+  "image-resize": `<svg ${S}><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="m21 3-7 7"/><path d="m3 21 7-7"/></svg>`,
+  "image-compress": `<svg ${S}><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="m14 10 7-7"/><path d="m3 21 7-7"/></svg>`,
+  "image-mosaic": `<svg ${S}><rect x="3" y="3" width="6" height="6"/><rect x="9" y="9" width="6" height="6"/><rect x="15" y="3" width="6" height="6"/><rect x="3" y="15" width="6" height="6"/><rect x="15" y="15" width="6" height="6"/></svg>`,
+  "image-merge": `<svg ${S}><rect x="3" y="4" width="8" height="16" rx="1.5"/><rect x="13" y="4" width="8" height="16" rx="1.5"/></svg>`,
+  "video-trim": `<svg ${S}><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4 8.1 15.9"/><path d="M14.5 14.5 20 20"/><path d="M8.1 8.1 12 12"/></svg>`,
+  "video-gif": `<svg ${S}><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M10 10H8v4h2v-1.5"/><path d="M13 10v4"/><path d="M18 10h-2.5v4"/><path d="M15.5 12H17"/></svg>`,
+  "audio-edit": `<svg ${S}><path d="M3 12h2"/><path d="M7 8v8"/><path d="M11 4v16"/><path d="M15 7v10"/><path d="M19 10v4"/></svg>`,
+  "pdf-merge": `<svg ${S}><path d="M8 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3"/><path d="M16 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-3"/><path d="M12 8v8"/><path d="m9 13 3 3 3-3"/></svg>`,
+  "pdf-split": `<svg ${S}><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="9" rx="1"/><rect x="3" y="15" width="7" height="6" rx="1"/><rect x="14" y="15" width="7" height="6" rx="1"/></svg>`,
+  "image-to-pdf": `<svg ${S}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><circle cx="10" cy="13" r="2"/><path d="m20 17-3-3-7 7"/></svg>`,
+  "pdf-to-image": `<svg ${S}><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.5-3.5L7 21"/></svg>`,
+  upload: `<svg ${S}><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>`,
+  download: `<svg ${S}><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>`,
+  x: `<svg ${S}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
+  up: `<svg ${S}><path d="m18 15-6-6-6 6"/></svg>`,
+  down: `<svg ${S}><path d="m6 9 6 6 6-6"/></svg>`,
+  rotate: `<svg ${S}><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>`,
+  undo: `<svg ${S}><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></svg>`,
   play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4v16l13-8z"/></svg>',
   stop: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="1"/></svg>'
 };
@@ -105,7 +122,49 @@ const TT = {
   // 페이지의 [data-icon] 자리에 아이콘 채우기
   fillIcons(root = document) {
     root.querySelectorAll("[data-icon]").forEach(el => { el.innerHTML = TT.icon(el.dataset.icon) + el.innerHTML; });
-  }
+  },
+
+  // 상태 문구
+  sayTo(el) { return (t, cls = "") => { el.textContent = t; el.className = "status " + cls; }; },
+
+  // 목록 항목 위·아래로 옮기기
+  move(arr, i, d) {
+    const j = i + d;
+    if (j < 0 || j >= arr.length) return false;
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    return true;
+  },
+
+  // 다른 출처의 워커 스크립트를 blob 주소로 바꿔 쓰기 (GitHub Pages에서 CDN 워커를 띄우기 위해)
+  async workerBlobURL(url) {
+    try {
+      const txt = await (await fetch(url)).text();
+      return URL.createObjectURL(new Blob([txt], { type: "text/javascript" }));
+    } catch { return url; }
+  },
+
+  // pdf.js 준비 (페이지에 pdf.min.js가 먼저 로드돼 있어야 함)
+  _pdfReady: null,
+  pdfjs() {
+    if (!window.pdfjsLib) return Promise.reject(new Error("pdfjs"));
+    return TT._pdfReady ||= (async () => {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = await TT.workerBlobURL("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js");
+      return pdfjsLib;
+    })();
+  },
+
+  // 이미지 파일을 캔버스로 (EXIF 회전 반영)
+  async toCanvas(file, maxSide = Infinity) {
+    const bmp = await createImageBitmap(file);
+    const s = Math.min(1, maxSide / Math.max(bmp.width, bmp.height));
+    const c = document.createElement("canvas");
+    c.width = Math.round(bmp.width * s); c.height = Math.round(bmp.height * s);
+    c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+    bmp.close();
+    return c;
+  },
+
+  canvasBlob(c, type = "image/png", q) { return new Promise(r => c.toBlob(r, type, q)); }
 };
 window.TT = TT;
 document.addEventListener("DOMContentLoaded", () => TT.fillIcons());

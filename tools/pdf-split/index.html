@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PDF 나누기 · 정리 · 뚝딱툴</title>
+<meta name="description" content="PDF 페이지를 보면서 삭제, 회전, 순서 변경, 원하는 페이지만 추출, 한 장씩 나누기, 범위로 나누기. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--doc); }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+  .bar p { margin: 0; font-size: 14px; color: var(--muted); }
+  .bar .row { gap: 6px; }
+  .split-block { display: grid; gap: 8px; }
+  .divider { height: 1px; background: var(--line); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>PDF 나누기 · 정리</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="pdf-split"></span>
+    <div>
+      <h1>PDF 나누기 · 정리</h1>
+      <p>페이지를 눌러 고르고, 끌어서 순서를 바꾸고, 돌리거나 빼세요. 다 정리한 PDF로 저장하거나, 고른 페이지만 뽑거나, 여러 파일로 나눌 수 있어요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="PDF 파일 선택">
+        <span data-icon="upload"></span>
+        <strong>PDF를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>한 번에 한 파일</span>
+        <input type="file" id="file">
+      </div>
+      <div id="board" hidden style="display:grid; gap:12px">
+        <div class="bar">
+          <p id="summary"></p>
+          <div class="row">
+            <button class="btn btn-sm" id="selAll">전체 선택</button>
+            <button class="btn btn-sm" id="selNone">선택 해제</button>
+            <button class="btn btn-sm" id="rotSel" data-icon="rotate"> 선택 회전</button>
+            <button class="btn btn-sm" id="delSel" data-icon="x"> 선택 빼기</button>
+            <button class="btn btn-sm" id="reset">처음 상태로</button>
+          </div>
+        </div>
+        <div class="pages" id="pages"></div>
+        <div class="drop compact" id="drop2" tabindex="0" role="button" aria-label="다른 PDF 고르기">
+          <span data-icon="upload"></span><span>다른 PDF 고르기</span><input type="file">
+        </div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>저장하기</h2>
+        <button class="btn btn-primary btn-block" id="saveAll" disabled>정리한 PDF 저장</button>
+        <p class="hint">지금 화면의 순서·회전 그대로, 뺀 페이지는 제외하고 저장해요.</p>
+        <button class="btn btn-block" id="saveSel" disabled>고른 페이지만 저장</button>
+        <div class="divider"></div>
+        <div class="split-block">
+          <span class="label" style="font-size:13px;font-weight:600">여러 파일로 나누기</span>
+          <button class="btn btn-block" id="splitEach" disabled>한 장씩 나누기 (zip)</button>
+          <div class="field">
+            <label for="ranges">범위로 나누기</label>
+            <input type="text" id="ranges" placeholder="예: 1-3, 4, 5-8">
+            <p class="hint">쉼표로 구분한 범위마다 파일 하나씩 만들어요. 번호는 지금 보이는 순서 기준이에요.</p>
+          </div>
+          <button class="btn btn-block" id="splitRange" disabled>범위대로 나누기 (zip)</button>
+        </div>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>PDF는 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const pagesEl = $("#pages"), prog = $("#prog"), bar = prog.firstElementChild;
+  const say = TT.sayTo($("#status"));
+  let file = null, bytes = null, pages = [], thumbs = [], loadId = 0;
+  const btns = ["#saveAll", "#saveSel", "#splitEach", "#splitRange"];
+
+  TT.dropzone($("#drop"), f => load(f[0]), { accept: "application/pdf,.pdf", multiple: false });
+  TT.dropzone($("#drop2"), f => load(f[0]), { accept: "application/pdf,.pdf", multiple: false, paste: false });
+
+  async function load(f) {
+    if (!f || !(f.type === "application/pdf" || /\.pdf$/i.test(f.name))) { say("PDF 파일이 아니에요.", "err"); return; }
+    const my = ++loadId;
+    file = f; bytes = new Uint8Array(await f.arrayBuffer());
+    let n;
+    try { n = (await PDFLib.PDFDocument.load(bytes)).getPageCount(); }
+    catch (e) { say(/encrypt/i.test(String(e)) ? "암호가 걸린 PDF는 열 수 없어요." : "PDF를 열지 못했어요.", "err"); return; }
+    pages = Array.from({ length: n }, (_, i) => ({ src: i, rot: 0, sel: false }));
+    thumbs = new Array(n);
+    $("#drop").hidden = true; $("#board").hidden = false;
+    render(); say("");
+    // 썸네일은 한 장씩 차례로 그려요
+    try {
+      const lib = await TT.pdfjs();
+      const doc = await lib.getDocument({ data: bytes.slice() }).promise;
+      for (let i = 0; i < n; i++) {
+        if (my !== loadId) return;
+        const p = await doc.getPage(i + 1);
+        const v1 = p.getViewport({ scale: 1 });
+        const vp = p.getViewport({ scale: 220 / Math.max(v1.width, v1.height) });
+        const c = document.createElement("canvas");
+        c.width = vp.width; c.height = vp.height;
+        await p.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+        thumbs[i] = c;
+        const slot = pagesEl.querySelector(`[data-src="${i}"] canvas`);
+        if (slot) { slot.width = c.width; slot.height = c.height; slot.getContext("2d").drawImage(c, 0, 0); }
+      }
+    } catch { say("미리보기를 그리지 못했지만 편집과 저장은 할 수 있어요."); }
+  }
+
+  function render() {
+    pagesEl.innerHTML = "";
+    pages.forEach((pg, i) => {
+      const el = document.createElement("div");
+      el.className = "pg" + (pg.sel ? " sel" : "");
+      el.dataset.src = pg.src; el.draggable = true; el.tabIndex = 0;
+      el.setAttribute("aria-label", `${i + 1}번째 (원래 ${pg.src + 1}쪽)`);
+      const c = document.createElement("canvas");
+      const t = thumbs[pg.src];
+      if (t) { c.width = t.width; c.height = t.height; c.getContext("2d").drawImage(t, 0, 0); }
+      else { c.width = 150; c.height = 212; }
+      c.style.transform = `rotate(${pg.rot}deg)`;
+      el.innerHTML = `<div class="tools">
+          <button class="icon-btn" data-a="rot" title="90° 돌리기">${TT.icon("rotate")}</button>
+          <button class="icon-btn" data-a="rm" title="빼기">${TT.icon("x")}</button>
+        </div><span class="no">${i + 1}${pg.src !== i ? ` <span title="원래 쪽번호">(${pg.src + 1})</span>` : ""}</span>`;
+      el.insertBefore(c, el.lastElementChild);
+      el.onclick = e => {
+        const a = e.target.closest("button")?.dataset.a;
+        if (a === "rot") pg.rot = (pg.rot + 90) % 360;
+        else if (a === "rm") pages.splice(i, 1);
+        else pg.sel = !pg.sel;
+        render();
+      };
+      el.onkeydown = e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); pg.sel = !pg.sel; render(); } };
+      el.ondragstart = e => { e.dataTransfer.setData("text/plain", i); el.classList.add("drag"); };
+      el.ondragend = () => el.classList.remove("drag");
+      el.ondragover = e => { e.preventDefault(); el.classList.add("over"); };
+      el.ondragleave = () => el.classList.remove("over");
+      el.ondrop = e => {
+        e.preventDefault(); e.stopPropagation();
+        const from = +e.dataTransfer.getData("text/plain");
+        if (isNaN(from) || from === i) return render();
+        const [m] = pages.splice(from, 1); pages.splice(i, 0, m); render();
+      };
+      pagesEl.appendChild(el);
+    });
+    const nSel = pages.filter(p => p.sel).length;
+    $("#summary").textContent = `${file?.name ?? ""} · ${pages.length}쪽${nSel ? ` · ${nSel}쪽 고름` : ""}`;
+    $("#saveAll").disabled = $("#splitEach").disabled = $("#splitRange").disabled = !pages.length;
+    $("#saveSel").disabled = !nSel;
+  }
+
+  $("#selAll").onclick = () => { pages.forEach(p => p.sel = true); render(); };
+  $("#selNone").onclick = () => { pages.forEach(p => p.sel = false); render(); };
+  $("#rotSel").onclick = () => { pages.forEach(p => { if (p.sel) p.rot = (p.rot + 90) % 360; }); render(); };
+  $("#delSel").onclick = () => { pages = pages.filter(p => !p.sel); render(); };
+  $("#reset").onclick = () => { pages = thumbs.map((_, i) => ({ src: i, rot: 0, sel: false })); render(); };
+
+  async function build(list) {
+    const src = await PDFLib.PDFDocument.load(bytes);
+    const out = await PDFLib.PDFDocument.create();
+    const copied = await out.copyPages(src, list.map(p => p.src));
+    copied.forEach((pg, k) => {
+      if (list[k].rot) pg.setRotation(PDFLib.degrees((pg.getRotation().angle + list[k].rot) % 360));
+      out.addPage(pg);
+    });
+    return new Blob([await out.save()], { type: "application/pdf" });
+  }
+
+  async function busy(fn) {
+    btns.forEach(b => $(b).disabled = true); prog.hidden = false;
+    try { await fn(); }
+    catch (e) { console.error(e); say("저장하지 못했어요. 다시 시도해 주세요.", "err"); }
+    finally { prog.hidden = true; bar.style.width = 0; render(); }
+  }
+  const base = () => TT.baseName(file.name);
+
+  $("#saveAll").onclick = () => busy(async () => {
+    const b = await build(pages); TT.download(b, `${base()}_정리.pdf`);
+    say(`저장했어요 · ${pages.length}쪽 · ${TT.bytes(b.size)}`, "ok");
+  });
+  $("#saveSel").onclick = () => busy(async () => {
+    const list = pages.filter(p => p.sel);
+    const b = await build(list); TT.download(b, `${base()}_선택${list.length}쪽.pdf`);
+    say(`고른 ${list.length}쪽을 저장했어요.`, "ok");
+  });
+  $("#splitEach").onclick = () => busy(async () => {
+    const out = [];
+    for (let i = 0; i < pages.length; i++) {
+      out.push({ blob: await build([pages[i]]), name: `${base()}_${String(i + 1).padStart(3, "0")}.pdf` });
+      bar.style.width = ((i + 1) / pages.length * 100) + "%";
+    }
+    await TT.downloadZip(out, `${base()}_한장씩.zip`);
+    say(`${out.length}개 파일로 나눴어요.`, "ok");
+  });
+
+  function parseRanges(text, n) {
+    const groups = [];
+    for (const part of text.split(/[,，\s]+/).filter(Boolean)) {
+      const m = part.match(/^(\d+)(?:[-~](\d+))?$/);
+      if (!m) throw new Error(`"${part}"를 이해하지 못했어요.`);
+      let a = +m[1], b = m[2] ? +m[2] : a;
+      if (a > b) [a, b] = [b, a];
+      if (a < 1 || b > n) throw new Error(`${part}: 1부터 ${n} 사이로 적어 주세요.`);
+      groups.push({ label: a === b ? `${a}` : `${a}-${b}`, list: pages.slice(a - 1, b) });
+    }
+    if (!groups.length) throw new Error("범위를 적어 주세요. 예: 1-3, 4-6");
+    return groups;
+  }
+  $("#splitRange").onclick = () => {
+    let groups;
+    try { groups = parseRanges($("#ranges").value, pages.length); } catch (e) { say(e.message, "err"); return; }
+    busy(async () => {
+      const out = [];
+      for (let i = 0; i < groups.length; i++) {
+        out.push({ blob: await build(groups[i].list), name: `${base()}_${groups[i].label}.pdf` });
+        bar.style.width = ((i + 1) / groups.length * 100) + "%";
+      }
+      if (out.length === 1) TT.download(out[0].blob, out[0].name);
+      else await TT.downloadZip(out, `${base()}_나눔.zip`);
+      say(`${out.length}개 파일로 나눴어요.`, "ok");
+    });
+  };
+})();
+</script>
+</body>
+</html>
