@@ -58,8 +58,8 @@
         <div class="panel-body">
           <h2>브라우저 탭에서는 이렇게 보여요</h2>
           <div class="tabs-mock">
-            <div class="tab light"><canvas id="tabL" width="32" height="32"></canvas><span id="tabTitle1">내 웹사이트</span></div>
-            <div class="tab dark"><canvas id="tabD" width="32" height="32"></canvas><span id="tabTitle2">내 웹사이트</span></div>
+            <div class="tab light"><canvas id="tabL" width="32" height="32"></canvas><span id="tabTitle1">사이트 이름</span></div>
+            <div class="tab dark"><canvas id="tabD" width="32" height="32"></canvas><span id="tabTitle2">사이트 이름</span></div>
           </div>
           <h2>크기별 미리보기</h2>
           <div class="sizes" id="sizes"></div>
@@ -96,7 +96,7 @@
         </div>
         <div class="field">
           <label for="name">사이트 이름 (홈 화면 아이콘용)</label>
-          <input type="text" id="name" value="내 웹사이트">
+          <input type="text" id="name" placeholder="사이트 이름을 입력하세요">
         </div>
         <button class="btn btn-primary btn-block" id="run" disabled data-icon="download"> 아이콘 묶음 저장 (zip)</button>
         <p class="status" id="status"></p>
@@ -172,7 +172,7 @@
 
   function draw() {
     $("#pv").textContent = $("#pad").value + "%"; $("#rv").textContent = $("#round").value + "%";
-    $("#tabTitle1").textContent = $("#tabTitle2").textContent = $("#name").value || "내 웹사이트";
+    $("#tabTitle1").textContent = $("#tabTitle2").textContent = $("#name").value || "사이트 이름";
     if (!src) return;
     const i32 = icon(32);
     for (const id of ["#tabL", "#tabD"]) { const g = $(id).getContext("2d"); g.clearRect(0, 0, 32, 32); g.drawImage(i32, 0, 0); }
@@ -205,7 +205,7 @@
     $("#run").disabled = true; say("만드는 중…");
     try {
       const png = async (s, bg) => TT.canvasBlob(icon(s, bg), "image/png");
-      const name = ($("#name").value || "내 웹사이트").trim();
+      const name = ($("#name").value || "웹사이트").trim();
       const manifest = JSON.stringify({ name, short_name: name.slice(0, 12), icons: [
         { src: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
         { src: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" }],

@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
 <link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&family=Nanum+Gothic:wght@400;700&family=Nanum+Myeongjo:wght@400;700&family=Gowun+Dodum&family=Gowun+Batang:wght@400;700&family=Song+Myung&family=Do+Hyeon&family=Jua&family=Gaegu:wght@400;700&family=Nanum+Pen+Script&display=swap">
 <style>
   body { --cat: var(--img); }
   .preview { display: grid; place-items: center; background: repeating-conic-gradient(var(--surface-2) 0 25%, var(--line) 0 50%) 0 0 / 16px 16px; border-radius: 8px; padding: 10px; }
@@ -72,7 +73,24 @@
         </div>
         <div class="field" data-kind="text">
           <label for="text">문구</label>
-          <input type="text" id="text" value="© 이어진">
+          <input type="text" id="text" placeholder="텍스트를 입력하세요 (예: © 내 이름)">
+          <div class="row">
+            <select id="font" aria-label="글꼴" style="flex:1 1 160px">
+              <option value="Noto Sans KR" style="font-family:'Noto Sans KR'">본고딕 (Noto Sans KR)</option>
+              <option value="Nanum Gothic" style="font-family:'Nanum Gothic'">나눔고딕</option>
+              <option value="Nanum Myeongjo" style="font-family:'Nanum Myeongjo'">나눔명조</option>
+              <option value="IBM Plex Sans KR" style="font-family:'IBM Plex Sans KR'">IBM Plex Sans KR</option>
+              <option value="Gowun Dodum" style="font-family:'Gowun Dodum'">고운돋움</option>
+              <option value="Gowun Batang" style="font-family:'Gowun Batang'">고운바탕</option>
+              <option value="Song Myung" style="font-family:'Song Myung'">송명</option>
+              <option value="Black Han Sans" style="font-family:'Black Han Sans'">검은고딕 (Black Han Sans)</option>
+              <option value="Do Hyeon" style="font-family:'Do Hyeon'">도현</option>
+              <option value="Jua" style="font-family:'Jua'">주아</option>
+              <option value="Gaegu" style="font-family:'Gaegu'">개구</option>
+              <option value="Nanum Pen Script" style="font-family:'Nanum Pen Script'">나눔손글씨 펜</option>
+            </select>
+            <label class="check"><input type="checkbox" id="bold" checked> 굵게</label>
+          </div>
           <div class="color-row"><input type="color" id="color" value="#ffffff" aria-label="글자 색"><label class="check"><input type="checkbox" id="shadow" checked> 그림자 (밝은 사진에서도 보이게)</label></div>
         </div>
         <div class="field" data-kind="logo" hidden>
@@ -119,6 +137,10 @@
   const filesEl = $("#files"), pv = $("#pv"), runBtn = $("#run"), prog = $("#prog"), bar = prog.firstElementChild;
   const say = TT.sayTo($("#status"));
   const items = []; let logo = null, pos = 8;
+  const font = px => `${$("#bold").checked ? 700 : 400} ${px}px "${$("#font").value}", "Malgun Gothic", sans-serif`;
+  // 고른 글꼴이 내려받아진 뒤에 그려야 글꼴이 제대로 나와요
+  async function ensureFont() { try { await document.fonts.load(font(40), $("#text").value || "가A"); } catch {} }
+  $("#font").addEventListener("change", async () => { await ensureFont(); preview(); });
 
   TT.dropzone($("#drop"), add, { accept: "image/*" });
   document.querySelectorAll("input[name=kind]").forEach(r => r.onchange = () => { document.querySelectorAll("[data-kind]").forEach(el => el.hidden = el.dataset.kind !== kind()); preview(); });
@@ -166,10 +188,10 @@
     }
     const text = $("#text").value.trim(); if (!text) return null;
     const m = document.createElement("canvas").getContext("2d");
-    m.font = `600 100px "IBM Plex Sans KR", "Malgun Gothic", sans-serif`;
+    m.font = font(100);
     const fs = 100 * target / Math.max(1, m.measureText(text).width);
     return { w: target, h: fs * 1.2, draw: (g, x, y) => {
-      g.font = `600 ${fs}px "IBM Plex Sans KR", "Malgun Gothic", sans-serif`; g.textBaseline = "top";
+      g.font = font(fs); g.textBaseline = "top";
       if ($("#shadow").checked) { g.shadowColor = "rgba(0,0,0,.55)"; g.shadowBlur = fs * 0.12; g.shadowOffsetY = fs * 0.04; }
       g.fillStyle = $("#color").value; g.fillText(text, x, y + fs * 0.1);
       g.shadowColor = "transparent";
@@ -200,13 +222,14 @@
     pv.width = Math.round(first.bmp.width * s); pv.height = Math.round(first.bmp.height * s);
     const g = pv.getContext("2d"); g.drawImage(first.bmp, 0, 0, pv.width, pv.height);
     const ok = apply(g, pv.width, pv.height);
-    if (!ok) say(kind() === "logo" ? "로고 이미지를 골라 주세요." : "문구를 적어 주세요."); else say("");
+    if (!ok) say(kind() === "logo" ? "로고 이미지를 골라 주세요." : "넣을 텍스트를 입력하세요."); else say("");
     runBtn.disabled = !ok || !items.some(i => !i.bad);
   }
 
   runBtn.onclick = async () => {
     const todo = items.filter(i => !i.bad), out = [];
     runBtn.disabled = true; prog.hidden = false;
+    await ensureFont();
     try {
       for (let k = 0; k < todo.length; k++) {
         const it = todo[k]; say(`넣는 중… ${k + 1}/${todo.length}`);

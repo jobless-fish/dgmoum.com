@@ -60,7 +60,7 @@
       </div>
       <div class="panel">
         <div class="form" data-k="url">
-          <div class="field"><label for="url">주소</label><input type="text" id="url" value="https://jobless-fish.github.io/ttukttak/" inputmode="url"></div>
+          <div class="field"><label for="url">주소</label><input type="text" id="url" placeholder="주소를 입력하세요 (예: example.com)" inputmode="url"></div>
           <p class="hint">https:// 를 빼고 적으면 자동으로 붙여요.</p>
         </div>
         <div class="form" data-k="wifi" hidden>
@@ -229,7 +229,7 @@
   }
 
   function update() {
-    if (!window.qrcode) { say("QR 기능을 불러오지 못했어요. 새로고침해 주세요.", "err"); return; }
+    if (!window.qrcode) { say("QR 기능을 불러오지 못했어요. 새로고침해 주세요.", "err"); toggle(false); return; }
     payload = build();
     $("#data").textContent = payload || "(비어 있음)";
     if (logo) $("#ec").value = "H";
