@@ -23,6 +23,7 @@ tools/
   pdf-split/      PDF 나누기 · 정리 (삭제·회전·순서·추출·분할)
   image-to-pdf/   이미지 → PDF (A4 맞춤)
   pdf-to-image/   PDF → 이미지 (PNG·JPG, dpi 선택)
+  qr-code/        QR코드 만들기 (링크·와이파이·연락처·문자·이메일, PNG·SVG)
   char-count/     글자 수 세기 (공백 포함·제외·바이트·목표)
 ```
 
@@ -49,6 +50,6 @@ tools/
 
 - **영상 자르기**: 고른 구간을 재생하면서 녹화하는 방식이라 구간 길이만큼 시간이 걸려요. 최신 크롬·엣지는 MP4로, 그 외에는 WEBM으로 저장돼요.
 - **음원 피치**: 키와 빠르기를 따로 바꿔요(WSOLA 방식). ±12반음, 0.5~2배.
-- 외부 라이브러리는 모두 cdnjs에서 불러와요: MP3 저장(lamejs), zip 받기(JSZip), PDF 편집(pdf-lib), PDF 그리기(pdf.js), GIF 만들기(gif.js).
+- 외부 라이브러리는 모두 cdnjs에서 불러와요: MP3 저장(lamejs), zip 받기(JSZip), PDF 편집(pdf-lib), PDF 그리기(pdf.js), GIF 만들기(gif.js), QR코드(qrcode-generator, jsDelivr).
 - **MP3 저장**과 **zip 받기**는 불러오지 못하면 WAV 저장 / 파일 하나씩 받기로 자동 전환돼요.
 - HEIC(아이폰 사진)는 사파리 외 브라우저에서 열리지 않아요.

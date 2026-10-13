@@ -17,6 +17,7 @@ window.TT_TOOLS = [
   { id: "pdf-split", cat: "doc", name: "PDF 나누기 · 정리", desc: "페이지를 보면서 빼고, 돌리고, 순서를 바꾸고, 필요한 페이지만 뽑거나 한 장씩 나눠요.", tags: ["pdf", "나누기", "분할", "추출", "삭제", "회전", "split"], status: "live" },
   { id: "image-to-pdf", cat: "doc", name: "이미지 → PDF", desc: "사진·스캔 이미지 여러 장을 PDF 한 파일로 만들어요. A4 맞춤 지원.", tags: ["pdf", "jpg", "png", "사진", "스캔", "서류"], status: "live" },
   { id: "pdf-to-image", cat: "doc", name: "PDF → 이미지", desc: "PDF 페이지를 PNG나 JPG 이미지로 뽑아요. 해상도 선택.", tags: ["pdf", "png", "jpg", "이미지", "변환"], status: "live" },
+  { id: "qr-code", cat: "txt", name: "QR코드 만들기", desc: "링크, 와이파이, 연락처, 문자를 QR코드로. 색과 점 모양, 가운데 로고까지 넣어 PNG·SVG로 저장해요.", tags: ["qr", "큐알", "qr코드", "큐알코드", "와이파이", "명함", "링크"], status: "live" },
   { id: "char-count", cat: "txt", name: "글자 수 세기", desc: "공백 포함·제외, 바이트, 줄 수를 한 번에. 목표 글자 수를 넣으면 남은 글자를 알려줘요.", tags: ["글자수", "글자 수", "자소서", "바이트", "byte", "공백", "문자", "카운터"], status: "live" }
 ];
 
@@ -25,7 +26,7 @@ window.TT_CATS = {
   doc: { label: "PDF", color: "var(--doc)" },
   vid: { label: "영상", color: "var(--vid)" },
   aud: { label: "오디오", color: "var(--aud)" },
-  txt: { label: "텍스트", color: "var(--txt)" }
+  txt: { label: "텍스트 · 생활", color: "var(--txt)" }
 };
 
 const S = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
@@ -45,6 +46,7 @@ window.TT_ICONS = {
   "image-gif": `<svg ${S}><rect x="3" y="7" width="13" height="13" rx="2"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/><path d="m8 11 4 2.5L8 16z"/></svg>`,
   "char-count": `<svg ${S}><path d="M4 7V5h16v2"/><path d="M12 5v14"/><path d="M9 19h6"/></svg>`,
   "insta-grid": `<svg ${S}><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 12h18"/></svg>`,
+  "qr-code": `<svg ${S}><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3z"/><path d="M20 14v.01"/><path d="M14 20h.01"/><path d="M17 20h4v-3"/></svg>`,
   upload: `<svg ${S}><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>`,
   download: `<svg ${S}><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>`,
   x: `<svg ${S}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
