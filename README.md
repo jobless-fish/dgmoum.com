@@ -14,6 +14,7 @@ tools/
   image-resize/   이미지 크기 조절 (긴 변 / 픽셀 / 퍼센트)
   image-compress/ 이미지 압축 (목표 용량 KB 맞추기)
   image-mosaic/   모자이크 · 흐리게 · 박스로 가리기
+  image-gif/      움짤 만들기 (사진 여러 장 → GIF)
   video-trim/     영상 자르기
   video-gif/      영상 → GIF
   audio-edit/     음원 자르기 · 키 · 빠르기 · 페이드
@@ -21,6 +22,7 @@ tools/
   pdf-split/      PDF 나누기 · 정리 (삭제·회전·순서·추출·분할)
   image-to-pdf/   이미지 → PDF (A4 맞춤)
   pdf-to-image/   PDF → 이미지 (PNG·JPG, dpi 선택)
+  char-count/     글자 수 세기 (공백 포함·제외·바이트·목표)
 ```
 
 각 도구는 독립된 페이지라서 `tools/<이름>/` 주소로 바로 들어갈 수 있어요.

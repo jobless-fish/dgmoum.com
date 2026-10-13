@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>움짤 만들기 · 뚝딱툴</title>
+<meta name="description" content="사진 여러 장을 이어서 GIF 움짤 만들기. 순서 바꾸기, 넘김 속도, 크기, 반복 설정. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--img); }
+  .file { grid-template-columns: 22px 56px minmax(0, 1fr) auto; }
+  .order { font-family: var(--f-mono); font-weight: 600; color: var(--img); text-align: center; }
+  .preview { display: grid; place-items: center; background: repeating-conic-gradient(var(--surface-2) 0 25%, var(--line) 0 50%) 0 0 / 14px 14px; border-radius: 8px; min-height: 160px; overflow: hidden; }
+  .preview canvas, .preview img { max-width: 100%; display: block; }
+  .color-row { display: flex; gap: 8px; align-items: center; }
+  .color-row input[type=color] { width: 40px; height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; }
+  .other { font-size: 13px; color: var(--muted); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>움짤 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="image-gif"></span>
+    <div>
+      <h1>움짤 만들기</h1>
+      <p>사진을 여러 장 넣고 순서를 맞추면 한 장씩 넘어가는 GIF가 돼요. 연속 사진, 표정 모음, 전후 비교에 쓰세요.</p>
+      <p class="other">영상에서 움짤을 만들려면 <a href="../video-gif/">영상 → GIF</a>를 쓰세요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="이미지 파일 선택">
+        <span data-icon="upload"></span>
+        <strong>이미지를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>두 장 이상 · Ctrl+V로 붙여넣기도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <div id="listWrap" hidden>
+        <div class="list-head">
+          <p id="summary"></p>
+          <button class="btn btn-sm" id="clear">모두 비우기</button>
+        </div>
+        <div class="files" id="files"></div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>미리보기</h2>
+        <div class="preview" id="preview"><canvas id="pv" width="1" height="1"></canvas></div>
+        <div class="field">
+          <label for="delay">한 장 보여주는 시간 <span class="num" id="dv">0.5초</span></label>
+          <input type="range" id="delay" min="50" max="2000" step="50" value="500">
+        </div>
+        <div class="field">
+          <label for="w">가로 크기</label>
+          <select id="w">
+            <option value="320">320px</option>
+            <option value="480" selected>480px</option>
+            <option value="640">640px</option>
+            <option value="800">800px</option>
+          </select>
+          <p class="hint">세로는 첫 번째 사진의 비율을 따라가요.</p>
+        </div>
+        <div class="field">
+          <span class="label">크기가 다른 사진</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="fit" id="fit-c" value="contain" checked><label for="fit-c">전부 보이게</label>
+            <input type="radio" name="fit" id="fit-f" value="cover"><label for="fit-f">꽉 채우기</label>
+          </div>
+        </div>
+        <div class="field" id="bgField">
+          <span class="label">빈 곳 색</span>
+          <div class="color-row"><input type="color" id="bg" value="#ffffff" aria-label="배경색"><span class="hint">'전부 보이게'일 때 남는 부분을 채워요.</span></div>
+        </div>
+        <label class="check"><input type="checkbox" id="loop" checked> 계속 반복</label>
+        <label class="check"><input type="checkbox" id="pingpong"> 끝까지 갔다가 거꾸로 돌아오기</label>
+        <button class="btn btn-primary btn-block" id="run" disabled>GIF 만들기</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+        <button class="btn btn-block" id="dl" hidden data-icon="download"> 다시 받기</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>이미지는 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const val = n => document.querySelector(`input[name=${n}]:checked`).value;
+  const filesEl = $("#files"), runBtn = $("#run"), prog = $("#prog"), bar = prog.firstElementChild, pv = $("#pv");
+  const say = TT.sayTo($("#status"));
+  const items = []; let out = null, timer = null, frameIdx = 0;
+  const workerURL = TT.workerBlobURL("https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js");
+
+  TT.dropzone($("#drop"), add, { accept: "image/*" });
+
+  async function add(files) {
+    for (const file of files) {
+      const it = { file, url: URL.createObjectURL(file) };
+      try { it.bmp = await createImageBitmap(file); } catch { it.bad = true; }
+      items.push(it);
+    }
+    render();
+  }
+
+  function size() {
+    const first = items.find(i => !i.bad);
+    const W = +$("#w").value;
+    return first ? [W, Math.max(1, Math.round(W * first.bmp.height / first.bmp.width))] : [W, W];
+  }
+  function frames() {
+    const ok = items.filter(i => !i.bad);
+    return $("#pingpong").checked && ok.length > 2 ? [...ok, ...ok.slice(1, -1).reverse()] : ok;
+  }
+  function paint(g, it, W, H) {
+    const b = it.bmp, cover = val("fit") === "cover";
+    const s = cover ? Math.max(W / b.width, H / b.height) : Math.min(W / b.width, H / b.height);
+    const dw = b.width * s, dh = b.height * s;
+    g.fillStyle = $("#bg").value; g.fillRect(0, 0, W, H);
+    g.imageSmoothingQuality = "high";
+    g.drawImage(b, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  }
+
+  // 오른쪽 미리보기: 설정대로 계속 돌려 보여줘요
+  function preview() {
+    clearTimeout(timer);
+    const fr = frames();
+    if (!fr.length) { pv.width = pv.height = 1; return; }
+    const [W, H] = size();
+    pv.width = W; pv.height = H;
+    const g = pv.getContext("2d");
+    const step = () => {
+      const f = frames(); if (!f.length) return;
+      frameIdx = (frameIdx + 1) % f.length;
+      paint(g, f[frameIdx], W, H);
+      timer = setTimeout(step, +$("#delay").value);
+    };
+    frameIdx = -1; step();
+  }
+
+  function render() {
+    filesEl.innerHTML = "";
+    items.forEach((it, i) => {
+      const el = document.createElement("div");
+      el.className = "file";
+      el.innerHTML = `
+        <span class="order">${i + 1}</span>
+        <img class="thumb" alt="" ${it.bad ? "" : `src="${it.url}"`}>
+        <div class="meta"><div class="name"></div><div class="info">${it.bad ? "열 수 없는 형식" : `${it.bmp.width}×${it.bmp.height}`}</div></div>
+        <div class="acts">
+          <button class="icon-btn" data-a="up" title="위로" ${i === 0 ? "disabled" : ""}>${TT.icon("up")}</button>
+          <button class="icon-btn" data-a="down" title="아래로" ${i === items.length - 1 ? "disabled" : ""}>${TT.icon("down")}</button>
+          <button class="icon-btn" data-a="rm" title="빼기">${TT.icon("x")}</button>
+        </div>`;
+      el.querySelector(".name").textContent = it.file.name;
+      el.querySelector(".acts").onclick = e => {
+        const a = e.target.closest("button")?.dataset.a; if (!a) return;
+        if (a === "rm") { URL.revokeObjectURL(it.url); it.bmp?.close?.(); items.splice(i, 1); }
+        else TT.move(items, i, a === "up" ? -1 : 1);
+        render();
+      };
+      filesEl.appendChild(el);
+    });
+    const ok = items.filter(i => !i.bad);
+    $("#listWrap").hidden = !items.length;
+    const [W, H] = size(), n = frames().length;
+    $("#summary").textContent = `${ok.length}장 · ${W}×${H} · 한 바퀴 ${(n * $("#delay").value / 1000).toFixed(1)}초`;
+    runBtn.disabled = ok.length < 2 || !window.GIF;
+    if (!window.GIF) say("GIF 만들기 기능을 불러오지 못했어요. 새로고침해 주세요.", "err");
+    else if (ok.length === 1) say("한 장 더 넣어 주세요.");
+    else say("");
+    $("#dl").hidden = true;
+    preview();
+  }
+
+  $("#delay").oninput = e => { $("#dv").textContent = (e.target.value / 1000) + "초"; render(); };
+  ["#w", "#bg", "#loop", "#pingpong"].forEach(s => $(s).addEventListener("input", render));
+  document.querySelectorAll("input[name=fit]").forEach(r => r.onchange = () => { $("#bgField").hidden = val("fit") === "cover"; render(); });
+  $("#clear").onclick = () => { items.forEach(i => { URL.revokeObjectURL(i.url); i.bmp?.close?.(); }); items.length = 0; render(); };
+
+  runBtn.onclick = async () => {
+    const fr = frames(), [W, H] = size();
+    runBtn.disabled = true; prog.hidden = false;
+    try {
+      const gif = new GIF({ workers: 2, quality: 10, width: W, height: H, workerScript: await workerURL, repeat: $("#loop").checked ? 0 : -1 });
+      const c = document.createElement("canvas"); c.width = W; c.height = H;
+      const g = c.getContext("2d", { willReadFrequently: true });
+      for (const it of fr) { paint(g, it, W, H); gif.addFrame(g, { copy: true, delay: +$("#delay").value }); }
+      say("GIF로 굽는 중…");
+      const blob = await new Promise(r => { gif.on("progress", p => bar.style.width = (p * 100) + "%"); gif.on("finished", r); gif.render(); });
+      out = { blob, name: `움짤_${fr.length}장.gif` };
+      TT.download(blob, out.name);
+      say(`완료 · ${W}×${H} · ${fr.length}프레임 · ${TT.bytes(blob.size)}`, "ok");
+      $("#dl").hidden = false;
+    } catch (e) {
+      console.error(e); say("GIF를 만들지 못했어요. 크기를 줄여 다시 해 보세요.", "err");
+    } finally { runBtn.disabled = false; prog.hidden = true; bar.style.width = 0; }
+  };
+  $("#dl").onclick = () => out && TT.download(out.blob, out.name);
+})();
+</script>
+</body>
+</html>
