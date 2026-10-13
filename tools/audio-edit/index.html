@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>음원 자르기 · 피치 조절 · 뚝딱툴</title>
+<meta name="description" content="음악 파일을 파형을 보며 구간 자르기, 키(반음)와 속도를 따로 조절, 페이드 인·아웃 후 WAV·MP3로 저장. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--aud); }
+  .wave-wrap { padding: 14px 16px 16px; display: grid; gap: 12px; }
+  .wave { position: relative; height: 150px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; touch-action: none; cursor: crosshair; }
+  .wave canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .times { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .times b { color: var(--ink); font-weight: 600; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pair .unit { display: grid; gap: 4px; }
+  .pair .unit span { font-size: 12px; color: var(--muted); }
+  .dial { display: grid; gap: 6px; }
+  .dial .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .dial .top label { font-size: 13px; font-weight: 600; }
+  .dial .val { font-family: var(--f-mono); font-size: 18px; font-weight: 600; color: var(--aud); font-variant-numeric: tabular-nums; }
+  .ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-family: var(--f-mono); }
+  .note { font-size: 12.5px; color: var(--muted); }
+  .divider { height: 1px; background: var(--line); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>음원 자르기 · 피치 조절</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="audio-edit"></span>
+    <div>
+      <h1>음원 자르기 · 피치 조절</h1>
+      <p>파형 위를 드래그해 남길 구간을 고르고, 키(반음)와 빠르기를 따로 바꿔 저장해요. 노래방 키 맞추기, 연습용 느리게 듣기, 벨소리 만들기에 쓰세요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="음원 파일 선택">
+        <span data-icon="upload"></span>
+        <strong>음원을 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>MP3 · WAV · M4A · OGG · FLAC (영상 파일의 소리도 꺼낼 수 있어요)</span>
+        <input type="file" id="file">
+      </div>
+
+      <div class="panel" id="editor" hidden>
+        <div class="wave-wrap">
+          <div class="wave" id="wave" aria-label="파형. 드래그해서 구간 선택"><canvas id="cv"></canvas></div>
+          <div class="times num">
+            <span>선택 <b id="tSel">0:00.0 – 0:00.0</b></span>
+            <span>결과 길이 <b id="tOut">0:00.0</b></span>
+            <span>전체 <b id="tDur">0:00.0</b></span>
+          </div>
+          <div class="controls">
+            <button class="btn" id="playOrig" data-icon="play"> 원본 구간 듣기</button>
+            <button class="btn btn-primary" id="playOut" data-icon="play"> 바꾼 소리 듣기</button>
+            <button class="btn btn-sm" id="selAll">전체 선택</button>
+          </div>
+          <div class="drop compact" id="drop2" tabindex="0" role="button" aria-label="다른 음원 고르기">
+            <span data-icon="upload"></span><span>다른 음원 고르기</span><input type="file">
+          </div>
+        </div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>편집 설정</h2>
+        <div class="pair">
+          <div class="unit"><span>시작 (초)</span><input type="number" id="s" step="0.1" min="0" value="0" disabled></div>
+          <div class="unit"><span>끝 (초)</span><input type="number" id="e" step="0.1" min="0" value="0" disabled></div>
+        </div>
+
+        <div class="dial">
+          <div class="top"><label for="pitch">키 (반음)</label><span class="val" id="pv">0</span></div>
+          <input type="range" id="pitch" min="-12" max="12" step="1" value="0">
+          <div class="ticks"><span>-12</span><span>0</span><span>+12</span></div>
+        </div>
+        <div class="dial">
+          <div class="top"><label for="speed">빠르기</label><span class="val" id="sv">1.00×</span></div>
+          <input type="range" id="speed" min="0.5" max="2" step="0.05" value="1">
+          <div class="ticks"><span>0.5×</span><span>1×</span><span>2×</span></div>
+        </div>
+        <p class="note">키와 빠르기는 서로 영향을 주지 않아요. 키만 올리면 길이는 그대로예요. 더블클릭하면 원래 값으로 돌아가요.</p>
+
+        <div class="pair">
+          <div class="unit"><span>페이드 인 (초)</span><input type="number" id="fi" step="0.5" min="0" value="0"></div>
+          <div class="unit"><span>페이드 아웃 (초)</span><input type="number" id="fo" step="0.5" min="0" value="0"></div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field">
+          <span class="label">저장 형식</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="fmt" id="f-mp3" value="mp3" checked><label for="f-mp3">MP3</label>
+            <input type="radio" name="fmt" id="f-wav" value="wav"><label for="f-wav">WAV</label>
+          </div>
+        </div>
+        <div class="field" id="brField">
+          <label for="br">MP3 음질</label>
+          <select id="br">
+            <option value="320">320 kbps (최고)</option>
+            <option value="192" selected>192 kbps (보통)</option>
+            <option value="128">128 kbps (가볍게)</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary btn-block" id="run" disabled>적용해서 저장</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>음원은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const cv = $("#cv"), wave = $("#wave"), status = $("#status"), prog = $("#prog"), bar = prog.firstElementChild;
+  const inS = $("#s"), inE = $("#e"), runBtn = $("#run");
+  let actx = null, buf = null, file = null, start = 0, end = 0, peaks = null;
+  let playing = null; // { node, kind, t0, offset, rate }
+  let cache = null;   // 마지막으로 처리한 결과 { key, chs, sr }
+
+  const ctx = () => (actx ||= new (window.AudioContext || window.webkitAudioContext)());
+  const say = (t, cls = "") => { status.textContent = t; status.className = "status " + cls; };
+  const yieldUI = () => new Promise(r => setTimeout(r, 0));
+
+  if (!window.lamejs) { $("#f-wav").checked = true; $("#f-mp3").disabled = true; }
+  const fmt = () => document.querySelector("input[name=fmt]:checked").value;
+  document.querySelectorAll("input[name=fmt]").forEach(r => r.addEventListener("change", () => $("#brField").hidden = fmt() !== "mp3"));
+  $("#brField").hidden = fmt() !== "mp3";
+
+  /* ---------- 불러오기 ---------- */
+  TT.dropzone($("#drop"), f => load(f[0]), { accept: "audio/*,video/*", multiple: false });
+  TT.dropzone($("#drop2"), f => load(f[0]), { accept: "audio/*,video/*", multiple: false, paste: false });
+
+  async function load(f) {
+    if (!f) return;
+    stop(); say("소리를 읽는 중…");
+    try {
+      const data = await f.arrayBuffer();
+      buf = await ctx().decodeAudioData(data);
+    } catch { say("이 파일의 소리를 읽지 못했어요. 다른 형식으로 시도해 보세요.", "err"); return; }
+    file = f; start = 0; end = buf.duration; cache = null;
+    $("#drop").hidden = true; $("#editor").hidden = false;
+    inS.disabled = inE.disabled = false; runBtn.disabled = false;
+    $("#tDur").textContent = TT.time(buf.duration);
+    peaks = null; resize(); sync();
+    say(`${f.name} · ${buf.numberOfChannels === 1 ? "모노" : "스테레오"} · ${buf.sampleRate / 1000}kHz · ${TT.bytes(f.size)}`);
+  }
+
+  /* ---------- 파형 ---------- */
+  function computePeaks(width) {
+    const n = buf.length, ch = buf.numberOfChannels, step = n / width;
+    const data = []; for (let c = 0; c < ch; c++) data.push(buf.getChannelData(c));
+    const out = new Float32Array(width * 2);
+    for (let x = 0; x < width; x++) {
+      const a = Math.floor(x * step), b = Math.min(n, Math.floor((x + 1) * step));
+      let mn = 0, mx = 0;
+      const inc = Math.max(1, Math.floor((b - a) / 400)); // 긴 곡은 표본만 봐도 충분
+      for (let i = a; i < b; i += inc) {
+        let s = 0; for (let c = 0; c < ch; c++) s += data[c][i];
+        s /= ch; if (s < mn) mn = s; if (s > mx) mx = s;
+      }
+      out[x * 2] = mn; out[x * 2 + 1] = mx;
+    }
+    return out;
+  }
+  function resize() {
+    const r = wave.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+    cv.width = Math.max(1, Math.round(r.width * dpr)); cv.height = Math.max(1, Math.round(r.height * dpr));
+    if (buf) { peaks = computePeaks(cv.width); draw(); }
+  }
+  new ResizeObserver(() => buf && resize()).observe(wave);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => buf && draw());
+
+  function draw() {
+    if (!buf || !peaks) return;
+    const g = cv.getContext("2d"), W = cv.width, H = cv.height, css = getComputedStyle(document.body);
+    const col = n => css.getPropertyValue(n).trim();
+    g.clearRect(0, 0, W, H);
+    const xs = start / buf.duration * W, xe = end / buf.duration * W;
+    g.fillStyle = col("--aud"); g.globalAlpha = .13; g.fillRect(xs, 0, xe - xs, H); g.globalAlpha = 1;
+    const mid = H / 2;
+    for (let x = 0; x < W; x++) {
+      const inside = x >= xs && x <= xe;
+      g.fillStyle = inside ? col("--aud") : col("--muted");
+      g.globalAlpha = inside ? 1 : .45;
+      const mn = peaks[x * 2], mx = peaks[x * 2 + 1];
+      const y1 = mid - mx * mid * .95, y2 = mid - mn * mid * .95;
+      g.fillRect(x, y1, 1, Math.max(1, y2 - y1));
+    }
+    g.globalAlpha = 1;
+    g.fillStyle = col("--aud");
+    const dpr = W / wave.clientWidth;
+    g.fillRect(xs - dpr, 0, 2 * dpr, H); g.fillRect(xe - dpr, 0, 2 * dpr, H);
+    if (playing) {
+      const t = playPos();
+      if (t !== null) { g.fillStyle = col("--ink"); g.fillRect(t / buf.duration * W, 0, 1.5 * dpr, H); }
+    }
+  }
+
+  /* ---------- 구간 선택 ---------- */
+  const MIN = 0.05;
+  const tAt = x => { const r = wave.getBoundingClientRect(); return Math.max(0, Math.min(1, (x - r.left) / r.width)) * buf.duration; };
+  wave.addEventListener("pointerdown", e => {
+    if (!buf) return;
+    wave.setPointerCapture(e.pointerId);
+    const r = wave.getBoundingClientRect();
+    const px = t => r.left + t / buf.duration * r.width;
+    let edge = null;
+    if (Math.abs(e.clientX - px(start)) < 10) edge = "s";
+    else if (Math.abs(e.clientX - px(end)) < 10) edge = "e";
+    const anchor = tAt(e.clientX), x0 = e.clientX, prev = [start, end];
+    let moved = false;
+    const mv = ev => {
+      if (Math.abs(ev.clientX - x0) > 3) moved = true;
+      if (!moved) return;
+      const t = tAt(ev.clientX);
+      if (edge === "s") start = Math.min(t, end - MIN);
+      else if (edge === "e") end = Math.max(t, start + MIN);
+      else { start = Math.min(anchor, t); end = Math.max(anchor, t); if (end - start < MIN) end = Math.min(buf.duration, start + MIN); }
+      sync();
+    };
+    const up = () => {
+      wave.removeEventListener("pointermove", mv); wave.removeEventListener("pointerup", up);
+      if (!moved && !edge) { [start, end] = prev; sync(); }
+    };
+    wave.addEventListener("pointermove", mv); wave.addEventListener("pointerup", up);
+  });
+  inS.addEventListener("change", () => { start = Math.max(0, Math.min(+inS.value || 0, end - MIN)); sync(); });
+  inE.addEventListener("change", () => { end = Math.min(buf.duration, Math.max(+inE.value || 0, start + MIN)); sync(); });
+  $("#selAll").onclick = () => { start = 0; end = buf.duration; sync(); };
+
+  const pitchEl = $("#pitch"), speedEl = $("#speed");
+  pitchEl.addEventListener("input", sync); speedEl.addEventListener("input", sync);
+  pitchEl.addEventListener("dblclick", () => { pitchEl.value = 0; sync(); });
+  speedEl.addEventListener("dblclick", () => { speedEl.value = 1; sync(); });
+  ["#fi", "#fo"].forEach(s => $(s).addEventListener("input", sync));
+
+  function sync() {
+    if (!buf) return;
+    inS.value = start.toFixed(2); inE.value = end.toFixed(2);
+    const st = +pitchEl.value, sp = +speedEl.value;
+    $("#pv").textContent = (st > 0 ? "+" : "") + st;
+    $("#sv").textContent = sp.toFixed(2) + "×";
+    $("#tSel").textContent = `${TT.time(start)} – ${TT.time(end)}`;
+    $("#tOut").textContent = TT.time((end - start) / sp);
+    if (playing && playing.kind === "out") stop();
+    draw();
+  }
+
+  /* ---------- 재생 ---------- */
+  function playPos() {
+    if (!playing) return null;
+    const el = (ctx().currentTime - playing.t0) * playing.rate;
+    return playing.kind === "orig" ? playing.offset + el : start + el * (+speedEl.value);
+  }
+  function stop() {
+    if (playing) { try { playing.node.stop(); } catch {} playing = null; }
+    setBtn("#playOrig", false, "원본 구간 듣기"); setBtn("#playOut", false, "바꾼 소리 듣기");
+    draw();
+  }
+  function setBtn(sel, on, label) { $(sel).innerHTML = TT.icon(on ? "stop" : "play") + " " + (on ? "정지" : label); }
+  function playBuffer(ab, offset, dur, kind) {
+    stop();
+    const c = ctx(); c.resume();
+    const node = c.createBufferSource(); node.buffer = ab; node.connect(c.destination);
+    node.start(0, offset, dur);
+    playing = { node, kind, t0: c.currentTime, offset, rate: 1 };
+    node.onended = () => { if (playing && playing.node === node) stop(); };
+    const loop = () => { if (playing && playing.node === node) { draw(); requestAnimationFrame(loop); } };
+    loop();
+  }
+  $("#playOrig").onclick = () => {
+    if (playing?.kind === "orig") return stop();
+    playBuffer(buf, start, end - start, "orig");
+    setBtn("#playOrig", true);
+  };
+  $("#playOut").onclick = async () => {
+    if (playing?.kind === "out") return stop();
+    const r = await render();
+    if (!r) return;
+    const ab = ctx().createBuffer(r.chs.length, r.chs[0].length, r.sr);
+    r.chs.forEach((d, i) => ab.copyToChannel(d, i));
+    playBuffer(ab, 0, undefined, "out");
+    setBtn("#playOut", true);
+  };
+
+  /* ---------- 처리: 자르기 → 시간 늘이기(WSOLA) → 리샘플(키) → 페이드 ---------- */
+  async function render() {
+    const st = +pitchEl.value, sp = +speedEl.value, fi = Math.max(0, +$("#fi").value || 0), fo = Math.max(0, +$("#fo").value || 0);
+    const key = [file.name, start, end, st, sp, fi, fo].join("|");
+    if (cache && cache.key === key) return cache;
+    const sr = buf.sampleRate;
+    const a = Math.floor(start * sr), b = Math.floor(end * sr);
+    let chs = [];
+    for (let c = 0; c < buf.numberOfChannels; c++) chs.push(buf.getChannelData(c).slice(a, b));
+
+    const p = Math.pow(2, st / 12);   // 키 배율
+    const stretch = p / sp;           // 먼저 이만큼 늘이고, p 배로 리샘플하면 → 키 p배, 길이 1/sp배
+    const busy = Math.abs(stretch - 1) > 1e-3 || Math.abs(p - 1) > 1e-3;
+    if (busy) { prog.hidden = false; runBtn.disabled = true; }
+    try {
+      if (Math.abs(stretch - 1) > 1e-3) {
+        say("소리를 늘이고 줄이는 중…");
+        chs = await wsola(chs, stretch, sr, f => bar.style.width = (f * 90) + "%");
+      }
+      if (Math.abs(p - 1) > 1e-3) { say("키를 바꾸는 중…"); await yieldUI(); chs = chs.map(d => resample(d, p)); }
+      bar.style.width = "100%";
+      fade(chs, sr, fi, fo);
+    } finally {
+      if (busy) { prog.hidden = true; bar.style.width = 0; runBtn.disabled = false; }
+    }
+    say("");
+    cache = { key, chs, sr };
+    return cache;
+  }
+
+  function fade(chs, sr, fi, fo) {
+    const n = chs[0].length, ni = Math.min(n, Math.floor(fi * sr)), no = Math.min(n, Math.floor(fo * sr));
+    for (const d of chs) {
+      for (let i = 0; i < ni; i++) d[i] *= i / ni;
+      for (let i = 0; i < no; i++) d[n - 1 - i] *= i / no;
+    }
+  }
+
+  function resample(d, r) {
+    const n = Math.floor(d.length / r), out = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      const x = i * r, j = Math.floor(x), f = x - j;
+      out[i] = d[j] * (1 - f) + (d[j + 1] ?? d[j]) * f;
+    }
+    return out;
+  }
+
+  // WSOLA: 소리의 높이는 그대로 두고 길이만 s배로
+  async function wsola(chs, s, sr, onProg) {
+    const n = chs[0].length;
+    const N = 1 << Math.round(Math.log2(sr * 0.046));
+    const Hs = N >> 1, Ha = Hs / s;
+    const win = new Float32Array(N);
+    for (let i = 0; i < N; i++) win[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / N);
+    const outLen = Math.ceil(n * s);
+    const out = chs.map(() => new Float32Array(outLen + N));
+    const norm = new Float32Array(outLen + N);
+
+    // 맞춤 위치 찾기는 1/4로 줄인 모노 신호로 (속도)
+    const D = 4, m = Math.floor(n / D), ref = new Float32Array(m);
+    for (let i = 0; i < m; i++) { let v = 0; for (const c of chs) for (let k = 0; k < D; k++) v += c[i * D + k]; ref[i] = v; }
+    const L = Math.floor(Hs / D), tolD = Math.round(sr * 0.012 / D);
+
+    const frames = Math.ceil(outLen / Hs);
+    let prev = 0;
+    for (let k = 0; k <= frames; k++) {
+      const outPos = k * Hs, nominal = Math.round(k * Ha);
+      let pos = Math.min(Math.max(0, nominal), Math.max(0, n - N));
+      if (k > 0) {
+        const natD = Math.floor((prev + Hs) / D);
+        const lo = Math.max(0, Math.floor(nominal / D) - tolD);
+        const hi = Math.min(Math.floor((n - N) / D), Math.floor(nominal / D) + tolD);
+        if (natD + L < m && hi >= lo) {
+          let best = -Infinity;
+          for (let c = lo; c <= hi; c++) {
+            let dot = 0, en = 1e-9;
+            for (let j = 0; j < L; j++) { const x = ref[c + j]; dot += x * ref[natD + j]; en += x * x; }
+            const score = dot / Math.sqrt(en);
+            if (score > best) { best = score; pos = c * D; }
+          }
+        }
+      }
+      for (let ci = 0; ci < chs.length; ci++) {
+        const src = chs[ci], dst = out[ci];
+        for (let i = 0; i < N; i++) { const idx = pos + i; if (idx < n) dst[outPos + i] += src[idx] * win[i]; }
+      }
+      for (let i = 0; i < N; i++) norm[outPos + i] += win[i];
+      prev = pos;
+      if (k % 400 === 0) { onProg(k / frames); await yieldUI(); }
+    }
+    return out.map(o => {
+      const r = new Float32Array(outLen);
+      for (let i = 0; i < outLen; i++) r[i] = norm[i] > 1e-3 ? o[i] / norm[i] : 0;
+      return r;
+    });
+  }
+
+  /* ---------- 저장 ---------- */
+  function toI16(d) {
+    const o = new Int16Array(d.length);
+    for (let i = 0; i < d.length; i++) { const s = Math.max(-1, Math.min(1, d[i])); o[i] = s < 0 ? s * 0x8000 : s * 0x7fff; }
+    return o;
+  }
+  function wav(chs, sr) {
+    const nc = chs.length, n = chs[0].length, bytes = n * nc * 2;
+    const ab = new ArrayBuffer(44 + bytes), v = new DataView(ab);
+    const w = (o, s) => [...s].forEach((ch, i) => v.setUint8(o + i, ch.charCodeAt(0)));
+    w(0, "RIFF"); v.setUint32(4, 36 + bytes, true); w(8, "WAVE"); w(12, "fmt ");
+    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, nc, true);
+    v.setUint32(24, sr, true); v.setUint32(28, sr * nc * 2, true); v.setUint16(32, nc * 2, true); v.setUint16(34, 16, true);
+    w(36, "data"); v.setUint32(40, bytes, true);
+    const i16 = chs.map(toI16);
+    let o = 44;
+    for (let i = 0; i < n; i++) for (let c = 0; c < nc; c++) { v.setInt16(o, i16[c][i], true); o += 2; }
+    return new Blob([ab], { type: "audio/wav" });
+  }
+  async function mp3(chs, sr, kbps) {
+    const L = toI16(chs[0]), R = chs.length > 1 ? toI16(chs[1]) : null;
+    const enc = new lamejs.Mp3Encoder(R ? 2 : 1, sr, kbps);
+    const parts = [], step = 1152 * 40;
+    for (let i = 0; i < L.length; i += step) {
+      const l = L.subarray(i, i + step);
+      const out = R ? enc.encodeBuffer(l, R.subarray(i, i + step)) : enc.encodeBuffer(l);
+      if (out.length) parts.push(new Uint8Array(out));
+      if ((i / step) % 20 === 0) { bar.style.width = (i / L.length * 100) + "%"; await yieldUI(); }
+    }
+    const end = enc.flush(); if (end.length) parts.push(new Uint8Array(end));
+    return new Blob(parts, { type: "audio/mpeg" });
+  }
+
+  runBtn.onclick = async () => {
+    stop();
+    try {
+      const r = await render();
+      runBtn.disabled = true; prog.hidden = false;
+      const f = fmt();
+      say(f === "mp3" ? "MP3로 만드는 중…" : "WAV로 만드는 중…");
+      await yieldUI();
+      let blob;
+      if (f === "mp3" && ![32000, 44100, 48000].includes(r.sr)) {
+        say("이 음원의 샘플레이트는 MP3로 저장할 수 없어서 WAV로 저장해요.");
+        blob = wav(r.chs, r.sr);
+      } else {
+        blob = f === "mp3" ? await mp3(r.chs, r.sr, +$("#br").value) : wav(r.chs, r.sr);
+      }
+      const st = +pitchEl.value, sp = +speedEl.value;
+      const tag = [st ? `key${st > 0 ? "+" : ""}${st}` : "", sp !== 1 ? `x${sp}` : "", "cut"].filter(Boolean).join("_");
+      TT.download(blob, `${TT.baseName(file.name)}_${tag}.${blob.type === "audio/mpeg" ? "mp3" : "wav"}`);
+      say(`저장했어요 · ${TT.bytes(blob.size)}`, "ok");
+    } catch (e) {
+      console.error(e); say("저장하지 못했어요. WAV로 다시 시도해 보세요.", "err");
+    } finally {
+      runBtn.disabled = false; prog.hidden = true; bar.style.width = 0;
+    }
+  };
+})();
+</script>
+</body>
+</html>

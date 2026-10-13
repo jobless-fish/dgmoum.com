@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>이미지 포맷 변환 · 뚝딱툴</title>
+<meta name="description" content="PNG, JPG, WEBP 이미지를 여러 장 한 번에 변환. 화질 조절, 투명 배경 색 지정. 업로드 없이 브라우저에서 처리.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--img); }
+  .color-row { display: flex; gap: 8px; align-items: center; }
+  .color-row input[type=color] { width: 40px; height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>이미지 포맷 변환</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="image-convert"></span>
+    <div>
+      <h1>이미지 포맷 변환</h1>
+      <p>PNG · JPG · WEBP · GIF · BMP 이미지를 원하는 형식으로 바꿔요. 여러 장을 한 번에 넣고 zip으로 받을 수 있어요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="이미지 파일 선택">
+        <span data-icon="upload"></span>
+        <strong>이미지를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>여러 장 가능 · Ctrl+V로 붙여넣기도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <div id="listWrap" hidden>
+        <div class="list-head">
+          <p id="summary"></p>
+          <button class="btn btn-sm" id="clear">모두 비우기</button>
+        </div>
+        <div class="files" id="files"></div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>변환 설정</h2>
+        <div class="field">
+          <span class="label">바꿀 형식</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="fmt" id="f-jpg" value="image/jpeg" checked><label for="f-jpg">JPG</label>
+            <input type="radio" name="fmt" id="f-png" value="image/png"><label for="f-png">PNG</label>
+            <input type="radio" name="fmt" id="f-webp" value="image/webp"><label for="f-webp">WEBP</label>
+          </div>
+        </div>
+        <div class="field" id="qualityField">
+          <label for="quality">화질 <span class="num" id="qv">90</span></label>
+          <input type="range" id="quality" min="10" max="100" value="90">
+          <p class="hint">낮출수록 용량이 작아져요. 보통 80~90이면 눈으로 차이가 거의 없어요.</p>
+        </div>
+        <div class="field" id="bgField">
+          <span class="label">투명한 부분 채울 색</span>
+          <div class="color-row">
+            <input type="color" id="bg" value="#ffffff" aria-label="배경색">
+            <span class="hint">JPG는 투명을 지원하지 않아서 이 색으로 채워요.</span>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled>변환하기</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+        <button class="btn btn-block" id="zip" hidden data-icon="download"> 전부 zip으로 받기</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>모든 변환은 이 브라우저 안에서만 이뤄져요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+  const EXT = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+  const items = []; // { id, file, url, w, h, out?: {blob,name}, el }
+  let uid = 0;
+
+  const $ = s => document.querySelector(s);
+  const filesEl = $("#files"), listWrap = $("#listWrap"), runBtn = $("#run"), zipBtn = $("#zip");
+  const status = $("#status"), prog = $("#prog"), bar = prog.firstElementChild;
+
+  const fmt = () => document.querySelector("input[name=fmt]:checked").value;
+  function syncFields() {
+    const f = fmt();
+    $("#qualityField").hidden = f === "image/png";
+    $("#bgField").hidden = f !== "image/jpeg";
+  }
+  document.querySelectorAll("input[name=fmt]").forEach(r => r.addEventListener("change", () => { syncFields(); markStale(); }));
+  $("#quality").addEventListener("input", e => { $("#qv").textContent = e.target.value; markStale(); });
+  $("#bg").addEventListener("input", markStale);
+  syncFields();
+
+  TT.dropzone($("#drop"), addFiles, { accept: "image/*" });
+
+  async function addFiles(files) {
+    const imgs = files.filter(f => f.type.startsWith("image/") || /\.(heic|heif|avif|bmp|gif|ico|tiff?)$/i.test(f.name));
+    if (!imgs.length) { say("이미지 파일이 아니에요.", "err"); return; }
+    for (const file of imgs) {
+      const it = { id: ++uid, file, url: URL.createObjectURL(file) };
+      try {
+        const bmp = await createImageBitmap(file);
+        it.w = bmp.width; it.h = bmp.height; bmp.close();
+      } catch { it.bad = true; }
+      items.push(it);
+      filesEl.appendChild(row(it));
+    }
+    refresh();
+    say(items.some(i => i.bad) ? "이 브라우저가 열 수 없는 파일이 있어요 (예: HEIC). 그 파일은 건너뛰어요." : "", items.some(i => i.bad) ? "err" : "");
+  }
+
+  function row(it) {
+    const el = document.createElement("div");
+    el.className = "file";
+    el.innerHTML = `
+      <img class="thumb" alt="" ${it.bad ? "" : `src="${it.url}"`}>
+      <div class="meta">
+        <div class="name"></div>
+        <div class="info">${it.bad ? "열 수 없는 형식" : `${it.w}×${it.h} · ${TT.bytes(it.file.size)}`}<span class="res"></span></div>
+      </div>
+      <div class="acts">
+        <button class="icon-btn dl" title="받기" hidden>${TT.icon("download")}</button>
+        <button class="icon-btn rm" title="빼기">${TT.icon("x")}</button>
+      </div>`;
+    el.querySelector(".name").textContent = it.file.name;
+    el.querySelector(".rm").onclick = () => {
+      URL.revokeObjectURL(it.url);
+      items.splice(items.indexOf(it), 1); el.remove(); refresh();
+    };
+    el.querySelector(".dl").onclick = () => it.out && TT.download(it.out.blob, it.out.name);
+    it.el = el;
+    return el;
+  }
+
+  function refresh() {
+    listWrap.hidden = !items.length;
+    const ok = items.filter(i => !i.bad);
+    runBtn.disabled = !ok.length;
+    const total = ok.reduce((s, i) => s + i.file.size, 0);
+    $("#summary").textContent = `${items.length}개 파일 · ${TT.bytes(total)}`;
+    zipBtn.hidden = !(ok.length > 1 && ok.every(i => i.out));
+  }
+
+  function markStale() {
+    let had = false;
+    items.forEach(i => { if (i.out) { had = true; i.out = null; i.el.querySelector(".dl").hidden = true; i.el.querySelector(".res").textContent = ""; } });
+    if (had) { say("설정이 바뀌었어요. 다시 변환해 주세요."); refresh(); }
+  }
+
+  $("#clear").onclick = () => { items.forEach(i => URL.revokeObjectURL(i.url)); items.length = 0; filesEl.innerHTML = ""; refresh(); say(""); };
+
+  function say(t, cls = "") { status.textContent = t; status.className = "status " + cls; }
+
+  async function convert(it, type, q, bg) {
+    const bmp = await createImageBitmap(it.file);
+    const c = document.createElement("canvas");
+    c.width = bmp.width; c.height = bmp.height;
+    const ctx = c.getContext("2d");
+    if (type === "image/jpeg") { ctx.fillStyle = bg; ctx.fillRect(0, 0, c.width, c.height); }
+    ctx.drawImage(bmp, 0, 0); bmp.close();
+    const blob = await new Promise(r => c.toBlob(r, type, q));
+    if (!blob) throw new Error("encode");
+    if (blob.type !== type) throw new Error("unsupported");
+    return { blob, name: `${TT.baseName(it.file.name)}.${EXT[type]}` };
+  }
+
+  runBtn.onclick = async () => {
+    const type = fmt(), q = $("#quality").value / 100, bg = $("#bg").value;
+    const todo = items.filter(i => !i.bad);
+    runBtn.disabled = true; prog.hidden = false; zipBtn.hidden = true;
+    let done = 0, failed = 0, before = 0, after = 0;
+    for (const it of todo) {
+      say(`변환 중… ${done + 1}/${todo.length}`);
+      try {
+        it.out = await convert(it, type, q, bg);
+        before += it.file.size; after += it.out.blob.size;
+        const diff = Math.round((it.out.blob.size / it.file.size - 1) * 100);
+        it.el.querySelector(".res").innerHTML = ` → ${EXT[type].toUpperCase()} ${TT.bytes(it.out.blob.size)} <b class="${diff > 0 ? "up" : ""}">${diff > 0 ? "+" : ""}${diff}%</b>`;
+        it.el.querySelector(".dl").hidden = false;
+      } catch (e) {
+        failed++;
+        it.el.querySelector(".res").textContent = e.message === "unsupported" ? " → 이 브라우저는 이 형식 저장을 지원하지 않아요" : " → 변환 실패";
+      }
+      done++; bar.style.width = (done / todo.length * 100) + "%";
+    }
+    prog.hidden = true; bar.style.width = 0; runBtn.disabled = false;
+    if (failed === todo.length) say("변환하지 못했어요. 다른 형식을 골라 보세요.", "err");
+    else say(`${done - failed}개 완료 · ${TT.bytes(before)} → ${TT.bytes(after)}`, "ok");
+    if (todo.length - failed === 1) { const one = todo.find(i => i.out); TT.download(one.out.blob, one.out.name); }
+    refresh();
+  };
+
+  zipBtn.onclick = () => TT.downloadZip(items.filter(i => i.out).map(i => i.out), `converted-${EXT[fmt()]}.zip`);
+})();
+</script>
+</body>
+</html>

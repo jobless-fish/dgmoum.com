@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>이미지 크기 조절 · 뚝딱툴</title>
+<meta name="description" content="이미지 크기를 픽셀, 퍼센트, 긴 변 기준으로 줄이거나 늘리기. 비율 유지, 여러 장 일괄 처리. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--img); }
+  .wh { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: end; }
+  .wh .x { padding-bottom: 9px; color: var(--muted); }
+  .unit { display: grid; gap: 4px; }
+  .unit span { font-size: 12px; color: var(--muted); }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>이미지 크기 조절</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="image-resize"></span>
+    <div>
+      <h1>이미지 크기 조절</h1>
+      <p>픽셀을 직접 넣거나, 퍼센트로, 또는 긴 변 길이로 맞춰서 한 번에 줄여요. 상세페이지·SNS 업로드용 용량 줄이기에 좋아요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="이미지 파일 선택">
+        <span data-icon="upload"></span>
+        <strong>이미지를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>여러 장 가능 · Ctrl+V로 붙여넣기도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <div id="listWrap" hidden>
+        <div class="list-head">
+          <p id="summary"></p>
+          <button class="btn btn-sm" id="clear">모두 비우기</button>
+        </div>
+        <div class="files" id="files"></div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>크기 설정</h2>
+        <div class="field">
+          <span class="label">기준</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="mode" id="m-long" value="long" checked><label for="m-long">긴 변</label>
+            <input type="radio" name="mode" id="m-px" value="px"><label for="m-px">픽셀</label>
+            <input type="radio" name="mode" id="m-pct" value="pct"><label for="m-pct">퍼센트</label>
+          </div>
+        </div>
+
+        <div class="field" data-mode="long">
+          <label for="long">긴 변 길이 (px)</label>
+          <input type="number" id="long" min="1" max="20000" value="1080">
+          <div class="presets">
+            <button class="btn btn-sm" data-long="860">860</button>
+            <button class="btn btn-sm" data-long="1080">1080</button>
+            <button class="btn btn-sm" data-long="1920">1920</button>
+            <button class="btn btn-sm" data-long="2560">2560</button>
+          </div>
+          <p class="hint">가로든 세로든 더 긴 쪽을 이 길이에 맞추고 비율은 그대로 둬요.</p>
+        </div>
+
+        <div class="field" data-mode="px" hidden>
+          <div class="wh">
+            <div class="unit"><span>가로</span><input type="number" id="w" min="1" max="20000" placeholder="자동"></div>
+            <span class="x">×</span>
+            <div class="unit"><span>세로</span><input type="number" id="h" min="1" max="20000" placeholder="자동"></div>
+          </div>
+          <label class="check"><input type="checkbox" id="keep" checked> 비율 유지 (한쪽만 넣으면 나머지는 자동)</label>
+          <p class="hint">비율 유지를 끄면 두 값에 정확히 맞춰 늘리거나 줄여요.</p>
+        </div>
+
+        <div class="field" data-mode="pct" hidden>
+          <label for="pct">배율 <span class="num" id="pv">50</span>%</label>
+          <input type="range" id="pct" min="5" max="200" value="50" step="5">
+        </div>
+
+        <label class="check"><input type="checkbox" id="noUp" checked> 원본보다 크게 키우지 않기</label>
+
+        <div class="field">
+          <label for="ofmt">저장 형식</label>
+          <select id="ofmt">
+            <option value="same">원본 형식 유지</option>
+            <option value="image/jpeg">JPG</option>
+            <option value="image/png">PNG</option>
+            <option value="image/webp">WEBP</option>
+          </select>
+        </div>
+        <div class="field" id="qualityField">
+          <label for="quality">화질 <span class="num" id="qv">90</span></label>
+          <input type="range" id="quality" min="10" max="100" value="90">
+        </div>
+
+        <button class="btn btn-primary btn-block" id="run" disabled>크기 바꾸기</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+        <button class="btn btn-block" id="zip" hidden data-icon="download"> 전부 zip으로 받기</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>모든 처리는 이 브라우저 안에서만 이뤄져요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+  const EXT = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+  const items = [];
+  const $ = s => document.querySelector(s);
+  const filesEl = $("#files"), runBtn = $("#run"), zipBtn = $("#zip"), status = $("#status");
+  const prog = $("#prog"), bar = prog.firstElementChild;
+
+  const mode = () => document.querySelector("input[name=mode]:checked").value;
+  document.querySelectorAll("input[name=mode]").forEach(r => r.addEventListener("change", () => {
+    document.querySelectorAll("[data-mode]").forEach(el => el.hidden = el.dataset.mode !== mode());
+    update();
+  }));
+  document.querySelectorAll("[data-long]").forEach(b => b.onclick = () => { $("#long").value = b.dataset.long; update(); });
+  $("#pct").addEventListener("input", e => { $("#pv").textContent = e.target.value; update(); });
+  $("#quality").addEventListener("input", e => { $("#qv").textContent = e.target.value; markStale(); });
+  ["#long", "#w", "#h", "#keep", "#noUp"].forEach(s => $(s).addEventListener("input", update));
+  $("#ofmt").addEventListener("change", () => { syncQ(); markStale(); });
+
+  function outType(file) {
+    const v = $("#ofmt").value;
+    if (v !== "same") return v;
+    return EXT[file.type] ? file.type : "image/png"; // gif·bmp 등은 png로
+  }
+  function syncQ() {
+    const v = $("#ofmt").value;
+    $("#qualityField").hidden = v === "image/png";
+  }
+  syncQ();
+
+  // 목표 크기 계산
+  function target(w, h) {
+    let nw, nh;
+    const m = mode();
+    if (m === "long") {
+      const L = Math.max(1, +$("#long").value || 1);
+      const s = L / Math.max(w, h);
+      nw = w * s; nh = h * s;
+    } else if (m === "pct") {
+      const s = +$("#pct").value / 100;
+      nw = w * s; nh = h * s;
+    } else {
+      const iw = +$("#w").value, ih = +$("#h").value;
+      if ($("#keep").checked) {
+        if (iw && ih) { const s = Math.min(iw / w, ih / h); nw = w * s; nh = h * s; }
+        else if (iw) { nw = iw; nh = h * iw / w; }
+        else if (ih) { nh = ih; nw = w * ih / h; }
+        else { nw = w; nh = h; }
+      } else { nw = iw || w; nh = ih || h; }
+    }
+    if ($("#noUp").checked && (nw > w || nh > h)) {
+      const s = Math.min(w / nw, h / nh);
+      nw *= s; nh *= s;
+    }
+    return [Math.max(1, Math.round(nw)), Math.max(1, Math.round(nh))];
+  }
+
+  TT.dropzone($("#drop"), addFiles, { accept: "image/*" });
+
+  async function addFiles(files) {
+    for (const file of files) {
+      const it = { file, url: URL.createObjectURL(file) };
+      try { const b = await createImageBitmap(file); it.w = b.width; it.h = b.height; b.close(); }
+      catch { it.bad = true; }
+      items.push(it); filesEl.appendChild(row(it));
+    }
+    update();
+    say(items.some(i => i.bad) ? "이 브라우저가 열 수 없는 파일은 건너뛰어요." : "", items.some(i => i.bad) ? "err" : "");
+  }
+
+  function row(it) {
+    const el = document.createElement("div");
+    el.className = "file";
+    el.innerHTML = `
+      <img class="thumb" alt="" ${it.bad ? "" : `src="${it.url}"`}>
+      <div class="meta"><div class="name"></div><div class="info"></div></div>
+      <div class="acts">
+        <button class="icon-btn dl" title="받기" hidden>${TT.icon("download")}</button>
+        <button class="icon-btn rm" title="빼기">${TT.icon("x")}</button>
+      </div>`;
+    el.querySelector(".name").textContent = it.file.name;
+    el.querySelector(".rm").onclick = () => { URL.revokeObjectURL(it.url); items.splice(items.indexOf(it), 1); el.remove(); update(); };
+    el.querySelector(".dl").onclick = () => it.out && TT.download(it.out.blob, it.out.name);
+    it.el = el;
+    return el;
+  }
+
+  // 설정이 바뀔 때마다 각 파일의 "원본 → 결과" 크기 미리보기 갱신
+  function update() {
+    items.forEach(it => {
+      if (it.out) { it.out = null; it.el.querySelector(".dl").hidden = true; }
+      const info = it.el.querySelector(".info");
+      if (it.bad) { info.textContent = "열 수 없는 형식"; return; }
+      const [nw, nh] = target(it.w, it.h);
+      info.innerHTML = `${it.w}×${it.h} → <b>${nw}×${nh}</b> · ${TT.bytes(it.file.size)}`;
+    });
+    refresh();
+  }
+  function markStale() { items.forEach(it => { if (it.out) { it.out = null; it.el.querySelector(".dl").hidden = true; } }); refresh(); }
+
+  function refresh() {
+    $("#listWrap").hidden = !items.length;
+    const ok = items.filter(i => !i.bad);
+    runBtn.disabled = !ok.length;
+    $("#summary").textContent = `${items.length}개 파일 · ${TT.bytes(ok.reduce((s, i) => s + i.file.size, 0))}`;
+    zipBtn.hidden = !(ok.length > 1 && ok.every(i => i.out));
+  }
+  $("#clear").onclick = () => { items.forEach(i => URL.revokeObjectURL(i.url)); items.length = 0; filesEl.innerHTML = ""; refresh(); say(""); };
+  function say(t, cls = "") { status.textContent = t; status.className = "status " + cls; }
+
+  // 크게 줄일 때 계단식으로 절반씩 줄이면 계단 현상이 덜해요
+  function scaleDown(src, w, h, tw, th) {
+    let cur = src, cw = w, ch = h;
+    while (cw / 2 >= tw && ch / 2 >= th) {
+      const c = document.createElement("canvas");
+      c.width = Math.round(cw / 2); c.height = Math.round(ch / 2);
+      const x = c.getContext("2d"); x.imageSmoothingQuality = "high";
+      x.drawImage(cur, 0, 0, c.width, c.height);
+      cur = c; cw = c.width; ch = c.height;
+    }
+    return cur;
+  }
+
+  async function resize(it) {
+    const [tw, th] = target(it.w, it.h);
+    const type = outType(it.file);
+    const bmp = await createImageBitmap(it.file);
+    const src = scaleDown(bmp, it.w, it.h, tw, th);
+    const c = document.createElement("canvas");
+    c.width = tw; c.height = th;
+    const ctx = c.getContext("2d");
+    ctx.imageSmoothingQuality = "high";
+    if (type === "image/jpeg") { ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, tw, th); }
+    ctx.drawImage(src, 0, 0, tw, th);
+    bmp.close();
+    const blob = await new Promise(r => c.toBlob(r, type, $("#quality").value / 100));
+    if (!blob) throw new Error("encode");
+    return { blob, name: `${TT.baseName(it.file.name)}_${tw}x${th}.${EXT[blob.type] || "png"}` };
+  }
+
+  runBtn.onclick = async () => {
+    const todo = items.filter(i => !i.bad);
+    runBtn.disabled = true; prog.hidden = false; zipBtn.hidden = true;
+    let done = 0, failed = 0, before = 0, after = 0;
+    for (const it of todo) {
+      say(`처리 중… ${done + 1}/${todo.length}`);
+      try {
+        it.out = await resize(it);
+        before += it.file.size; after += it.out.blob.size;
+        const [nw, nh] = target(it.w, it.h);
+        it.el.querySelector(".info").innerHTML = `${it.w}×${it.h} → <b>${nw}×${nh}</b> · ${TT.bytes(it.file.size)} → ${TT.bytes(it.out.blob.size)}`;
+        it.el.querySelector(".dl").hidden = false;
+      } catch { failed++; it.el.querySelector(".info").textContent = "처리 실패"; }
+      done++; bar.style.width = (done / todo.length * 100) + "%";
+    }
+    prog.hidden = true; bar.style.width = 0; runBtn.disabled = false;
+    say(failed === todo.length ? "처리하지 못했어요." : `${done - failed}개 완료 · ${TT.bytes(before)} → ${TT.bytes(after)}`, failed === todo.length ? "err" : "ok");
+    if (todo.length - failed === 1) { const one = todo.find(i => i.out); TT.download(one.out.blob, one.out.name); }
+    refresh();
+  };
+
+  zipBtn.onclick = () => TT.downloadZip(items.filter(i => i.out).map(i => i.out), "resized.zip");
+})();
+</script>
+</body>
+</html>

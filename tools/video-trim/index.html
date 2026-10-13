@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>영상 자르기 · 뚝딱툴</title>
+<meta name="description" content="동영상에서 원하는 구간만 잘라 저장. 소리 포함, 화질 선택. 업로드 없이 브라우저에서 처리.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--vid); }
+  .stage { background: #0b0d10; border-radius: var(--r) var(--r) 0 0; display: grid; place-items: center; overflow: hidden; }
+  .stage video { display: block; width: 100%; max-height: 60vh; background: #0b0d10; }
+  .deck { padding: 14px 16px 16px; display: grid; gap: 12px; }
+  .track { position: relative; height: 44px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--line); cursor: pointer; touch-action: none; user-select: none; }
+  .track .sel { position: absolute; top: 0; bottom: 0; background: color-mix(in srgb, var(--vid) 22%, transparent); border-top: 3px solid var(--vid); border-bottom: 3px solid var(--vid); }
+  .track .h { position: absolute; top: -4px; bottom: -4px; width: 14px; margin-left: -7px; background: var(--vid); border-radius: 4px; cursor: ew-resize; display: grid; place-items: center; }
+  .track .h::after { content: ""; width: 2px; height: 14px; background: rgba(255,255,255,.8); border-radius: 1px; }
+  .track .h:focus-visible { outline: 3px solid var(--accent); }
+  .track .head { position: absolute; top: -6px; bottom: -6px; width: 2px; margin-left: -1px; background: var(--ink); pointer-events: none; }
+  .times { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .times b { color: var(--ink); font-weight: 600; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pair .unit { display: grid; gap: 4px; }
+  .pair .unit span { font-size: 12px; color: var(--muted); }
+  .result { display: grid; gap: 8px; }
+  .result video { width: 100%; border-radius: 8px; background: #0b0d10; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>영상 자르기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="video-trim"></span>
+    <div>
+      <h1>영상 자르기</h1>
+      <p>빨간 손잡이를 끌어 남길 구간을 고르고 저장하세요. 고른 구간을 재생하면서 그대로 녹화하는 방식이라, 저장에는 구간 길이만큼 시간이 걸려요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="영상 파일 선택">
+        <span data-icon="upload"></span>
+        <strong>영상을 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>MP4 · WEBM · MOV 등 이 브라우저에서 재생되는 영상</span>
+        <input type="file" id="file">
+      </div>
+
+      <div class="panel" id="editor" hidden>
+        <div class="stage"><video id="v" playsinline preload="auto"></video></div>
+        <div class="deck">
+          <div class="track" id="track" aria-label="자를 구간">
+            <div class="sel" id="sel"></div>
+            <div class="h" id="hs" tabindex="0" role="slider" aria-label="시작 지점"></div>
+            <div class="h" id="he" tabindex="0" role="slider" aria-label="끝 지점"></div>
+            <div class="head" id="head"></div>
+          </div>
+          <div class="times num">
+            <span>현재 <b id="tNow">0:00.0</b></span>
+            <span>구간 길이 <b id="tLen">0:00.0</b></span>
+            <span>전체 <b id="tDur">0:00.0</b></span>
+          </div>
+          <div class="controls">
+            <button class="btn" id="play" data-icon="play"> 재생</button>
+            <button class="btn" id="playSel">구간만 재생</button>
+            <button class="btn btn-sm" id="setS">여기를 시작으로</button>
+            <button class="btn btn-sm" id="setE">여기를 끝으로</button>
+          </div>
+          <div class="drop compact" id="drop2" tabindex="0" role="button" aria-label="다른 영상 고르기">
+            <span data-icon="upload"></span><span>다른 영상 고르기</span><input type="file">
+          </div>
+        </div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>자르기 설정</h2>
+        <div class="pair">
+          <div class="unit"><span>시작 (초)</span><input type="number" id="s" step="0.1" min="0" value="0" disabled></div>
+          <div class="unit"><span>끝 (초)</span><input type="number" id="e" step="0.1" min="0" value="0" disabled></div>
+        </div>
+        <div class="field">
+          <label for="q">화질</label>
+          <select id="q">
+            <option value="8000000">높음 (8 Mbps)</option>
+            <option value="4000000" selected>보통 (4 Mbps)</option>
+            <option value="1500000">가볍게 (1.5 Mbps)</option>
+          </select>
+        </div>
+        <label class="check"><input type="checkbox" id="listen"> 저장하는 동안 소리 듣기</label>
+        <button class="btn btn-primary btn-block" id="run" disabled>잘라서 저장</button>
+        <button class="btn btn-block" id="cancel" hidden>그만두기</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+        <div class="result" id="result" hidden>
+          <video id="rv" controls playsinline></video>
+          <button class="btn btn-block" id="dl" data-icon="download"> 다시 받기</button>
+        </div>
+        <p class="hint" id="fmtHint"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>영상은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const v = $("#v"), track = $("#track"), sel = $("#sel"), hs = $("#hs"), he = $("#he"), head = $("#head");
+  const inS = $("#s"), inE = $("#e"), runBtn = $("#run"), status = $("#status"), prog = $("#prog"), bar = prog.firstElementChild;
+  let file = null, url = null, start = 0, end = 0, dur = 0, stopAt = null, out = null, cancelled = false;
+  let actx = null, srcNode = null, spk = null, dest = null;
+
+  const MIMES = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+  const mime = window.MediaRecorder ? MIMES.find(m => MediaRecorder.isTypeSupported(m)) : null;
+  const canCapture = !!(HTMLMediaElement.prototype.captureStream || HTMLMediaElement.prototype.mozCaptureStream);
+  $("#fmtHint").textContent = !mime || !canCapture
+    ? "이 브라우저는 영상 녹화를 지원하지 않아요. 최신 크롬이나 엣지를 써 주세요."
+    : `저장 형식: ${mime.startsWith("video/mp4") ? "MP4" : "WEBM"} (브라우저가 지원하는 형식으로 저장돼요)`;
+
+  TT.dropzone($("#drop"), f => load(f[0]), { accept: "video/*", multiple: false });
+  TT.dropzone($("#drop2"), f => load(f[0]), { accept: "video/*", multiple: false, paste: false });
+
+  function load(f) {
+    if (!f) return;
+    if (!f.type.startsWith("video/") && !/\.(mp4|mov|webm|mkv|m4v|ogv)$/i.test(f.name)) { say("영상 파일이 아니에요.", "err"); return; }
+    file = f;
+    if (url) URL.revokeObjectURL(url);
+    url = URL.createObjectURL(f);
+    v.src = url;
+    $("#result").hidden = true; out = null;
+    say("불러오는 중…");
+  }
+
+  v.addEventListener("loadedmetadata", () => {
+    dur = v.duration;
+    if (!isFinite(dur)) { say("영상 길이를 읽지 못했어요. 다른 파일로 해 보세요.", "err"); return; }
+    start = 0; end = dur;
+    $("#drop").hidden = true; $("#editor").hidden = false;
+    inS.disabled = inE.disabled = false; inS.max = inE.max = dur.toFixed(2);
+    runBtn.disabled = !mime || !canCapture;
+    $("#tDur").textContent = TT.time(dur);
+    draw(); say(`${file.name} · ${v.videoWidth}×${v.videoHeight} · ${TT.bytes(file.size)}`);
+  });
+  v.addEventListener("error", () => say("이 브라우저에서 재생할 수 없는 영상이에요 (코덱 문제일 수 있어요).", "err"));
+
+  function draw() {
+    const p = t => (t / dur * 100) + "%";
+    hs.style.left = p(start); he.style.left = p(end);
+    sel.style.left = p(start); sel.style.width = ((end - start) / dur * 100) + "%";
+    head.style.left = p(v.currentTime);
+    inS.value = start.toFixed(1); inE.value = end.toFixed(1);
+    $("#tLen").textContent = TT.time(end - start);
+    $("#tNow").textContent = TT.time(v.currentTime);
+    hs.setAttribute("aria-valuetext", TT.time(start)); he.setAttribute("aria-valuetext", TT.time(end));
+  }
+  v.addEventListener("timeupdate", () => {
+    draw();
+    if (stopAt !== null && v.currentTime >= stopAt) { v.pause(); stopAt = null; }
+  });
+
+  const MIN = 0.1;
+  function setStart(t) { start = Math.max(0, Math.min(t, end - MIN)); draw(); }
+  function setEnd(t) { end = Math.min(dur, Math.max(t, start + MIN)); draw(); }
+  const tAt = x => { const r = track.getBoundingClientRect(); return Math.max(0, Math.min(1, (x - r.left) / r.width)) * dur; };
+
+  function drag(handle, setter) {
+    handle.addEventListener("pointerdown", e => {
+      e.stopPropagation(); handle.setPointerCapture(e.pointerId);
+      const mv = ev => { const t = tAt(ev.clientX); setter(t); v.currentTime = handle === hs ? start : end; };
+      const up = () => { handle.removeEventListener("pointermove", mv); handle.removeEventListener("pointerup", up); };
+      handle.addEventListener("pointermove", mv); handle.addEventListener("pointerup", up);
+    });
+    handle.addEventListener("keydown", e => {
+      const step = e.shiftKey ? 1 : 0.1;
+      const cur = handle === hs ? start : end;
+      if (e.key === "ArrowLeft") { e.preventDefault(); setter(cur - step); }
+      if (e.key === "ArrowRight") { e.preventDefault(); setter(cur + step); }
+    });
+  }
+  drag(hs, setStart); drag(he, setEnd);
+  track.addEventListener("pointerdown", e => { if (dur) v.currentTime = tAt(e.clientX); });
+
+  inS.addEventListener("change", () => setStart(+inS.value || 0));
+  inE.addEventListener("change", () => setEnd(+inE.value || dur));
+  $("#setS").onclick = () => setStart(v.currentTime);
+  $("#setE").onclick = () => setEnd(v.currentTime);
+
+  function ensureAudio() {
+    if (actx) { actx.resume(); return; }
+    try {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      srcNode = actx.createMediaElementSource(v);
+      spk = actx.createGain(); dest = actx.createMediaStreamDestination();
+      srcNode.connect(spk).connect(actx.destination);
+      srcNode.connect(dest);
+    } catch { actx = null; }
+  }
+
+  const playBtn = $("#play");
+  playBtn.onclick = () => { ensureAudio(); stopAt = null; v.paused ? v.play() : v.pause(); };
+  v.addEventListener("play", () => { playBtn.innerHTML = TT.icon("stop") + " 정지"; });
+  v.addEventListener("pause", () => { playBtn.innerHTML = TT.icon("play") + " 재생"; });
+  $("#playSel").onclick = () => { ensureAudio(); v.currentTime = start; stopAt = end; v.play(); };
+
+  const seekTo = t => new Promise(r => { v.addEventListener("seeked", r, { once: true }); v.currentTime = t; });
+
+  runBtn.onclick = async () => {
+    ensureAudio();
+    v.pause(); stopAt = null; cancelled = false;
+    runBtn.disabled = true; $("#cancel").hidden = false; prog.hidden = false; $("#result").hidden = true;
+    say("준비 중…");
+    try {
+      await seekTo(start);
+      const cap = (v.captureStream || v.mozCaptureStream).call(v);
+      const tracks = [...cap.getVideoTracks()];
+      if (dest) tracks.push(...dest.stream.getAudioTracks()); else tracks.push(...cap.getAudioTracks());
+      const rec = new MediaRecorder(new MediaStream(tracks), { mimeType: mime, videoBitsPerSecond: +$("#q").value, audioBitsPerSecond: 192000 });
+      const chunks = [];
+      rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+      const done = new Promise(r => rec.onstop = r);
+      if (spk) spk.gain.value = $("#listen").checked ? 1 : 0;
+      rec.start(250);
+      await v.play();
+      await new Promise(resolve => {
+        const tick = () => {
+          const t = v.currentTime;
+          bar.style.width = Math.min(100, (t - start) / (end - start) * 100) + "%";
+          say(`녹화 중… ${TT.time(t - start)} / ${TT.time(end - start)}`);
+          if (cancelled || t >= end || v.ended) return resolve();
+          requestAnimationFrame(tick);
+        };
+        tick();
+      });
+      v.pause(); rec.stop(); await done;
+      if (spk) spk.gain.value = 1;
+      if (cancelled) { say("그만뒀어요."); return; }
+      const type = mime.split(";")[0], ext = type === "video/mp4" ? "mp4" : "webm";
+      out = { blob: new Blob(chunks, { type }), name: `${TT.baseName(file.name)}_${start.toFixed(1)}-${end.toFixed(1)}s.${ext}` };
+      $("#rv").src = URL.createObjectURL(out.blob);
+      $("#result").hidden = false;
+      say(`완료 · ${TT.bytes(out.blob.size)}`, "ok");
+      TT.download(out.blob, out.name);
+    } catch (err) {
+      say("저장하지 못했어요. 다른 브라우저에서 시도해 보세요.", "err");
+      console.error(err);
+    } finally {
+      if (spk) spk.gain.value = 1;
+      runBtn.disabled = false; $("#cancel").hidden = true; prog.hidden = true; bar.style.width = 0;
+    }
+  };
+  $("#cancel").onclick = () => { cancelled = true; };
+  $("#dl").onclick = () => out && TT.download(out.blob, out.name);
+
+  function say(t, cls = "") { status.textContent = t; status.className = "status " + cls; }
+})();
+</script>
+</body>
+</html>
