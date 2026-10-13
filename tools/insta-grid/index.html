@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>인스타 그리드 자르기 · 뚝딱툴</title>
+<meta name="description" content="인스타그램 프로필 그리드(3:4)에 맞게 사진 한 장을 3칸 여러 줄로 분할. 피드 퍼즐, 올리는 순서 번호까지. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--img); }
+  .stage { padding: 14px; display: grid; gap: 10px; }
+  .board { position: relative; display: grid; place-items: center; background: var(--surface-2); border-radius: 8px; padding: 10px; touch-action: none; }
+  .board canvas { display: block; max-width: 100%; height: auto; cursor: grab; border-radius: 2px; }
+  .board canvas:active { cursor: grabbing; }
+  .sbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+  .sbar p { margin: 0; font-size: 13px; color: var(--muted); }
+  .order-note { font-size: 12.5px; color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .order-note b { color: var(--ink); }
+  .color-row { display: flex; gap: 8px; align-items: center; }
+  .color-row input[type=color] { width: 40px; height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>인스타 그리드 자르기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="insta-grid"></span>
+    <div>
+      <h1>인스타 그리드 자르기</h1>
+      <p>사진 한 장을 가로 3칸으로 나눠서, 프로필에 올리면 하나의 큰 그림으로 이어지게 만들어요. 인스타 프로필 그리드는 2025년부터 3:4 비율로 보여서 그 기준에 맞췄어요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="이미지 파일 선택">
+        <span data-icon="upload"></span>
+        <strong>사진을 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>세로가 긴 사진은 줄을 늘리고, 가로가 긴 사진은 1~2줄이 잘 맞아요</span>
+        <input type="file" id="file">
+      </div>
+      <div class="panel" id="editor" hidden>
+        <div class="stage">
+          <div class="sbar">
+            <p>사진을 끌어서 위치를 맞추세요. 숫자는 올리는 순서예요.</p>
+            <label class="check"><input type="checkbox" id="feedLook"> 프로필에서 보이는 모습</label>
+          </div>
+          <div class="board" id="board"><canvas id="cv"></canvas></div>
+          <div class="drop compact" id="drop2" tabindex="0" role="button" aria-label="다른 사진 고르기">
+            <span data-icon="upload"></span><span>다른 사진 고르기</span><input type="file">
+          </div>
+        </div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>그리드 설정</h2>
+        <div class="field">
+          <span class="label">줄 수 (가로는 3칸 고정)</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="rows" id="r1" value="1"><label for="r1">1</label>
+            <input type="radio" name="rows" id="r2" value="2"><label for="r2">2</label>
+            <input type="radio" name="rows" id="r3" value="3" checked><label for="r3">3</label>
+            <input type="radio" name="rows" id="r4" value="4"><label for="r4">4</label>
+            <input type="radio" name="rows" id="r5" value="5"><label for="r5">5</label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="ratio">게시물 비율</label>
+          <select id="ratio">
+            <option value="34" selected>3:4 · 1080×1440 (추천)</option>
+            <option value="45">4:5 · 1080×1350</option>
+            <option value="11">1:1 · 1080×1080</option>
+          </select>
+          <p class="hint" id="ratioHint"></p>
+        </div>
+        <div class="field">
+          <label for="zoom">확대 <span class="num" id="zv">100%</span></label>
+          <input type="range" id="zoom" min="100" max="300" value="100">
+        </div>
+        <div class="field">
+          <span class="label">빈 곳 색</span>
+          <div class="color-row"><input type="color" id="bg" value="#ffffff" aria-label="배경색"><span class="hint">사진이 칸을 다 못 채울 때 쓰여요.</span></div>
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled data-icon="download"> 나눠서 저장 (zip)</button>
+        <p class="status" id="status"></p>
+        <p class="order-note">인스타는 <b>나중에 올린 게시물이 왼쪽 위</b>에 와요. 그래서 파일 이름의 번호가 올리는 순서예요. <b>01번부터</b> 차례로 올리면 그림이 완성돼요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>사진은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const cv = $("#cv"), g = cv.getContext("2d");
+  const say = TT.sayTo($("#status"));
+  const COLS = 3, TW = 1080;
+  // 게시물 크기와, 그 중 그리드(3:4)에 보이는 가운데 너비
+  const RATIOS = {
+    "34": { th: 1440, vw: 1080, hint: "그리드 칸과 같은 비율이라 잘리는 곳이 없어요. 피드에서도 꽉 차게 보여요." },
+    "45": { th: 1350, vw: 1012.5, hint: "그리드에서는 양옆이 조금씩(약 34px) 잘려 보여요. 잘리는 부분도 사진으로 이어지게 채워 둬요." },
+    "11": { th: 1080, vw: 1080, hint: "지금 인스타 그리드는 3:4라 위아래가 잘려 보일 수 있어요. 다른 SNS용으로 쓰세요." }
+  };
+  let file = null, img = null, ox = 0, oy = 0, base = 1;
+  const rows = () => +document.querySelector("input[name=rows]:checked").value;
+  const R = () => RATIOS[$("#ratio").value];
+  const board = () => { const r = R(); return { w: COLS * r.vw, h: rows() * r.th, vw: r.vw, vh: r.th }; };
+  const scale = () => base * $("#zoom").value / 100;
+
+  TT.dropzone($("#drop"), f => load(f[0]), { accept: "image/*", multiple: false });
+  TT.dropzone($("#drop2"), f => load(f[0]), { accept: "image/*", multiple: false, paste: false });
+
+  async function load(f) {
+    if (!f) return;
+    try { img = await createImageBitmap(f); } catch { say("이 브라우저가 열 수 없는 이미지예요.", "err"); return; }
+    file = f;
+    // 사진 비율에 어울리는 줄 수를 골라줘요
+    const ar = img.height / img.width, r = R();
+    const best = Math.max(1, Math.min(5, Math.round(ar * COLS * r.vw / r.th)));
+    document.getElementById("r" + best).checked = true;
+    $("#drop").hidden = true; $("#editor").hidden = false; $("#run").disabled = false;
+    $("#zoom").value = 100; fit(); say(`${img.width}×${img.height} · ${best}줄을 추천해요.`);
+  }
+
+  // 판을 꽉 채우도록(cover) 맞추고 가운데로
+  function fit() {
+    const b = board();
+    base = Math.max(b.w / img.width, b.h / img.height);
+    const s = scale();
+    ox = (b.w - img.width * s) / 2; oy = (b.h - img.height * s) / 2;
+    draw();
+  }
+  function clamp() {
+    const b = board(), s = scale(), w = img.width * s, h = img.height * s;
+    ox = w >= b.w ? Math.min(0, Math.max(b.w - w, ox)) : (b.w - w) / 2;
+    oy = h >= b.h ? Math.min(0, Math.max(b.h - h, oy)) : (b.h - h) / 2;
+  }
+
+  function draw() {
+    if (!img) return;
+    const b = board(), feed = $("#feedLook").checked, n = rows();
+    const disp = Math.min(1, ($("#board").clientWidth - 20) / b.w, 900 / b.h);
+    const gap = feed ? 3 : 0;
+    cv.width = Math.round(b.w * disp) + gap * (COLS - 1); cv.height = Math.round(b.h * disp) + gap * (n - 1);
+    const css = getComputedStyle(document.body);
+    g.fillStyle = feed ? css.getPropertyValue("--surface").trim() : $("#bg").value; g.fillRect(0, 0, cv.width, cv.height);
+    const s = scale();
+    for (let r = 0; r < n; r++) for (let c = 0; c < COLS; c++) {
+      const x = Math.round(c * b.vw * disp) + c * gap, y = Math.round(r * b.vh * disp) + r * gap;
+      const w = Math.round(b.vw * disp), h = Math.round(b.vh * disp);
+      g.save(); g.beginPath(); g.rect(x, y, w, h); g.clip();
+      g.fillStyle = $("#bg").value; g.fillRect(x, y, w, h);
+      g.drawImage(img, x - c * b.vw * disp + ox * disp, y - r * b.vh * disp + oy * disp, img.width * s * disp, img.height * s * disp);
+      g.restore();
+    }
+    if (!feed) {
+      g.strokeStyle = "rgba(255,255,255,.85)"; g.lineWidth = 2; g.setLineDash([6, 4]);
+      for (let c = 1; c < COLS; c++) { const x = Math.round(c * b.vw * disp); g.beginPath(); g.moveTo(x, 0); g.lineTo(x, cv.height); g.stroke(); }
+      for (let r = 1; r < n; r++) { const y = Math.round(r * b.vh * disp); g.beginPath(); g.moveTo(0, y); g.lineTo(cv.width, y); g.stroke(); }
+      g.setLineDash([]);
+      // 올리는 순서 번호
+      const total = n * COLS;
+      g.font = `600 ${Math.max(12, Math.round(b.vw * disp * 0.12))}px "IBM Plex Mono", monospace`;
+      g.textAlign = "center"; g.textBaseline = "middle";
+      for (let r = 0; r < n; r++) for (let c = 0; c < COLS; c++) {
+        const k = total - (r * COLS + c);
+        const cx = (c + 0.5) * b.vw * disp, cy = (r + 0.5) * b.vh * disp, rad = b.vw * disp * 0.12;
+        g.fillStyle = "rgba(0,0,0,.55)"; g.beginPath(); g.arc(cx, cy, rad, 0, Math.PI * 2); g.fill();
+        g.fillStyle = "#fff"; g.fillText(String(k).padStart(2, "0"), cx, cy + 1);
+      }
+    }
+    $("#ratioHint").textContent = R().hint;
+    cv._disp = disp;
+  }
+
+  // 끌어서 위치 맞추기
+  let dragFrom = null;
+  cv.addEventListener("pointerdown", e => { if (!img) return; cv.setPointerCapture(e.pointerId); dragFrom = [e.clientX, e.clientY, ox, oy]; });
+  cv.addEventListener("pointermove", e => {
+    if (!dragFrom) return;
+    const k = cv.getBoundingClientRect().width / cv.width * cv._disp;
+    ox = dragFrom[2] + (e.clientX - dragFrom[0]) / k; oy = dragFrom[3] + (e.clientY - dragFrom[1]) / k;
+    clamp(); draw();
+  });
+  cv.addEventListener("pointerup", () => dragFrom = null);
+
+  $("#zoom").addEventListener("input", e => {
+    const b = board(), before = scale();
+    $("#zv").textContent = e.target.value + "%";
+    // 가운데를 기준으로 확대
+    const cx = (b.w / 2 - ox) / before, cy = (b.h / 2 - oy) / before, s = scale();
+    ox = b.w / 2 - cx * s; oy = b.h / 2 - cy * s; clamp(); draw();
+  });
+  document.querySelectorAll("input[name=rows]").forEach(r => r.addEventListener("change", () => img && fit()));
+  $("#ratio").addEventListener("change", () => img && fit());
+  ["#bg", "#feedLook"].forEach(s => $(s).addEventListener("input", draw));
+  new ResizeObserver(() => img && draw()).observe($("#board"));
+
+  $("#run").onclick = async () => {
+    const b = board(), r = R(), n = rows(), s = scale(), total = n * COLS, out = [];
+    $("#run").disabled = true; say("나누는 중…");
+    try {
+      for (let row = 0; row < n; row++) for (let c = 0; c < COLS; c++) {
+        const t = document.createElement("canvas"); t.width = TW; t.height = r.th;
+        const tg = t.getContext("2d");
+        tg.fillStyle = $("#bg").value; tg.fillRect(0, 0, TW, r.th);
+        tg.imageSmoothingQuality = "high";
+        // 4:5일 때는 칸 양옆(그리드에서 잘리는 부분)까지 이어서 그려요
+        const left = c * b.vw - (TW - b.vw) / 2, top = row * b.vh;
+        tg.drawImage(img, ox - left, oy - top, img.width * s, img.height * s);
+        const k = total - (row * COLS + c);
+        out.push({ blob: await TT.canvasBlob(t, "image/jpeg", 0.93), name: `${String(k).padStart(2, "0")}_올리는순서_${row + 1}줄${c + 1}칸.jpg` });
+      }
+      out.sort((a, b2) => a.name.localeCompare(b2.name));
+      await TT.downloadZip(out, `${TT.baseName(file.name)}_인스타그리드_${n}줄.zip`);
+      say(`${total}장으로 나눴어요 · 01번부터 올리세요.`, "ok");
+    } catch (e) { console.error(e); say("저장하지 못했어요.", "err"); }
+    finally { $("#run").disabled = false; }
+  };
+})();
+</script>
+</body>
+</html>

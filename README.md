@@ -15,6 +15,7 @@ tools/
   image-compress/ 이미지 압축 (목표 용량 KB 맞추기)
   image-mosaic/   모자이크 · 흐리게 · 박스로 가리기
   image-gif/      움짤 만들기 (사진 여러 장 → GIF)
+  insta-grid/     인스타 그리드 자르기 (3칸 × 1~5줄, 올리는 순서 번호)
   video-trim/     영상 자르기
   video-gif/      영상 → GIF
   audio-edit/     음원 자르기 · 키 · 빠르기 · 페이드
