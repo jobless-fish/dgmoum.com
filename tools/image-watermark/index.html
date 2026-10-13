@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>워터마크 넣기 · 뚝딱툴</title>
+<meta name="description" content="사진 여러 장에 글자나 로고 워터마크를 한 번에. 위치 9곳, 사선 반복, 투명도 조절. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--img); }
+  .preview { display: grid; place-items: center; background: repeating-conic-gradient(var(--surface-2) 0 25%, var(--line) 0 50%) 0 0 / 16px 16px; border-radius: 8px; padding: 10px; }
+  .preview canvas { max-width: 100%; max-height: 60vh; height: auto; display: block; }
+  .pos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 132px; }
+  .pos button { aspect-ratio: 1; border: 1px solid var(--line); background: var(--surface-2); border-radius: 6px; cursor: pointer; font-size: 0; }
+  .pos button::after { content: ""; display: block; width: 8px; height: 8px; margin: auto; border-radius: 2px; background: var(--muted); }
+  .pos button[aria-pressed="true"] { background: var(--img); border-color: var(--img); }
+  .pos button[aria-pressed="true"]::after { background: #fff; }
+  .pos-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .color-row { display: flex; gap: 8px; align-items: center; }
+  .color-row input[type=color] { width: 40px; height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; }
+  .logo-row { display: flex; gap: 8px; align-items: center; }
+  .logo-row img { width: 34px; height: 34px; object-fit: contain; border: 1px solid var(--line); border-radius: 6px; background: var(--surface-2); }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>워터마크 넣기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="image-watermark"></span>
+    <div>
+      <h1>워터마크 넣기</h1>
+      <p>작업물·상품 사진에 이름이나 로고를 넣어 도용을 막으세요. 여러 장을 넣으면 모두 같은 위치·비율로 들어가요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>이미지를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>여러 장 가능 · 모두 같은 워터마크가 들어가요</span>
+        <input type="file" id="file">
+      </div>
+      <div class="panel" id="pvWrap" hidden><div class="panel-body"><h2>미리보기 (첫 번째 이미지)</h2><div class="preview"><canvas id="pv"></canvas></div></div></div>
+      <div id="listWrap" hidden>
+        <div class="list-head">
+          <p id="summary"></p>
+          <button class="btn btn-sm" id="clear">모두 비우기</button>
+        </div>
+        <div class="files" id="files"></div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>워터마크</h2>
+        <div class="seg" role="radiogroup">
+          <input type="radio" name="kind" id="k-t" value="text" checked><label for="k-t">글자</label>
+          <input type="radio" name="kind" id="k-l" value="logo"><label for="k-l">로고 이미지</label>
+        </div>
+        <div class="field" data-kind="text">
+          <label for="text">문구</label>
+          <input type="text" id="text" value="© 이어진">
+          <div class="color-row"><input type="color" id="color" value="#ffffff" aria-label="글자 색"><label class="check"><input type="checkbox" id="shadow" checked> 그림자 (밝은 사진에서도 보이게)</label></div>
+        </div>
+        <div class="field" data-kind="logo" hidden>
+          <div class="logo-row"><img id="logoPrev" alt="" hidden><button class="btn btn-sm" id="logoBtn">로고 고르기</button><input type="file" id="logoFile" accept="image/*" hidden></div>
+          <p class="hint">배경이 투명한 PNG 로고가 가장 깔끔해요.</p>
+        </div>
+        <div class="field">
+          <span class="label">위치</span>
+          <div class="pos-row">
+            <div class="pos" id="pos">
+              <button data-p="0" aria-pressed="false">왼쪽 위</button><button data-p="1" aria-pressed="false">위</button><button data-p="2" aria-pressed="false">오른쪽 위</button>
+              <button data-p="3" aria-pressed="false">왼쪽</button><button data-p="4" aria-pressed="false">가운데</button><button data-p="5" aria-pressed="false">오른쪽</button>
+              <button data-p="6" aria-pressed="false">왼쪽 아래</button><button data-p="7" aria-pressed="false">아래</button><button data-p="8" aria-pressed="true">오른쪽 아래</button>
+            </div>
+            <label class="check"><input type="checkbox" id="tile"> 사선으로 반복<br>(도용 방지용)</label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="size">크기 <span class="num" id="sv">20%</span></label>
+          <input type="range" id="size" min="5" max="60" value="20">
+          <p class="hint">사진 가로 길이 대비 크기예요. 사진 크기가 달라도 같은 비율로 들어가요.</p>
+        </div>
+        <div class="field">
+          <label for="op">불투명도 <span class="num" id="ov">60%</span></label>
+          <input type="range" id="op" min="10" max="100" value="60">
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled>모두 적용해서 저장</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const kind = () => document.querySelector("input[name=kind]:checked").value;
+  const filesEl = $("#files"), pv = $("#pv"), runBtn = $("#run"), prog = $("#prog"), bar = prog.firstElementChild;
+  const say = TT.sayTo($("#status"));
+  const items = []; let logo = null, pos = 8;
+
+  TT.dropzone($("#drop"), add, { accept: "image/*" });
+  document.querySelectorAll("input[name=kind]").forEach(r => r.onchange = () => { document.querySelectorAll("[data-kind]").forEach(el => el.hidden = el.dataset.kind !== kind()); preview(); });
+  $("#pos").onclick = e => { const b = e.target.closest("button"); if (!b) return; pos = +b.dataset.p; document.querySelectorAll("#pos button").forEach(x => x.setAttribute("aria-pressed", x === b)); $("#tile").checked = false; preview(); };
+  document.querySelectorAll("aside input").forEach(el => el.addEventListener("input", preview));
+  $("#logoBtn").onclick = () => $("#logoFile").click();
+  $("#logoFile").onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try { logo = await createImageBitmap(f); } catch { say("로고를 열지 못했어요.", "err"); return; }
+    $("#logoPrev").src = URL.createObjectURL(f); $("#logoPrev").hidden = false; e.target.value = ""; preview();
+  };
+
+  async function add(files) {
+    for (const file of files) {
+      const it = { file, url: URL.createObjectURL(file) };
+      try { it.bmp = await createImageBitmap(file); } catch { it.bad = true; }
+      items.push(it); filesEl.appendChild(row(it));
+    }
+    refresh();
+  }
+  function row(it) {
+    const el = document.createElement("div"); el.className = "file";
+    el.innerHTML = `<img class="thumb" alt="" ${it.bad ? "" : `src="${it.url}"`}>
+      <div class="meta"><div class="name"></div><div class="info">${it.bad ? "열 수 없는 형식" : `${it.bmp.width}×${it.bmp.height}`}</div></div>
+      <div class="acts"><button class="icon-btn rm" title="빼기">${TT.icon("x")}</button></div>`;
+    el.querySelector(".name").textContent = it.file.name;
+    el.querySelector(".rm").onclick = () => { URL.revokeObjectURL(it.url); it.bmp?.close?.(); items.splice(items.indexOf(it), 1); el.remove(); refresh(); };
+    return el;
+  }
+  function refresh() {
+    const ok = items.filter(i => !i.bad);
+    $("#listWrap").hidden = !items.length; $("#pvWrap").hidden = !ok.length;
+    $("#summary").textContent = `${ok.length}장`;
+    runBtn.disabled = !ok.length; preview();
+  }
+  $("#clear").onclick = () => { items.forEach(i => { URL.revokeObjectURL(i.url); i.bmp?.close?.(); }); items.length = 0; filesEl.innerHTML = ""; refresh(); };
+
+  // 워터마크 한 개를 그릴 그림(글자 또는 로고)을 만들어요
+  function stamp(W) {
+    const target = W * $("#size").value / 100;
+    if (kind() === "logo") {
+      if (!logo) return null;
+      const s = target / logo.width;
+      return { w: target, h: logo.height * s, draw: (g, x, y) => g.drawImage(logo, x, y, target, logo.height * s) };
+    }
+    const text = $("#text").value.trim(); if (!text) return null;
+    const m = document.createElement("canvas").getContext("2d");
+    m.font = `600 100px "IBM Plex Sans KR", "Malgun Gothic", sans-serif`;
+    const fs = 100 * target / Math.max(1, m.measureText(text).width);
+    return { w: target, h: fs * 1.2, draw: (g, x, y) => {
+      g.font = `600 ${fs}px "IBM Plex Sans KR", "Malgun Gothic", sans-serif`; g.textBaseline = "top";
+      if ($("#shadow").checked) { g.shadowColor = "rgba(0,0,0,.55)"; g.shadowBlur = fs * 0.12; g.shadowOffsetY = fs * 0.04; }
+      g.fillStyle = $("#color").value; g.fillText(text, x, y + fs * 0.1);
+      g.shadowColor = "transparent";
+    } };
+  }
+
+  function apply(g, W, H) {
+    const st = stamp(W); if (!st) return false;
+    g.save(); g.globalAlpha = $("#op").value / 100;
+    if ($("#tile").checked) {
+      g.translate(W / 2, H / 2); g.rotate(-Math.PI / 6);
+      const R = Math.hypot(W, H), sx = st.w * 1.6, sy = st.h * 3;
+      for (let i = 0, y = -R; y < R; y += sy, i++) for (let x = -R + (i % 2 ? sx / 2 : 0); x < R; x += sx) st.draw(g, x, y);
+    } else {
+      const m = Math.min(W, H) * 0.03;
+      const col = pos % 3, row = Math.floor(pos / 3);
+      const x = col === 0 ? m : col === 1 ? (W - st.w) / 2 : W - st.w - m;
+      const y = row === 0 ? m : row === 1 ? (H - st.h) / 2 : H - st.h - m;
+      st.draw(g, x, y);
+    }
+    g.restore(); return true;
+  }
+
+  function preview() {
+    $("#sv").textContent = $("#size").value + "%"; $("#ov").textContent = $("#op").value + "%";
+    const first = items.find(i => !i.bad); if (!first) return;
+    const s = Math.min(1, 900 / Math.max(first.bmp.width, first.bmp.height));
+    pv.width = Math.round(first.bmp.width * s); pv.height = Math.round(first.bmp.height * s);
+    const g = pv.getContext("2d"); g.drawImage(first.bmp, 0, 0, pv.width, pv.height);
+    const ok = apply(g, pv.width, pv.height);
+    if (!ok) say(kind() === "logo" ? "로고 이미지를 골라 주세요." : "문구를 적어 주세요."); else say("");
+    runBtn.disabled = !ok || !items.some(i => !i.bad);
+  }
+
+  runBtn.onclick = async () => {
+    const todo = items.filter(i => !i.bad), out = [];
+    runBtn.disabled = true; prog.hidden = false;
+    try {
+      for (let k = 0; k < todo.length; k++) {
+        const it = todo[k]; say(`넣는 중… ${k + 1}/${todo.length}`);
+        const c = document.createElement("canvas"); c.width = it.bmp.width; c.height = it.bmp.height;
+        const g = c.getContext("2d"); g.drawImage(it.bmp, 0, 0); apply(g, c.width, c.height);
+        const type = ["image/png", "image/webp"].includes(it.file.type) ? it.file.type : "image/jpeg";
+        const blob = await TT.canvasBlob(c, type, 0.92);
+        const ext = { "image/png": "png", "image/webp": "webp", "image/jpeg": "jpg" }[blob.type] || "png";
+        out.push({ blob, name: `${TT.baseName(it.file.name)}_wm.${ext}` });
+        bar.style.width = ((k + 1) / todo.length * 100) + "%";
+      }
+      if (out.length === 1) TT.download(out[0].blob, out[0].name); else await TT.downloadZip(out, "watermarked.zip");
+      say(`${out.length}장에 넣었어요.`, "ok");
+    } catch (e) { console.error(e); say("저장하지 못했어요.", "err"); }
+    finally { runBtn.disabled = false; prog.hidden = true; bar.style.width = 0; }
+  };
+
+})();
+</script>
+</body>
+</html>

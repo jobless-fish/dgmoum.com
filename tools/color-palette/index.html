@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>색 뽑기 · 뚝딱툴</title>
+<meta name="description" content="이미지에서 대표 색 추출, HEX·RGB·HSL 코드 복사, 스포이드로 원하는 색 집기, CSS 변수와 팔레트 이미지로 저장. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--des); }
+  .view { padding: 14px; display: grid; gap: 10px; }
+  .view .img { display: grid; place-items: center; background: var(--surface-2); border-radius: 8px; padding: 10px; position: relative; }
+  .view canvas { max-width: 100%; max-height: 60vh; height: auto; display: block; cursor: crosshair; }
+  .loupe { position: absolute; pointer-events: none; width: 44px; height: 44px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.4), 0 4px 10px rgba(0,0,0,.3); transform: translate(-50%, -130%); }
+  .strip { display: flex; height: 64px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+  .strip div { flex: var(--share) 1 0; min-width: 6px; }
+  .swatches { display: grid; gap: 6px; }
+  .sw { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 6px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); cursor: pointer; text-align: left; }
+  .sw:hover { border-color: var(--ink); }
+  .sw i { width: 34px; height: 34px; border-radius: 6px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.12); }
+  .sw b { font-family: var(--f-mono); font-size: 14px; }
+  .sw small { display: block; font-family: var(--f-mono); color: var(--muted); font-size: 11.5px; }
+  .sw .pct { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+  .two-btn { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .toast { font-size: 13px; color: var(--ok); min-height: 1.2em; margin: 0; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>색 뽑기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="color-palette"></span>
+    <div>
+      <h1>색 뽑기</h1>
+      <p>사진이나 레퍼런스 이미지에서 많이 쓰인 색을 순서대로 뽑아요. 색을 누르면 코드가 복사되고, 이미지를 누르면 그 자리 색을 집어요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>이미지를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>사진, 그림, 캡처 · Ctrl+V로 붙여넣기도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <div class="panel" id="editor" hidden>
+        <div class="view">
+          <div class="img" id="imgBox"><canvas id="cv"></canvas><div class="loupe" id="loupe" hidden></div></div>
+          <p class="hint">이미지를 누르면 그 자리의 색을 집어서 아래 "고른 색"에 넣어요.</p>
+          <div class="strip" id="strip" aria-label="대표 색 비율"></div>
+          <div class="drop compact" id="drop2" tabindex="0" role="button" aria-label="다른 이미지 고르기">
+            <span data-icon="upload"></span><span>다른 이미지 고르기</span><input type="file">
+          </div>
+        </div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>대표 색</h2>
+        <div class="field">
+          <label for="k">색 개수 <span class="num" id="kv">6</span></label>
+          <input type="range" id="k" min="3" max="10" value="6">
+        </div>
+        <div class="swatches" id="sw"><p class="hint">이미지를 넣으면 여기에 색이 나와요.</p></div>
+        <h2 id="pickTitle" hidden>고른 색</h2>
+        <div class="swatches" id="picked"></div>
+        <p class="toast" id="toast" aria-live="polite"></p>
+        <div class="two-btn">
+          <button class="btn btn-sm" id="copyHex" disabled>HEX 전부 복사</button>
+          <button class="btn btn-sm" id="copyCss" disabled>CSS 변수 복사</button>
+        </div>
+        <button class="btn btn-block" id="savePng" disabled data-icon="download"> 팔레트 이미지 저장</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const cv = $("#cv"), g = cv.getContext("2d", { willReadFrequently: true });
+  let file = null, pal = [], picked = [];
+  const hex = c => "#" + c.map(v => Math.round(v).toString(16).padStart(2, "0")).join("").toUpperCase();
+  const lum = c => { const f = c.map(v => v / 255).map(x => x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4); return 0.2126 * f[0] + 0.7152 * f[1] + 0.0722 * f[2]; };
+  function hsl([r, gg, b]) {
+    r /= 255; gg /= 255; b /= 255;
+    const mx = Math.max(r, gg, b), mn = Math.min(r, gg, b), l = (mx + mn) / 2; let h = 0, s = 0;
+    if (mx !== mn) { const d = mx - mn; s = l > 0.5 ? d / (2 - mx - mn) : d / (mx + mn);
+      h = mx === r ? (gg - b) / d + (gg < b ? 6 : 0) : mx === gg ? (b - r) / d + 2 : (r - gg) / d + 4; h *= 60; }
+    return `hsl(${Math.round(h)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%)`;
+  }
+
+  TT.dropzone($("#drop"), f => load(f[0]), { accept: "image/*", multiple: false });
+  TT.dropzone($("#drop2"), f => load(f[0]), { accept: "image/*", multiple: false, paste: false });
+  $("#k").addEventListener("input", e => { $("#kv").textContent = e.target.value; extract(); });
+
+  async function load(f) {
+    if (!f) return;
+    let bmp; try { bmp = await createImageBitmap(f); } catch { toast("이 브라우저가 열 수 없는 이미지예요."); return; }
+    file = f;
+    const s = Math.min(1, 900 / Math.max(bmp.width, bmp.height));
+    cv.width = Math.round(bmp.width * s); cv.height = Math.round(bmp.height * s);
+    g.drawImage(bmp, 0, 0, cv.width, cv.height); bmp.close();
+    $("#drop").hidden = true; $("#editor").hidden = false;
+    picked = []; renderPicked(); extract();
+  }
+
+  // k-means로 대표 색 찾기 (투명한 부분은 빼요)
+  function extract() {
+    if (!file) return;
+    const K = +$("#k").value, d = g.getImageData(0, 0, cv.width, cv.height).data;
+    const px = [], step = Math.max(1, Math.floor(cv.width * cv.height / 12000));
+    for (let i = 0; i < d.length / 4; i += step) { const j = i * 4; if (d[j + 3] > 200) px.push([d[j], d[j + 1], d[j + 2]]); }
+    if (!px.length) return;
+    const dist = (a, b) => (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
+    // k-means++ 시작점 (매번 같은 결과가 나오게 고정된 순서로)
+    let seed = 1; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const C = [px[Math.floor(rnd() * px.length)].slice()];
+    while (C.length < K) {
+      const ds = px.map(p => Math.min(...C.map(c => dist(p, c))));
+      let t = rnd() * ds.reduce((a, b) => a + b, 0), i = 0;
+      while (t > ds[i] && i < ds.length - 1) { t -= ds[i]; i++; }
+      C.push(px[i].slice());
+    }
+    let assign = new Array(px.length).fill(0);
+    for (let it = 0; it < 12; it++) {
+      const sum = C.map(() => [0, 0, 0, 0]);
+      px.forEach((p, i) => { let best = 0, bd = Infinity; C.forEach((c, k) => { const dd = dist(p, c); if (dd < bd) { bd = dd; best = k; } }); assign[i] = best; const s = sum[best]; s[0] += p[0]; s[1] += p[1]; s[2] += p[2]; s[3]++; });
+      sum.forEach((s, k) => { if (s[3]) C[k] = [s[0] / s[3], s[1] / s[3], s[2] / s[3]]; });
+    }
+    const counts = C.map(() => 0); assign.forEach(a => counts[a]++);
+    pal = C.map((c, k) => ({ c, share: counts[k] / px.length })).filter(p => p.share > 0).sort((a, b) => b.share - a.share);
+    renderPal();
+  }
+
+  function swatch(c, share) {
+    const b = document.createElement("button"); b.className = "sw"; b.type = "button";
+    b.innerHTML = `<i style="background:${hex(c)}"></i><span><b>${hex(c)}</b><small>rgb(${c.map(Math.round).join(", ")}) · ${hsl(c)}</small></span><span class="pct">${share != null ? Math.round(share * 100) + "%" : ""}</span>`;
+    b.onclick = () => copy(hex(c), `${hex(c)} 복사했어요`);
+    return b;
+  }
+  function renderPal() {
+    const sw = $("#sw"); sw.innerHTML = "";
+    pal.forEach(p => sw.appendChild(swatch(p.c, p.share)));
+    $("#strip").innerHTML = pal.map(p => `<div style="background:${hex(p.c)};--share:${p.share}"></div>`).join("");
+    ["#copyHex", "#copyCss", "#savePng"].forEach(s => $(s).disabled = !pal.length);
+  }
+  function renderPicked() {
+    const el = $("#picked"); el.innerHTML = "";
+    picked.forEach(c => el.appendChild(swatch(c)));
+    $("#pickTitle").hidden = !picked.length;
+  }
+
+  // 스포이드
+  const at = e => { const r = cv.getBoundingClientRect(); return [Math.floor((e.clientX - r.left) / r.width * cv.width), Math.floor((e.clientY - r.top) / r.height * cv.height)]; };
+  cv.addEventListener("pointermove", e => {
+    const [x, y] = at(e); if (x < 0 || y < 0 || x >= cv.width || y >= cv.height) return;
+    const d = g.getImageData(x, y, 1, 1).data, box = $("#imgBox").getBoundingClientRect();
+    Object.assign($("#loupe").style, { left: (e.clientX - box.left) + "px", top: (e.clientY - box.top) + "px", background: hex([d[0], d[1], d[2]]) });
+    $("#loupe").hidden = false;
+  });
+  cv.addEventListener("pointerleave", () => $("#loupe").hidden = true);
+  cv.addEventListener("click", e => {
+    const [x, y] = at(e); const d = g.getImageData(x, y, 1, 1).data;
+    const c = [d[0], d[1], d[2]];
+    if (!picked.some(p => hex(p) === hex(c))) { picked.unshift(c); picked = picked.slice(0, 8); }
+    renderPicked(); copy(hex(c), `${hex(c)} 집어서 복사했어요`);
+  });
+
+  let tt; function toast(t) { $("#toast").textContent = t; clearTimeout(tt); tt = setTimeout(() => $("#toast").textContent = "", 2200); }
+  async function copy(text, msg) {
+    try { await navigator.clipboard.writeText(text); toast(msg); } catch { toast(`복사가 막혀 있어요: ${text}`); }
+  }
+  const all = () => [...pal.map(p => p.c), ...picked];
+  $("#copyHex").onclick = () => copy(all().map(hex).join(", "), "HEX 코드를 전부 복사했어요");
+  $("#copyCss").onclick = () => copy(":root {\n" + all().map((c, i) => `  --color-${i + 1}: ${hex(c)};`).join("\n") + "\n}", "CSS 변수로 복사했어요");
+  $("#savePng").onclick = async () => {
+    const cols = all(), W = 1200, cw = W / cols.length, H = 600;
+    const c = document.createElement("canvas"); c.width = W; c.height = H;
+    const x = c.getContext("2d");
+    x.fillStyle = "#fff"; x.fillRect(0, 0, W, H);
+    cols.forEach((col, i) => {
+      x.fillStyle = hex(col); x.fillRect(i * cw, 0, Math.ceil(cw), H - 90);
+      x.fillStyle = "#141a21"; x.font = `600 ${Math.min(26, cw / 5)}px "IBM Plex Mono", monospace`; x.textAlign = "center";
+      x.fillText(hex(col), i * cw + cw / 2, H - 50);
+    });
+    TT.download(await TT.canvasBlob(c, "image/png"), `${TT.baseName(file.name)}_palette.png`);
+  };
+
+})();
+</script>
+</body>
+</html>

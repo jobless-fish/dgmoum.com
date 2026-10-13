@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>이미지 합치기 · 뚝딱툴</title>
+<meta name="description" content="여러 이미지를 세로, 가로, 격자로 이어 붙이기. 크기 자동 맞춤, 간격, 배경색. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--img); }
+  .file { grid-template-columns: 22px 56px minmax(0, 1fr) auto; }
+  .order { font-family: var(--f-mono); font-weight: 600; color: var(--img); text-align: center; }
+  .preview { display: grid; place-items: center; background: repeating-conic-gradient(var(--surface-2) 0 25%, var(--line) 0 50%) 0 0 / 14px 14px; border-radius: 8px; padding: 10px; min-height: 140px; }
+  .preview canvas { max-width: 100%; max-height: 420px; height: auto; display: block; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+  .color-row { display: flex; gap: 8px; align-items: center; }
+  .color-row input[type=color] { width: 40px; height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>이미지 합치기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="image-merge"></span>
+    <div>
+      <h1>이미지 합치기</h1>
+      <p>캡처 여러 장을 한 장으로, 상세페이지 이미지를 세로로 길게, 사진을 격자로 모아 붙여요. 순서는 화살표로 바꾸세요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>이미지를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>두 장 이상 · Ctrl+V로 붙여넣기도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <div id="listWrap" hidden>
+        <div class="list-head">
+          <p id="summary"></p>
+          <button class="btn btn-sm" id="clear">모두 비우기</button>
+        </div>
+        <div class="files" id="files"></div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>미리보기</h2>
+        <div class="preview"><canvas id="pv" width="1" height="1"></canvas></div>
+        <p class="hint num" id="dim"></p>
+        <div class="field">
+          <span class="label">붙이는 방향</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="dir" id="d-v" value="v" checked><label for="d-v">세로로</label>
+            <input type="radio" name="dir" id="d-h" value="h"><label for="d-h">가로로</label>
+            <input type="radio" name="dir" id="d-g" value="g"><label for="d-g">격자</label>
+          </div>
+        </div>
+        <div class="field" id="colsField" hidden>
+          <label for="cols">한 줄에 <span class="num" id="cv">2</span>장</label>
+          <input type="range" id="cols" min="2" max="6" value="2">
+        </div>
+        <div class="field">
+          <label for="match" id="matchLabel">너비 맞추기</label>
+          <select id="match">
+            <option value="first" selected>첫 번째 이미지에 맞춤</option>
+            <option value="min">가장 작은 이미지에 맞춤 (화질 안전)</option>
+            <option value="max">가장 큰 이미지에 맞춤</option>
+            <option value="none">원래 크기 그대로</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="gap">간격 <span class="num" id="gv">0px</span></label>
+          <input type="range" id="gap" min="0" max="80" value="0">
+        </div>
+        <div class="field">
+          <span class="label">바탕 · 간격 색</span>
+          <div class="color-row"><input type="color" id="bg" value="#ffffff" aria-label="바탕색"><label class="check"><input type="checkbox" id="transparent"> 투명 (PNG)</label></div>
+        </div>
+        <div class="field">
+          <span class="label">저장 형식</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="fmt" id="f-jpg" value="image/jpeg" checked><label for="f-jpg">JPG</label>
+            <input type="radio" name="fmt" id="f-png" value="image/png"><label for="f-png">PNG</label>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled data-icon="download"> 합쳐서 저장</button>
+        <p class="status" id="status"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const val = n => document.querySelector(`input[name=${n}]:checked`).value;
+  const filesEl = $("#files"), runBtn = $("#run"), pv = $("#pv");
+  const say = TT.sayTo($("#status"));
+  const items = [];
+  const MAXSIDE = 16000, MAXAREA = 120e6; // 브라우저가 그릴 수 있는 한계보다 조금 작게
+
+  TT.dropzone($("#drop"), add, { accept: "image/*" });
+  async function add(files) {
+    for (const file of files) {
+      const it = { file, url: URL.createObjectURL(file) };
+      try { it.bmp = await createImageBitmap(file); } catch { it.bad = true; }
+      items.push(it);
+    }
+    render();
+  }
+
+  // 배치 계산: 각 이미지의 위치와 크기
+  function layout() {
+    const ok = items.filter(i => !i.bad); if (!ok.length) return null;
+    const dir = val("dir"), gap = +$("#gap").value, m = $("#match").value;
+    const key = dir === "h" ? "height" : "width";
+    const sizes = ok.map(i => i.bmp[key]);
+    const target = m === "first" ? sizes[0] : m === "min" ? Math.min(...sizes) : m === "max" ? Math.max(...sizes) : null;
+    const boxes = [];
+    if (dir === "v" || dir === "h") {
+      let pos = 0, cross = 0;
+      for (const it of ok) {
+        const s = target ? target / it.bmp[key] : 1;
+        const w = Math.round(it.bmp.width * s), h = Math.round(it.bmp.height * s);
+        boxes.push(dir === "v" ? { it, x: 0, y: pos, w, h } : { it, x: pos, y: 0, w, h });
+        pos += (dir === "v" ? h : w) + gap; cross = Math.max(cross, dir === "v" ? w : h);
+      }
+      pos -= gap;
+      // 원래 크기 그대로일 때는 가운데 정렬
+      boxes.forEach(b => { if (dir === "v") b.x = Math.round((cross - b.w) / 2); else b.y = Math.round((cross - b.h) / 2); });
+      var W = dir === "v" ? cross : pos, H = dir === "v" ? pos : cross;
+    } else {
+      const cols = +$("#cols").value;
+      const cw = target || Math.max(...ok.map(i => i.bmp.width));
+      let y = 0;
+      for (let r = 0; r * cols < ok.length; r++) {
+        const row = ok.slice(r * cols, r * cols + cols);
+        const hs = row.map(i => Math.round(i.bmp.height * cw / i.bmp.width));
+        const rh = Math.max(...hs);
+        row.forEach((it, c) => boxes.push({ it, x: c * (cw + gap), y: y + Math.round((rh - hs[c]) / 2), w: cw, h: hs[c] }));
+        y += rh + gap;
+      }
+      var W = cols * cw + (cols - 1) * gap, H = y - gap;
+    }
+    // 너무 크면 전체를 줄여요
+    let k = Math.min(1, MAXSIDE / Math.max(W, H), Math.sqrt(MAXAREA / (W * H)));
+    return { W: Math.round(W * k), H: Math.round(H * k), k, boxes, gap };
+  }
+
+  function paint(canvas, L, scale) {
+    canvas.width = Math.max(1, Math.round(L.W * scale)); canvas.height = Math.max(1, Math.round(L.H * scale));
+    const g = canvas.getContext("2d");
+    const transparent = $("#transparent").checked && val("fmt") === "image/png";
+    g.clearRect(0, 0, canvas.width, canvas.height);
+    if (!transparent) { g.fillStyle = $("#bg").value; g.fillRect(0, 0, canvas.width, canvas.height); }
+    g.imageSmoothingQuality = "high";
+    const s = L.k * scale;
+    for (const b of L.boxes) g.drawImage(b.it.bmp, b.x * s, b.y * s, b.w * s, b.h * s);
+  }
+
+  function render() {
+    filesEl.innerHTML = "";
+    items.forEach((it, i) => {
+      const el = document.createElement("div");
+      el.className = "file";
+      el.innerHTML = `
+        <span class="order">${i + 1}</span>
+        <img class="thumb" alt="" ${it.bad ? "" : `src="${it.url}"`}>
+        <div class="meta"><div class="name"></div><div class="info">${it.bad ? "열 수 없는 형식" : `${it.bmp.width}×${it.bmp.height}`}</div></div>
+        <div class="acts">
+          <button class="icon-btn" data-a="up" title="앞으로" ${i === 0 ? "disabled" : ""}>${TT.icon("up")}</button>
+          <button class="icon-btn" data-a="down" title="뒤로" ${i === items.length - 1 ? "disabled" : ""}>${TT.icon("down")}</button>
+          <button class="icon-btn" data-a="rm" title="빼기">${TT.icon("x")}</button>
+        </div>`;
+      el.querySelector(".name").textContent = it.file.name;
+      el.querySelector(".acts").onclick = e => {
+        const a = e.target.closest("button")?.dataset.a; if (!a) return;
+        if (a === "rm") { URL.revokeObjectURL(it.url); it.bmp?.close?.(); items.splice(i, 1); }
+        else TT.move(items, i, a === "up" ? -1 : 1);
+        render();
+      };
+      filesEl.appendChild(el);
+    });
+    $("#listWrap").hidden = !items.length;
+    const ok = items.filter(i => !i.bad);
+    $("#summary").textContent = `${ok.length}장`;
+    runBtn.disabled = ok.length < 2;
+    update();
+  }
+
+  function update() {
+    const dir = val("dir");
+    $("#colsField").hidden = dir !== "g";
+    $("#matchLabel").textContent = dir === "h" ? "높이 맞추기" : "너비 맞추기";
+    $("#gv").textContent = $("#gap").value + "px"; $("#cv").textContent = $("#cols").value;
+    $("#transparent").disabled = val("fmt") !== "image/png";
+    const L = layout();
+    if (!L) { pv.width = pv.height = 1; $("#dim").textContent = ""; say(""); return; }
+    paint(pv, L, Math.min(1, 900 / Math.max(L.W, L.H)));
+    $("#dim").textContent = `결과 크기 ${L.W} × ${L.H} px`;
+    if (L.k < 1) say(`너무 커서 ${Math.round(L.k * 100)}% 크기로 줄여서 저장해요.`); else if (items.filter(i => !i.bad).length < 2) say("한 장 더 넣어 주세요."); else say("");
+  }
+  document.querySelectorAll("aside input, aside select").forEach(el => el.addEventListener("input", update));
+  $("#clear").onclick = () => { items.forEach(i => { URL.revokeObjectURL(i.url); i.bmp?.close?.(); }); items.length = 0; render(); };
+
+  runBtn.onclick = async () => {
+    const L = layout(); if (!L) return;
+    runBtn.disabled = true; say("합치는 중…");
+    try {
+      const c = document.createElement("canvas"); paint(c, L, 1);
+      const type = val("fmt");
+      const blob = await TT.canvasBlob(c, type, 0.92);
+      if (!blob) throw new Error("too big");
+      TT.download(blob, `합친이미지_${L.W}x${L.H}.${type === "image/png" ? "png" : "jpg"}`);
+      say(`저장했어요 · ${L.W}×${L.H} · ${TT.bytes(blob.size)}`, "ok");
+    } catch (e) { console.error(e); say("저장하지 못했어요. 이미지 수를 줄이거나 크기 맞춤을 '가장 작은 이미지'로 바꿔 보세요.", "err"); }
+    finally { runBtn.disabled = false; }
+  };
+
+})();
+</script>
+</body>
+</html>

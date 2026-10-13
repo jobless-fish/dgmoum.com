@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>긴 이미지 나누기 · 뚝딱툴</title>
+<meta name="description" content="세로로 긴 상세페이지, 웹툰, 캡처 이미지를 원하는 높이나 개수로 나누기. zip으로 한 번에. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--img); }
+  .split-view { padding: 14px; display: grid; gap: 10px; }
+  .split-view .scroll { max-height: 70vh; overflow: auto; border-radius: 8px; background: var(--surface-2); display: grid; justify-items: center; padding: 10px; }
+  .split-view canvas { max-width: 100%; height: auto; display: block; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>긴 이미지 나누기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="image-split"></span>
+    <div>
+      <h1>긴 이미지 나누기</h1>
+      <p>세로로 긴 상세페이지나 캡처를 정해진 높이로 잘라요. 노란 선이 자를 자리예요. 쇼핑몰 이미지 등록 제한에 맞출 때 쓰세요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>긴 이미지를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>상세페이지, 웹툰 컷, 긴 캡처 · Ctrl+V로 붙여넣기도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <div class="panel" id="editor" hidden>
+        <div class="split-view">
+          <p class="hint" id="info"></p>
+          <div class="scroll"><canvas id="cv"></canvas></div>
+          <div class="drop compact" id="drop2" tabindex="0" role="button" aria-label="다른 이미지 고르기">
+            <span data-icon="upload"></span><span>다른 이미지 고르기</span><input type="file">
+          </div>
+        </div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>나누는 방법</h2>
+        <div class="seg" role="radiogroup">
+          <input type="radio" name="mode" id="m-h" value="h" checked><label for="m-h">높이로</label>
+          <input type="radio" name="mode" id="m-n" value="n"><label for="m-n">개수로</label>
+        </div>
+        <div class="field" data-mode="h">
+          <label for="h">한 장 높이 (px)</label>
+          <input type="number" id="h" min="50" max="20000" value="1500">
+          <div class="presets">
+            <button class="btn btn-sm" data-h="1000">1000</button>
+            <button class="btn btn-sm" data-h="1500">1500</button>
+            <button class="btn btn-sm" data-h="2000">2000</button>
+            <button class="btn btn-sm" data-h="3000">3000</button>
+          </div>
+          <p class="hint">쇼핑몰마다 이미지 한 장의 세로 길이 제한이 있어요. 등록할 곳의 기준에 맞추세요.</p>
+        </div>
+        <div class="field" data-mode="n" hidden>
+          <label for="n">몇 장으로 <span class="num" id="nv">4</span></label>
+          <input type="range" id="n" min="2" max="30" value="4">
+        </div>
+        <div class="field">
+          <label for="w">가로 크기</label>
+          <select id="w">
+            <option value="0" selected>원본 그대로</option>
+            <option value="860">860px로 맞춤</option>
+            <option value="1000">1000px로 맞춤</option>
+            <option value="1080">1080px로 맞춤</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fmt">저장 형식</label>
+          <select id="fmt">
+            <option value="same" selected>원본 형식 유지</option>
+            <option value="image/jpeg">JPG</option>
+            <option value="image/png">PNG</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled data-icon="download"> 나눠서 저장 (zip)</button>
+        <p class="status" id="status"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const mode = () => document.querySelector("input[name=mode]:checked").value;
+  const cv = $("#cv"), say = TT.sayTo($("#status"));
+  let file = null, bmp = null;
+
+  TT.dropzone($("#drop"), f => load(f[0]), { accept: "image/*", multiple: false });
+  TT.dropzone($("#drop2"), f => load(f[0]), { accept: "image/*", multiple: false, paste: false });
+  document.querySelectorAll("input[name=mode]").forEach(r => r.onchange = () => { document.querySelectorAll("[data-mode]").forEach(el => el.hidden = el.dataset.mode !== mode()); draw(); });
+  document.querySelectorAll("[data-h]").forEach(b => b.onclick = () => { $("#h").value = b.dataset.h; draw(); });
+  ["#h", "#n", "#w"].forEach(s => $(s).addEventListener("input", draw));
+
+  async function load(f) {
+    if (!f) return;
+    try { bmp = await createImageBitmap(f); } catch { say("이 브라우저가 열 수 없는 이미지예요.", "err"); return; }
+    file = f;
+    $("#drop").hidden = true; $("#editor").hidden = false; $("#run").disabled = false;
+    $("#info").textContent = `${f.name} · ${bmp.width}×${bmp.height}`;
+    draw();
+  }
+
+  // 가로를 맞춘 뒤의 크기 기준으로 자를 위치를 계산해요
+  function cuts() {
+    const tw = +$("#w").value || bmp.width, s = tw / bmp.width, H = Math.round(bmp.height * s);
+    const step = mode() === "h" ? Math.max(50, +$("#h").value || 1500) : Math.ceil(H / +$("#n").value);
+    const list = []; for (let y = 0; y < H; y += step) list.push([y, Math.min(step, H - y)]);
+    return { tw, H, s, list };
+  }
+
+  function draw() {
+    if (!bmp) return;
+    $("#nv").textContent = $("#n").value;
+    const { tw, H, list } = cuts();
+    const disp = Math.min(1, 520 / tw);
+    cv.width = Math.round(tw * disp); cv.height = Math.round(H * disp);
+    const g = cv.getContext("2d");
+    g.drawImage(bmp, 0, 0, cv.width, cv.height);
+    g.font = "600 13px 'IBM Plex Mono', monospace"; g.textBaseline = "top";
+    list.forEach(([y, h], i) => {
+      const yy = Math.round(y * disp);
+      if (i) { g.fillStyle = "#ffcc00"; g.fillRect(0, yy - 1, cv.width, 3); }
+      const label = `${String(i + 1).padStart(2, "0")} · ${h}px`;
+      const w = g.measureText(label).width + 12;
+      g.fillStyle = "rgba(0,0,0,.65)"; g.fillRect(6, yy + 6, w, 20);
+      g.fillStyle = "#fff"; g.fillText(label, 12, yy + 9);
+    });
+    const last = list[list.length - 1];
+    say(`${list.length}장으로 나뉘어요 · 가로 ${tw}px${list.length > 1 && last[1] < 200 ? ` · 마지막 장이 ${last[1]}px로 짧아요` : ""}`);
+  }
+
+  $("#run").onclick = async () => {
+    const { tw, s, list } = cuts();
+    let type = $("#fmt").value; if (type === "same") type = file.type === "image/png" ? "image/png" : "image/jpeg";
+    const ext = type === "image/png" ? "png" : "jpg", base = TT.baseName(file.name), out = [];
+    $("#run").disabled = true;
+    try {
+      for (let i = 0; i < list.length; i++) {
+        const [y, h] = list[i];
+        say(`자르는 중… ${i + 1}/${list.length}`);
+        const c = document.createElement("canvas"); c.width = tw; c.height = h;
+        const g = c.getContext("2d"); g.imageSmoothingQuality = "high";
+        if (type === "image/jpeg") { g.fillStyle = "#fff"; g.fillRect(0, 0, tw, h); }
+        g.drawImage(bmp, 0, y / s, bmp.width, h / s, 0, 0, tw, h);
+        out.push({ blob: await TT.canvasBlob(c, type, 0.93), name: `${base}_${String(i + 1).padStart(2, "0")}.${ext}` });
+      }
+      await TT.downloadZip(out, `${base}_${out.length}장.zip`);
+      say(`${out.length}장으로 나눴어요 · ${TT.bytes(out.reduce((a, o) => a + o.blob.size, 0))}`, "ok");
+    } catch (e) { console.error(e); say("저장하지 못했어요.", "err"); }
+    finally { $("#run").disabled = false; }
+  };
+
+})();
+</script>
+</body>
+</html>

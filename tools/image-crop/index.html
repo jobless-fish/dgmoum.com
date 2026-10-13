@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>자르기 · 회전 · 뒤집기 · 뚝딱툴</title>
+<meta name="description" content="이미지 자르기(크롭) 1:1, 4:5, 16:9, 9:16 비율 프리셋, 90도 회전, 좌우·상하 뒤집기. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--img); }
+  .crop-view { padding: 14px; display: grid; gap: 10px; }
+  .board { display: grid; place-items: center; background: repeating-conic-gradient(var(--surface-2) 0 25%, var(--line) 0 50%) 0 0 / 16px 16px; border-radius: 8px; padding: 10px; touch-action: none; }
+  .board canvas { display: block; max-width: 100%; height: auto; cursor: crosshair; }
+  .tbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .tbar .spacer { flex: 1; }
+  .ratios { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .ratios button { border: 1px solid var(--line); background: var(--surface-2); border-radius: 8px; padding: 8px 4px; cursor: pointer; font-size: 13px; font-family: var(--f-mono); }
+  .ratios button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 600; }
+  .ratios button small { display: block; font-family: var(--f-body); font-size: 10.5px; opacity: .75; }
+  .size { font-family: var(--f-mono); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>자르기 · 회전 · 뒤집기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="image-crop"></span>
+    <div>
+      <h1>자르기 · 회전 · 뒤집기</h1>
+      <p>프로필 사진은 1:1, 인스타 피드는 4:5, 유튜브 썸네일은 16:9처럼 비율을 고르고 틀을 옮겨 자르세요. 돌리기와 뒤집기도 여기서 해요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>이미지를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>Ctrl+V로 붙여넣기도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <div class="panel" id="editor" hidden>
+        <div class="crop-view">
+          <div class="tbar">
+            <button class="btn btn-sm" id="rotL">↺ 왼쪽으로</button>
+            <button class="btn btn-sm" id="rotR">↻ 오른쪽으로</button>
+            <button class="btn btn-sm" id="flipH">⇆ 좌우 뒤집기</button>
+            <button class="btn btn-sm" id="flipV">⇅ 상하 뒤집기</button>
+            <span class="spacer"></span>
+            <button class="btn btn-sm" id="reset">처음으로</button>
+          </div>
+          <div class="board" id="board"><canvas id="cv"></canvas></div>
+          <p class="hint">틀 안을 끌면 옮겨지고, 네 귀퉁이를 끌면 크기가 바뀌어요. 바깥을 끌면 새로 그려요.</p>
+          <div class="drop compact" id="drop2" tabindex="0" role="button" aria-label="다른 이미지 고르기">
+            <span data-icon="upload"></span><span>다른 이미지 고르기</span><input type="file">
+          </div>
+        </div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>비율</h2>
+        <div class="ratios" id="ratios">
+          <button data-r="free" aria-pressed="true">자유</button>
+          <button data-r="orig" aria-pressed="false">원본</button>
+          <button data-r="1" aria-pressed="false">1:1<small>프로필</small></button>
+          <button data-r="0.8" aria-pressed="false">4:5<small>인스타</small></button>
+          <button data-r="0.75" aria-pressed="false">3:4</button>
+          <button data-r="1.7778" aria-pressed="false">16:9<small>유튜브</small></button>
+          <button data-r="0.5625" aria-pressed="false">9:16<small>스토리</small></button>
+          <button data-r="1.5" aria-pressed="false">3:2</button>
+        </div>
+        <div>
+          <span class="hint">자른 크기</span>
+          <div class="size" id="size">-</div>
+        </div>
+        <div class="field">
+          <label for="outW">가로를 이 크기로 맞추기 (선택)</label>
+          <input type="number" id="outW" min="16" max="10000" placeholder="그대로">
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled data-icon="download"> 저장</button>
+        <p class="status" id="status"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const cv = $("#cv"), g = cv.getContext("2d"), say = TT.sayTo($("#status"));
+  let file = null, bmp = null, rot = 0, fh = false, fv = false, work = null, box = null, ratio = null, disp = 1;
+
+  TT.dropzone($("#drop"), f => load(f[0]), { accept: "image/*", multiple: false });
+  TT.dropzone($("#drop2"), f => load(f[0]), { accept: "image/*", multiple: false, paste: false });
+
+  async function load(f) {
+    if (!f) return;
+    try { bmp = await createImageBitmap(f); } catch { say("이 브라우저가 열 수 없는 이미지예요.", "err"); return; }
+    file = f; rot = 0; fh = fv = false;
+    $("#drop").hidden = true; $("#editor").hidden = false; $("#run").disabled = false;
+    rebuild(true); say("");
+  }
+
+  // 회전·뒤집기를 적용한 작업용 그림
+  function rebuild(resetBox) {
+    const side = rot % 180 !== 0;
+    work = document.createElement("canvas");
+    work.width = side ? bmp.height : bmp.width; work.height = side ? bmp.width : bmp.height;
+    const w = work.getContext("2d");
+    w.translate(work.width / 2, work.height / 2);
+    w.rotate(rot * Math.PI / 180);
+    w.scale(fh ? -1 : 1, fv ? -1 : 1);
+    w.drawImage(bmp, -bmp.width / 2, -bmp.height / 2);
+    if (resetBox || !box) setRatio(ratio, true); else { clampBox(); draw(); }
+  }
+
+  function setRatio(r, full) {
+    ratio = r;
+    const W = work.width, H = work.height;
+    if (!r) { box = full || !box ? { x: 0, y: 0, w: W, h: H } : box; }
+    else {
+      let w = W, h = w / r; if (h > H) { h = H; w = h * r; }
+      w *= full ? 1 : 0.9; h *= full ? 1 : 0.9;
+      box = { x: (W - w) / 2, y: (H - h) / 2, w, h };
+    }
+    draw();
+  }
+  $("#ratios").onclick = e => {
+    const b = e.target.closest("button"); if (!b || !work) return;
+    document.querySelectorAll("#ratios button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    const r = b.dataset.r;
+    setRatio(r === "free" ? null : r === "orig" ? work.width / work.height : +r, r === "free" || r === "orig");
+  };
+
+  function clampBox() {
+    const W = work.width, H = work.height;
+    box.w = Math.min(box.w, W); box.h = Math.min(box.h, H);
+    if (ratio) { if (box.w / box.h > ratio) box.w = box.h * ratio; else box.h = box.w / ratio; }
+    box.x = Math.max(0, Math.min(W - box.w, box.x)); box.y = Math.max(0, Math.min(H - box.h, box.y));
+  }
+
+  function draw() {
+    const maxW = $("#board").clientWidth - 20;
+    disp = Math.min(1, maxW / work.width, 620 / work.height);
+    cv.width = Math.round(work.width * disp); cv.height = Math.round(work.height * disp);
+    g.drawImage(work, 0, 0, cv.width, cv.height);
+    const x = box.x * disp, y = box.y * disp, w = box.w * disp, h = box.h * disp;
+    g.fillStyle = "rgba(0,0,0,.55)";
+    g.fillRect(0, 0, cv.width, y); g.fillRect(0, y + h, cv.width, cv.height - y - h);
+    g.fillRect(0, y, x, h); g.fillRect(x + w, y, cv.width - x - w, h);
+    g.strokeStyle = "#ffcc00"; g.lineWidth = 2; g.strokeRect(x, y, w, h);
+    g.strokeStyle = "rgba(255,255,255,.45)"; g.lineWidth = 1; g.beginPath();
+    for (let i = 1; i < 3; i++) { g.moveTo(x + w * i / 3, y); g.lineTo(x + w * i / 3, y + h); g.moveTo(x, y + h * i / 3); g.lineTo(x + w, y + h * i / 3); }
+    g.stroke();
+    g.fillStyle = "#ffcc00";
+    for (const [cx, cy] of [[x, y], [x + w, y], [x, y + h], [x + w, y + h]]) g.fillRect(cx - 6, cy - 6, 12, 12);
+    $("#size").textContent = `${Math.round(box.w)} × ${Math.round(box.h)}`;
+  }
+
+  // 마우스·터치로 틀 조작
+  let act = null;
+  const pt = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * work.width, (e.clientY - r.top) / r.height * work.height]; };
+  cv.addEventListener("pointerdown", e => {
+    if (!work) return;
+    cv.setPointerCapture(e.pointerId);
+    const [px, py] = pt(e), tol = 14 / disp * (cv.width / cv.getBoundingClientRect().width);
+    const corners = { nw: [box.x, box.y], ne: [box.x + box.w, box.y], sw: [box.x, box.y + box.h], se: [box.x + box.w, box.y + box.h] };
+    for (const [k, [cx, cy]] of Object.entries(corners)) if (Math.abs(px - cx) < tol && Math.abs(py - cy) < tol) {
+      const opp = { nw: "se", ne: "sw", sw: "ne", se: "nw" }[k];
+      act = { type: "resize", ax: corners[opp][0], ay: corners[opp][1] }; return;
+    }
+    if (px > box.x && px < box.x + box.w && py > box.y && py < box.y + box.h) act = { type: "move", dx: px - box.x, dy: py - box.y };
+    else act = { type: "resize", ax: px, ay: py };
+  });
+  cv.addEventListener("pointermove", e => {
+    if (!act) return;
+    let [px, py] = pt(e);
+    const W = work.width, H = work.height;
+    if (act.type === "move") { box.x = px - act.dx; box.y = py - act.dy; clampBox(); }
+    else {
+      px = Math.max(0, Math.min(W, px)); py = Math.max(0, Math.min(H, py));
+      let w = Math.abs(px - act.ax), h = Math.abs(py - act.ay);
+      if (ratio) {
+        // 비율을 지키면서 바깥으로 나가지 않게
+        const maxW = px >= act.ax ? W - act.ax : act.ax, maxH = py >= act.ay ? H - act.ay : act.ay;
+        if (w / h > ratio) h = w / ratio; else w = h * ratio;
+        if (w > maxW) { w = maxW; h = w / ratio; } if (h > maxH) { h = maxH; w = h * ratio; }
+      }
+      w = Math.max(8, w); h = Math.max(8, h);
+      box = { x: px >= act.ax ? act.ax : act.ax - w, y: py >= act.ay ? act.ay : act.ay - h, w, h };
+    }
+    draw();
+  });
+  cv.addEventListener("pointerup", () => act = null);
+
+  $("#rotL").onclick = () => { rot = (rot + 270) % 360; rebuild(true); };
+  $("#rotR").onclick = () => { rot = (rot + 90) % 360; rebuild(true); };
+  $("#flipH").onclick = () => { if (rot % 180) fv = !fv; else fh = !fh; rebuild(false); };
+  $("#flipV").onclick = () => { if (rot % 180) fh = !fh; else fv = !fv; rebuild(false); };
+  $("#reset").onclick = () => { rot = 0; fh = fv = false; document.querySelector('#ratios [data-r="free"]').click(); rebuild(true); };
+  new ResizeObserver(() => work && draw()).observe($("#board"));
+
+  $("#run").onclick = async () => {
+    const bw = Math.round(box.w), bh = Math.round(box.h);
+    const ow = +$("#outW").value > 0 ? Math.round(+$("#outW").value) : bw, oh = Math.round(ow * bh / bw);
+    const c = document.createElement("canvas"); c.width = ow; c.height = oh;
+    const cg = c.getContext("2d"); cg.imageSmoothingQuality = "high";
+    const type = ["image/png", "image/webp"].includes(file.type) ? file.type : "image/jpeg";
+    if (type === "image/jpeg") { cg.fillStyle = "#fff"; cg.fillRect(0, 0, ow, oh); }
+    cg.drawImage(work, Math.round(box.x), Math.round(box.y), bw, bh, 0, 0, ow, oh);
+    const blob = await TT.canvasBlob(c, type, 0.93);
+    const ext = { "image/png": "png", "image/webp": "webp", "image/jpeg": "jpg" }[blob.type] || "png";
+    TT.download(blob, `${TT.baseName(file.name || "image")}_${ow}x${oh}.${ext}`);
+    say(`저장했어요 · ${ow}×${oh} · ${TT.bytes(blob.size)}`, "ok");
+  };
+
+})();
+</script>
+</body>
+</html>

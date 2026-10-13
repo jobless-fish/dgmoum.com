@@ -16,6 +16,13 @@ tools/
   image-mosaic/   모자이크 · 흐리게 · 박스로 가리기
   image-gif/      움짤 만들기 (사진 여러 장 → GIF)
   insta-grid/     인스타 그리드 자르기 (3칸 × 1~5줄, 올리는 순서 번호)
+  image-merge/    이미지 합치기 (세로·가로·격자)
+  image-split/    긴 이미지 나누기 (높이·개수 기준)
+  image-crop/     자르기 · 회전 · 뒤집기 (비율 프리셋)
+  image-watermark/ 워터마크 넣기 (글자·로고, 사선 반복)
+  image-exif/     사진 정보 지우기 (GPS·기기 정보, JPG·PNG는 화질 그대로)
+  color-palette/  색 뽑기 (대표 색 · 스포이드 · CSS 변수)
+  favicon/        파비콘 만들기 (ico · 홈 화면 아이콘 · webmanifest)
   video-trim/     영상 자르기
   video-gif/      영상 → GIF
   audio-edit/     음원 자르기 · 키 · 빠르기 · 페이드
@@ -50,6 +57,6 @@ tools/
 
 - **영상 자르기**: 고른 구간을 재생하면서 녹화하는 방식이라 구간 길이만큼 시간이 걸려요. 최신 크롬·엣지는 MP4로, 그 외에는 WEBM으로 저장돼요.
 - **음원 피치**: 키와 빠르기를 따로 바꿔요(WSOLA 방식). ±12반음, 0.5~2배.
-- 외부 라이브러리는 모두 cdnjs에서 불러와요: MP3 저장(lamejs), zip 받기(JSZip), PDF 편집(pdf-lib), PDF 그리기(pdf.js), GIF 만들기(gif.js), QR코드(qrcode-generator, jsDelivr).
+- 외부 라이브러리는 모두 cdnjs에서 불러와요: MP3 저장(lamejs), zip 받기(JSZip), PDF 편집(pdf-lib), PDF 그리기(pdf.js), GIF 만들기(gif.js), QR코드(qrcode-generator, jsDelivr), 사진 정보 읽기(exifr, jsDelivr).
 - **MP3 저장**과 **zip 받기**는 불러오지 못하면 WAV 저장 / 파일 하나씩 받기로 자동 전환돼요.
 - HEIC(아이폰 사진)는 사파리 외 브라우저에서 열리지 않아요.

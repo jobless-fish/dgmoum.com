@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>파비콘 만들기 · 뚝딱툴</title>
+<meta name="description" content="로고 이미지 하나로 favicon.ico, 16·32px, 아이폰·안드로이드 홈 화면 아이콘, webmanifest를 한 번에. HTML 코드 제공. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--des); }
+  .tabs-mock { display: grid; gap: 10px; }
+  .tab { display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 10px 10px 0 0; width: min(260px, 100%); font-size: 13px; }
+  .tab.light { background: #ffffff; color: #1f1f1f; border: 1px solid #dadce0; border-bottom: 0; }
+  .tab.dark { background: #35363a; color: #e8eaed; }
+  .tab canvas { width: 16px; height: 16px; image-rendering: auto; flex: none; }
+  .tab span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .sizes { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; padding: 14px; background: var(--surface-2); border-radius: 8px; }
+  .sizes figure { margin: 0; display: grid; gap: 4px; justify-items: center; }
+  .sizes figcaption { font-family: var(--f-mono); font-size: 11px; color: var(--muted); }
+  .sizes canvas { display: block; }
+  .home { display: grid; justify-items: center; gap: 4px; }
+  .code { font-family: var(--f-mono); font-size: 12px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px; white-space: pre; overflow-x: auto; margin: 0; }
+  .color-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .color-row input[type=color] { width: 40px; height: 34px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>파비콘 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="favicon"></span>
+    <div>
+      <h1>파비콘 만들기</h1>
+      <p>브라우저 탭에 뜨는 작은 아이콘(파비콘)과 휴대폰 홈 화면 아이콘을 한 번에 만들어요. 넣을 HTML 코드까지 같이 드려요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>로고나 아이콘 이미지를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>정사각형에 가까운 PNG·SVG가 좋아요 · 512px 이상 추천</span>
+        <input type="file" id="file">
+      </div>
+      <div class="panel" id="editor" hidden>
+        <div class="panel-body">
+          <h2>브라우저 탭에서는 이렇게 보여요</h2>
+          <div class="tabs-mock">
+            <div class="tab light"><canvas id="tabL" width="32" height="32"></canvas><span id="tabTitle1">내 웹사이트</span></div>
+            <div class="tab dark"><canvas id="tabD" width="32" height="32"></canvas><span id="tabTitle2">내 웹사이트</span></div>
+          </div>
+          <h2>크기별 미리보기</h2>
+          <div class="sizes" id="sizes"></div>
+          <div class="drop compact" id="drop2" tabindex="0" role="button" aria-label="다른 이미지 고르기">
+            <span data-icon="upload"></span><span>다른 이미지 고르기</span><input type="file">
+          </div>
+        </div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>아이콘 설정</h2>
+        <div class="field">
+          <span class="label">이미지 맞추기</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="fit" id="f-c" value="contain" checked><label for="f-c">전부 보이게</label>
+            <input type="radio" name="fit" id="f-v" value="cover"><label for="f-v">꽉 채우기</label>
+          </div>
+        </div>
+        <div class="field">
+          <label for="pad">안쪽 여백 <span class="num" id="pv">0%</span></label>
+          <input type="range" id="pad" min="0" max="30" value="0">
+        </div>
+        <div class="field">
+          <span class="label">배경</span>
+          <div class="color-row"><input type="color" id="bg" value="#ffffff" aria-label="배경색"><label class="check"><input type="checkbox" id="transparent" checked> 투명하게</label></div>
+          <p class="hint">아이폰 홈 화면 아이콘(180px)은 투명을 지원하지 않아서 이 색으로 채워요.</p>
+        </div>
+        <div class="field">
+          <label for="round">모서리 둥글게 <span class="num" id="rv">0%</span></label>
+          <input type="range" id="round" min="0" max="50" value="0">
+        </div>
+        <div class="field">
+          <label for="name">사이트 이름 (홈 화면 아이콘용)</label>
+          <input type="text" id="name" value="내 웹사이트">
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled data-icon="download"> 아이콘 묶음 저장 (zip)</button>
+        <p class="status" id="status"></p>
+        <h2>HTML에 넣을 코드</h2>
+        <pre class="code" id="code"></pre>
+        <button class="btn btn-sm" id="copy">코드 복사</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const val = n => document.querySelector(`input[name=${n}]:checked`).value;
+  const say = TT.sayTo($("#status"));
+  let src = null;
+  const PREV = [16, 32, 48, 64, 180, 192];
+  const CODE = `<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">`;
+  $("#code").textContent = CODE;
+
+  TT.dropzone($("#drop"), f => load(f[0]), { accept: "image/*,.svg", multiple: false });
+  TT.dropzone($("#drop2"), f => load(f[0]), { accept: "image/*,.svg", multiple: false, paste: false });
+  document.querySelectorAll("aside input").forEach(el => el.addEventListener("input", draw));
+
+  async function load(f) {
+    if (!f) return;
+    try {
+      if (f.type === "image/svg+xml" || /\.svg$/i.test(f.name)) {
+        // SVG는 크게 그려서 써요
+        const img = new Image(); img.src = URL.createObjectURL(f); await img.decode();
+        const c = document.createElement("canvas"); c.width = c.height = 1024;
+        const s = Math.min(1024 / (img.naturalWidth || 1024), 1024 / (img.naturalHeight || 1024));
+        const w = (img.naturalWidth || 1024) * s, h = (img.naturalHeight || 1024) * s;
+        c.getContext("2d").drawImage(img, (1024 - w) / 2, (1024 - h) / 2, w, h); src = c;
+      } else src = await TT.toCanvas(f, 2048);
+    } catch { say("이 이미지를 열지 못했어요.", "err"); return; }
+    $("#drop").hidden = true; $("#editor").hidden = false; $("#run").disabled = false;
+    const sq = Math.abs(src.width - src.height) / Math.max(src.width, src.height) < 0.05;
+    say(Math.max(src.width, src.height) < 256 ? "이미지가 작아서 큰 아이콘은 흐릴 수 있어요. 512px 이상을 추천해요." : sq ? "" : "정사각형이 아니라서 설정에 따라 여백이 생기거나 잘려요.");
+    draw();
+  }
+
+  function rr(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+
+  // 한 크기의 아이콘 그리기 (작은 크기는 단계적으로 줄여서 선명하게)
+  function icon(size, forceBg = false) {
+    const big = 1024, c = document.createElement("canvas"); c.width = c.height = big;
+    const g = c.getContext("2d");
+    const transparent = $("#transparent").checked && !forceBg;
+    const r = big * $("#round").value / 100;
+    if (!transparent) { g.fillStyle = $("#bg").value; if (r) { rr(g, 0, 0, big, big, r); g.fill(); } else g.fillRect(0, 0, big, big); }
+    if (r) { rr(g, 0, 0, big, big, r); g.clip(); }
+    const pad = big * $("#pad").value / 100, box = big - pad * 2;
+    const s = val("fit") === "cover" ? Math.max(box / src.width, box / src.height) : Math.min(box / src.width, box / src.height);
+    const w = src.width * s, h = src.height * s;
+    g.imageSmoothingQuality = "high";
+    g.drawImage(src, (big - w) / 2, (big - h) / 2, w, h);
+    let cur = c;
+    while (cur.width / 2 >= size) { const n = document.createElement("canvas"); n.width = n.height = cur.width / 2; const ng = n.getContext("2d"); ng.imageSmoothingQuality = "high"; ng.drawImage(cur, 0, 0, n.width, n.height); cur = n; }
+    if (cur.width !== size) { const n = document.createElement("canvas"); n.width = n.height = size; const ng = n.getContext("2d"); ng.imageSmoothingQuality = "high"; ng.drawImage(cur, 0, 0, size, size); cur = n; }
+    return cur;
+  }
+
+  function draw() {
+    $("#pv").textContent = $("#pad").value + "%"; $("#rv").textContent = $("#round").value + "%";
+    $("#tabTitle1").textContent = $("#tabTitle2").textContent = $("#name").value || "내 웹사이트";
+    if (!src) return;
+    const i32 = icon(32);
+    for (const id of ["#tabL", "#tabD"]) { const g = $(id).getContext("2d"); g.clearRect(0, 0, 32, 32); g.drawImage(i32, 0, 0); }
+    const box = $("#sizes"); box.innerHTML = "";
+    for (const s of PREV) {
+      const f = document.createElement("figure"), ic = icon(s, s === 180);
+      ic.style.width = ic.style.height = Math.min(s, 96) + "px";
+      f.append(ic); const cap = document.createElement("figcaption"); cap.textContent = s === 180 ? "180 · 아이폰" : s === 192 ? "192 · 안드로이드" : s + "px"; f.append(cap);
+      box.append(f);
+    }
+  }
+
+  // PNG 여러 장을 담은 .ico 파일 만들기
+  async function ico(sizes) {
+    const pngs = await Promise.all(sizes.map(async s => new Uint8Array(await (await TT.canvasBlob(icon(s), "image/png")).arrayBuffer())));
+    const head = new DataView(new ArrayBuffer(6 + 16 * sizes.length));
+    head.setUint16(2, 1, true); head.setUint16(4, sizes.length, true);
+    let off = 6 + 16 * sizes.length;
+    sizes.forEach((s, i) => {
+      const o = 6 + 16 * i;
+      head.setUint8(o, s >= 256 ? 0 : s); head.setUint8(o + 1, s >= 256 ? 0 : s);
+      head.setUint16(o + 4, 1, true); head.setUint16(o + 6, 32, true);
+      head.setUint32(o + 8, pngs[i].length, true); head.setUint32(o + 12, off, true);
+      off += pngs[i].length;
+    });
+    return new Blob([head.buffer, ...pngs], { type: "image/x-icon" });
+  }
+
+  $("#run").onclick = async () => {
+    $("#run").disabled = true; say("만드는 중…");
+    try {
+      const png = async (s, bg) => TT.canvasBlob(icon(s, bg), "image/png");
+      const name = ($("#name").value || "내 웹사이트").trim();
+      const manifest = JSON.stringify({ name, short_name: name.slice(0, 12), icons: [
+        { src: "/android-chrome-192x192.png", sizes: "192x192", type: "image/png" },
+        { src: "/android-chrome-512x512.png", sizes: "512x512", type: "image/png" }],
+        theme_color: $("#bg").value, background_color: $("#bg").value, display: "standalone" }, null, 2);
+      const out = [
+        { name: "favicon.ico", blob: await ico([16, 32, 48]) },
+        { name: "favicon-16x16.png", blob: await png(16) },
+        { name: "favicon-32x32.png", blob: await png(32) },
+        { name: "apple-touch-icon.png", blob: await png(180, true) },
+        { name: "android-chrome-192x192.png", blob: await png(192) },
+        { name: "android-chrome-512x512.png", blob: await png(512) },
+        { name: "site.webmanifest", blob: new Blob([manifest], { type: "application/manifest+json" }) },
+        { name: "사용법.txt", blob: new Blob(["파일들을 웹사이트 맨 위 폴더(index.html이 있는 곳)에 넣고,\n아래 코드를 모든 페이지의 <head> 안에 붙여넣으세요.\n\n" + CODE + "\n"], { type: "text/plain" }) }
+      ];
+      await TT.downloadZip(out, "favicon.zip");
+      say("저장했어요. zip 안의 사용법.txt를 참고하세요.", "ok");
+    } catch (e) { console.error(e); say("만들지 못했어요.", "err"); }
+    finally { $("#run").disabled = false; }
+  };
+  $("#copy").onclick = async () => { try { await navigator.clipboard.writeText(CODE); $("#copy").textContent = "복사했어요"; } catch { $("#copy").textContent = "직접 선택해 복사하세요"; } setTimeout(() => $("#copy").textContent = "코드 복사", 1500); };
+
+})();
+</script>
+</body>
+</html>
