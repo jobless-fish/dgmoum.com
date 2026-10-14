@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>한글 더미 텍스트 · 뚝딱툴</title>
+<meta name="description" content="디자인 시안·목업용 한글 더미 텍스트(한글 로렘 입숨) 생성기. 문단·문장·글자 수 단위, 제목 문구, 뜻 없는 글자, HTML p 태그.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--des); }
+  .out { padding: 0; display: grid; }
+  .out textarea { width: 100%; min-height: 56vh; resize: vertical; border: 0; background: transparent; padding: 20px; font: 16px/1.85 var(--f-body); color: var(--ink); border-radius: var(--r); }
+  .out textarea:focus-visible { outline: none; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--line); align-items: center; }
+  .bar .count { font-family: var(--f-mono); font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .bar .spacer { flex: 1; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>한글 더미 텍스트</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">입력한 내용은 전송되지 않아요</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="korean-lorem"></span>
+    <div>
+      <h1>한글 더미 텍스트</h1>
+      <p>시안이나 목업에 넣을 한글 자리용 글을 만들어요. 문단 수, 문장 수, 정확한 글자 수로 만들 수 있어요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="panel out">
+        <textarea id="out" aria-label="만든 한글 더미 텍스트" spellcheck="false"></textarea>
+        <div class="bar">
+          <span class="count" id="count"></span>
+          <span class="spacer"></span>
+          <button class="btn btn-sm" id="again">새로 만들기</button>
+          <button class="btn btn-sm btn-primary" id="copy">복사</button>
+        </div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>만들 분량</h2>
+        <div class="seg" role="radiogroup">
+          <input type="radio" name="unit" id="u-p" value="para" checked><label for="u-p">문단</label>
+          <input type="radio" name="unit" id="u-s" value="sent"><label for="u-s">문장</label>
+          <input type="radio" name="unit" id="u-c" value="char"><label for="u-c">글자 수</label>
+        </div>
+        <div class="field">
+          <label for="n" id="nLabel">문단 수</label>
+          <input type="number" id="n" min="1" max="5000" value="3">
+        </div>
+        <div class="field">
+          <span class="label">종류</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="kind" id="k-s" value="sent" checked><label for="k-s">문장</label>
+            <input type="radio" name="kind" id="k-t" value="title"><label for="k-t">제목·문구</label>
+            <input type="radio" name="kind" id="k-x" value="syl"><label for="k-x">뜻 없는 글자</label>
+          </div>
+          <p class="hint" id="kindHint"></p>
+        </div>
+        <label class="check"><input type="checkbox" id="html"> 문단마다 &lt;p&gt; 태그 붙이기</label>
+        <p class="hint">시안·목업에 넣을 자리용 글이에요. 실제 뜻이 있는 내용이 아니라 매번 무작위로 섞어서 만들어요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>글은 이 브라우저 안에서 만들어요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  async function copyText(text, btn) {
+    const old = btn.textContent;
+    try { await navigator.clipboard.writeText(text); btn.textContent = "복사했어요"; }
+    catch { btn.textContent = "직접 선택해 복사하세요"; }
+    setTimeout(() => btn.textContent = old, 1400);
+  }
+
+  const $ = s => document.querySelector(s);
+  const val = n => document.querySelector(`input[name=${n}]:checked`).value;
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const bat = w => { const c = w.charCodeAt(w.length - 1) - 0xAC00; return c >= 0 && c <= 11171 && c % 28 !== 0; };
+  const j = (w, a, b) => w + (bat(w) ? a : b);
+
+  const S = ["오늘의 하루", "작은 가게", "창가의 화분", "우리 동네 골목", "새로 산 노트", "오후의 햇살", "따뜻한 차 한 잔", "주말 아침", "오래된 사진", "바람 부는 날", "조용한 도서관", "첫 번째 계획", "가벼운 산책", "익숙한 노래", "새 계절", "책상 위의 메모", "저녁 무렵의 하늘", "작은 습관", "낯선 길", "기분 좋은 소식", "모퉁이 카페", "한 줄의 문장", "늦은 오후", "투명한 유리병", "푸른 들판"];
+  const ADV = ["천천히", "생각보다 훨씬", "언제나처럼", "조금씩", "오랜만에", "뜻밖에도", "가만히", "한동안", "자연스럽게", "어느새", "차분하게", "다시 한번"];
+  const P = ["새로운 이야기를 시작합니다", "마음을 편안하게 해 줍니다", "작은 변화를 만들어 냅니다", "기억 속에 오래 남습니다", "하루의 흐름을 바꿉니다", "분위기를 환하게 밝혀 줍니다", "다음 장면을 기다리게 합니다", "소중한 의미를 더해 줍니다", "익숙한 풍경을 다르게 보여 줍니다", "잔잔한 여운을 남깁니다", "생각을 정리할 시간을 줍니다", "새로운 가능성을 열어 줍니다"];
+  const P2 = ["눈에 들어오기 시작했습니다", "한결 가까워졌습니다", "새롭게 느껴졌습니다", "제자리를 찾았습니다", "조금 더 선명해졌습니다", "마음에 오래 남았습니다", "반갑게 다가왔습니다"];
+  const V = ["떠올려 봅니다", "준비해 봅니다", "차곡차곡 정리해 둡니다", "기록으로 남겨 둡니다", "함께 나누어 봅니다", "천천히 살펴봅니다"];
+  const ADJ = ["새로운", "따뜻한", "가벼운", "조용한", "특별한", "오늘의", "작은", "단단한", "느린", "선명한", "다정한", "깊은"];
+  const NOUN = ["시작", "하루", "계절", "이야기", "기록", "풍경", "선택", "약속", "발견", "순간", "여행", "온도"];
+  const SYL = "가나다라마바사아자차카타파하고노도로모보소오조초코토포호구누두루무부수우주추쿠투푸후그느드르므브스으즈츠크트프흐기니디리미비시이지치키티피히강난단랑망방상앙장창한결은을는를의에서와과도만큼".split("");
+
+  function sentence() {
+    const s = pick(S), s2 = pick(S.filter(x => x !== s));
+    switch (Math.floor(Math.random() * 5)) {
+      case 0: return `${j(s, "은", "는")} ${pick(ADV)} ${pick(P)}.`;
+      case 1: return `${pick(ADV)} ${j(s, "이", "가")} ${pick(P2)}.`;
+      case 2: return `${j(s, "과", "와")} ${j(s2, "을", "를")} ${pick(["함께", "나란히", "번갈아"])} ${pick(V)}.`;
+      case 3: return `${j(s, "은", "는")} 어떤 모습으로 기억될까요?`;
+      default: return `${j(s, "이", "가")} 있어서 ${j(s2, "은", "는")} ${pick(P)}.`;
+    }
+  }
+  function title() {
+    const a = pick(ADJ), n = pick(NOUN), n2 = pick(NOUN.filter(x => x !== n));
+    return pick([`${a} ${n}`, `${a} ${j(n, "을", "를")} 위한 ${n2}`, `${n}, 그리고 ${n2}`, `${a} ${n}의 ${n2}`]);
+  }
+  function syl() {
+    const w = () => Array.from({ length: 2 + Math.floor(Math.random() * 3) }, () => pick(SYL)).join("");
+    return Array.from({ length: 4 + Math.floor(Math.random() * 6) }, w).join(" ") + ".";
+  }
+  const unitOf = () => ({ sent: sentence, title, syl })[val("kind")];
+  const para = () => Array.from({ length: 3 + Math.floor(Math.random() * 3) }, unitOf()).join(" ");
+
+  function make() {
+    const n = Math.max(1, Math.min(5000, Math.floor(+$("#n").value || 1))), u = val("unit"), kind = val("kind");
+    let paras = [];
+    if (u === "para") paras = Array.from({ length: Math.min(n, 200) }, () => kind === "title" ? Array.from({ length: 4 }, title).join("\n") : para());
+    else if (u === "sent") paras = [Array.from({ length: Math.min(n, 1000) }, unitOf()).join(kind === "title" ? "\n" : " ")];
+    else {
+      let s = ""; const f = unitOf(), sep = kind === "title" ? "\n" : " ";
+      while ([...s].length < n) s += (s ? sep : "") + f();
+      s = [...s].slice(0, n).join("").replace(/\s+$/, "");
+      paras = [s];
+    }
+    const text = $("#html").checked ? paras.map(p => `<p>${p.replace(/\n/g, "<br>")}</p>`).join("\n") : paras.join("\n\n");
+    $("#out").value = text; count();
+  }
+  function count() {
+    const t = $("#out").value, all = [...t].length, ns = [...t].filter(c => !/\s/.test(c)).length;
+    $("#count").textContent = `공백 포함 ${all.toLocaleString()}자 · 공백 제외 ${ns.toLocaleString()}자`;
+  }
+  const HINT = { sent: "평범한 문장처럼 읽히는 글이에요. 본문 자리에 맞아요.", title: "짧은 제목·카피 자리에 넣기 좋은 문구예요.", syl: "뜻이 없는 글자 묶음이에요. 내용보다 글자 모양만 볼 때 써요." };
+  function sync() {
+    const u = val("unit");
+    $("#nLabel").textContent = u === "para" ? "문단 수" : u === "sent" ? (val("kind") === "title" ? "문구 수" : "문장 수") : "글자 수 (공백 포함)";
+    $("#kindHint").textContent = HINT[val("kind")];
+  }
+  document.querySelectorAll("input[name=unit]").forEach(r => r.onchange = () => { $("#n").value = { para: 3, sent: 5, char: 300 }[r.value]; sync(); make(); });
+  document.querySelectorAll("input[name=kind]").forEach(r => r.onchange = () => { sync(); make(); });
+  $("#n").addEventListener("input", make); $("#html").addEventListener("change", make);
+  $("#out").addEventListener("input", count);
+  $("#again").onclick = make;
+  $("#copy").onclick = e => copyText($("#out").value, e.currentTarget);
+  sync(); make();
+
+})();
+</script>
+</body>
+</html>

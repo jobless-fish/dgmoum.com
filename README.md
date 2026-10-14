@@ -24,6 +24,10 @@ tools/
   image-exif/     사진 정보 지우기 (GPS·기기 정보, JPG·PNG는 화질 그대로)
   color-palette/  색 뽑기 (대표 색 · 스포이드 · CSS 변수)
   favicon/        파비콘 만들기 (ico · 홈 화면 아이콘 · webmanifest)
+  color-convert/  색 코드 변환 (HEX · RGB · HSL · HSB · CMYK 근사)
+  print-size/     인쇄 크기 계산기 (px ↔ cm·mm, 용지별 DPI, 재단 여유)
+  placeholder/    임시 이미지 만들기 (크기 표시 · SNS 규격 · PNG/JPG/SVG)
+  korean-lorem/   한글 더미 텍스트 (문단 · 문장 · 정확한 글자 수)
   video-trim/     영상 자르기
   video-gif/      영상 → GIF
   shorts-maker/   쇼츠 · 릴스 · 틱톡 세로 변환 (9:16·4:5·1:1, 흐린 배경·꽉 채우기)

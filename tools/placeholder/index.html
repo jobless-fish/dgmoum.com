@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>임시 이미지 만들기 · 뚝딱툴</title>
+<meta name="description" content="원하는 크기의 임시 이미지(플레이스홀더) 만들기. 크기가 적힌 회색 박스, SNS 규격 프리셋, 색·문구 변경, PNG·JPG·SVG 저장.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--des); }
+  .preview { display: grid; place-items: center; background: repeating-conic-gradient(var(--surface-2) 0 25%, var(--line) 0 50%) 0 0 / 14px 14px; border-radius: 8px; padding: 14px; min-height: 240px; }
+  .preview canvas { max-width: 100%; max-height: 62vh; height: auto; display: block; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+  .wh { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: end; }
+  .wh .x { padding-bottom: 9px; color: var(--muted); }
+  .unit { display: grid; gap: 4px; } .unit span { font-size: 12px; color: var(--muted); }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .colors { display: flex; gap: 14px; flex-wrap: wrap; }
+  .colors label { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .colors input[type=color] { width: 36px; height: 30px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>임시 이미지 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="placeholder"></span>
+    <div>
+      <h1>임시 이미지 만들기</h1>
+      <p>레이아웃을 잡을 때 쓰는 자리용 이미지를 만들어요. 크기가 가운데 적혀 있어서 시안에서 어떤 규격인지 바로 보여요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="panel"><div class="panel-body">
+        <div class="preview"><canvas id="cv" aria-label="만든 임시 이미지 미리보기"></canvas></div>
+        <p class="hint num" id="dim"></p>
+      </div></div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>크기</h2>
+        <div class="wh">
+          <div class="unit"><span>가로 (px)</span><input type="number" id="w" min="1" max="8000" value="1080"></div>
+          <span class="x">×</span>
+          <div class="unit"><span>세로 (px)</span><input type="number" id="h" min="1" max="8000" value="1080"></div>
+        </div>
+        <div class="presets">
+          <button class="btn btn-sm" data-s="1080x1080">1:1 피드</button>
+          <button class="btn btn-sm" data-s="1080x1350">4:5 피드</button>
+          <button class="btn btn-sm" data-s="1080x1920">9:16 스토리</button>
+          <button class="btn btn-sm" data-s="1920x1080">16:9 화면</button>
+          <button class="btn btn-sm" data-s="1200x630">링크 미리보기</button>
+          <button class="btn btn-sm" data-s="860x1200">상세페이지</button>
+        </div>
+        <button class="btn btn-sm" id="swap">가로 · 세로 바꾸기</button>
+        <h2>모양</h2>
+        <div class="colors">
+          <label><input type="color" id="bg" value="#d5dbe1"> 바탕</label>
+          <label><input type="color" id="fg" value="#5a6672"> 글자</label>
+        </div>
+        <div class="field">
+          <label for="label">적을 글자</label>
+          <input type="text" id="label" placeholder="비워두면 크기가 적혀요 (예: 1080 × 1080)">
+        </div>
+        <label class="check"><input type="checkbox" id="cross" checked> 대각선 X 표시</label>
+        <h2>저장</h2>
+        <div class="seg" role="radiogroup">
+          <input type="radio" name="fmt" id="f-png" value="png" checked><label for="f-png">PNG</label>
+          <input type="radio" name="fmt" id="f-jpg" value="jpg"><label for="f-jpg">JPG</label>
+          <input type="radio" name="fmt" id="f-svg" value="svg"><label for="f-svg">SVG</label>
+        </div>
+        <button class="btn btn-primary btn-block" id="save" data-icon="download"> 이미지 저장</button>
+        <p class="status" id="status"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>이미지는 이 브라우저 안에서 만들어요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const val = n => document.querySelector(`input[name=${n}]:checked`).value;
+  const cv = $("#cv"), say = TT.sayTo($("#status"));
+  const FONT = `"IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif`;
+  const size = () => [Math.max(1, Math.min(8000, Math.round(+$("#w").value || 1))), Math.max(1, Math.min(8000, Math.round(+$("#h").value || 1)))];
+  const text = () => { const [w, h] = size(); return $("#label").value.trim() || `${w} × ${h}`; };
+
+  // 글자는 짧은 변에 맞추고, 가로 80%를 넘지 않게
+  function fontSize(W, H) {
+    const m = document.createElement("canvas").getContext("2d");
+    let fs = Math.min(W, H) / 8; m.font = `600 ${fs}px ${FONT}`;
+    const tw = m.measureText(text()).width; if (tw > W * 0.8) fs *= W * 0.8 / tw;
+    return fs;
+  }
+  function paint(c, W, H) {
+    c.width = W; c.height = H;
+    const g = c.getContext("2d");
+    g.fillStyle = $("#bg").value; g.fillRect(0, 0, W, H);
+    g.strokeStyle = $("#fg").value; g.globalAlpha = .35; g.lineWidth = Math.max(1, Math.min(W, H) / 300);
+    if ($("#cross").checked) { g.beginPath(); g.moveTo(0, 0); g.lineTo(W, H); g.moveTo(W, 0); g.lineTo(0, H); g.stroke(); }
+    g.globalAlpha = 1;
+    const fs = fontSize(W, H); g.font = `600 ${fs}px ${FONT}`;
+    const pw = g.measureText(text()).width + fs * 0.8, ph = fs * 1.5;
+    g.fillStyle = $("#bg").value; g.fillRect((W - pw) / 2, (H - ph) / 2, pw, ph);
+    g.fillStyle = $("#fg").value; g.textAlign = "center"; g.textBaseline = "middle";
+    g.fillText(text(), W / 2, H / 2 + fs * 0.04);
+  }
+  function update() {
+    const [w, h] = size(), k = Math.min(1, 900 / Math.max(w, h));
+    paint(cv, Math.max(1, Math.round(w * k)), Math.max(1, Math.round(h * k)));
+    $("#dim").textContent = `${w} × ${h} px`;
+  }
+  function svg() {
+    const [W, H] = size(), bg = $("#bg").value, fg = $("#fg").value;
+    const fs = fontSize(W, H), t = text().replace(/[<>&"]/g, c => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;" })[c]);
+    const sw = Math.max(1, Math.min(W, H) / 300);
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}"><rect width="${W}" height="${H}" fill="${bg}"/>` +
+      ($("#cross").checked ? `<path d="M0 0L${W} ${H}M${W} 0L0 ${H}" stroke="${fg}" stroke-opacity=".35" stroke-width="${sw}"/>` : "") +
+      `<text x="50%" y="50%" fill="${fg}" font-family='${FONT}' font-weight="600" font-size="${fs}" text-anchor="middle" dominant-baseline="central">${t}</text></svg>`;
+  }
+  document.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { const [w, h] = b.dataset.s.split("x"); $("#w").value = w; $("#h").value = h; update(); });
+  $("#swap").onclick = () => { const w = $("#w").value; $("#w").value = $("#h").value; $("#h").value = w; update(); };
+  document.querySelectorAll("aside input").forEach(el => el.addEventListener("input", update));
+  $("#save").onclick = async () => {
+    const [w, h] = size(), f = val("fmt"), name = `placeholder_${w}x${h}.${f}`;
+    let blob;
+    if (f === "svg") blob = new Blob([svg()], { type: "image/svg+xml" });
+    else { const c = document.createElement("canvas"); paint(c, w, h); blob = await TT.canvasBlob(c, f === "jpg" ? "image/jpeg" : "image/png", 0.92); }
+    TT.download(blob, name); say(`저장했어요 · ${TT.bytes(blob.size)}`, "ok");
+  };
+  update();
+  document.fonts?.ready.then(update);
+
+})();
+</script>
+</body>
+</html>

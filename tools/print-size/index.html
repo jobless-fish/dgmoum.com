@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>인쇄 크기 계산기 · 뚝딱툴</title>
+<meta name="description" content="픽셀과 DPI로 인쇄 크기(cm·mm·inch) 계산, A4·A3·명함 등 용지별로 필요한 픽셀 계산, 재단 여유(도련) 포함. 이미지 넣으면 자동 계산.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--des); }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tabs button { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 8px 16px; font-size: 14px; cursor: pointer; }
+  .tabs button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); font-weight: 600; }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+  .unit { display: grid; gap: 4px; } .unit > span { font-size: 12px; color: var(--muted); }
+  .result { display: grid; gap: 10px; }
+  .big { font-family: var(--f-mono); font-size: clamp(22px, 4vw, 32px); font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
+  .sub { font-family: var(--f-mono); font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .table th, .table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+  .table td.n { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+  .tag { display: inline-block; font-size: 12px; border-radius: 999px; padding: 2px 9px; }
+  .tag.good { background: color-mix(in srgb, var(--ok) 15%, transparent); color: var(--ok); }
+  .tag.mid { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+  .tag.bad { background: color-mix(in srgb, var(--err) 15%, transparent); color: var(--err); }
+  .scroll { overflow-x: auto; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>인쇄 크기 계산기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="print-size"></span>
+    <div>
+      <h1>인쇄 크기 계산기</h1>
+      <p>이 이미지가 몇 cm로 인쇄되는지, A4를 300 DPI로 뽑으려면 몇 px가 필요한지 계산해요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="tabs" role="group" aria-label="계산 방향">
+        <button data-tab="a" aria-pressed="true">픽셀 → 인쇄 크기</button>
+        <button data-tab="b" aria-pressed="false">인쇄 크기 → 필요한 픽셀</button>
+      </div>
+
+      <div class="panel" data-pane="a"><div class="panel-body">
+        <div class="drop compact" id="drop" tabindex="0" role="button" aria-label="이미지에서 픽셀 크기 읽기">
+          <span data-icon="upload"></span><span>이미지를 넣으면 픽셀 크기를 자동으로 채워요</span><input type="file">
+        </div>
+        <div class="grid3">
+          <div class="unit"><span>가로 (px)</span><input type="number" id="aw" min="1" placeholder="예: 2480"></div>
+          <div class="unit"><span>세로 (px)</span><input type="number" id="ah" min="1" placeholder="예: 3508"></div>
+          <div class="unit"><span>해상도 (DPI)</span><input type="number" id="adpi" min="1" value="300"></div>
+        </div>
+        <div class="result" id="aRes"><p class="hint">픽셀 크기를 넣으면 실제로 몇 cm로 인쇄되는지 계산해요.</p></div>
+      </div></div>
+
+      <div class="panel" data-pane="b" hidden><div class="panel-body">
+        <div class="grid3">
+          <div class="unit"><span>용지</span><select id="paper"></select></div>
+          <div class="unit"><span>방향</span><select id="orient"><option value="p">세로</option><option value="l">가로</option></select></div>
+          <div class="unit"><span>해상도 (DPI)</span><input type="number" id="bdpi" min="1" value="300"></div>
+        </div>
+        <div class="grid3">
+          <div class="unit"><span>가로 (mm)</span><input type="number" id="bw" min="1" step="0.1"></div>
+          <div class="unit"><span>세로 (mm)</span><input type="number" id="bh" min="1" step="0.1"></div>
+          <div class="unit"><span>재단 여유 (mm, 한쪽)</span><input type="number" id="bleed" min="0" max="20" step="0.5" value="0"></div>
+        </div>
+        <div class="result" id="bRes"></div>
+      </div></div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>DPI 고르는 법</h2>
+        <div class="row">
+          <button class="btn btn-sm" data-dpi="72">72</button>
+          <button class="btn btn-sm" data-dpi="150">150</button>
+          <button class="btn btn-sm" data-dpi="300">300</button>
+          <button class="btn btn-sm" data-dpi="350">350</button>
+        </div>
+        <p class="hint"><b>300</b>: 전단·브로셔·명함 같은 가까이서 보는 인쇄물<br><b>150</b>: 포스터·배너처럼 조금 떨어져서 보는 것<br><b>72~100</b>: 현수막처럼 멀리서 보는 큰 출력물</p>
+        <p class="hint">재단 여유(도련)는 잘릴 때 흰 테두리가 생기지 않게 바깥에 더 그리는 부분이에요. 보통 한쪽에 2~3mm예요. 정확한 값은 인쇄소 안내를 따르세요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>계산은 이 브라우저 안에서 해요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const MM = 25.4;
+  // 용지 크기 (mm, 세로 기준). B 계열은 국내 인쇄에서 쓰는 크기예요.
+  const PAPERS = [
+    ["A0", 841, 1189], ["A1", 594, 841], ["A2", 420, 594], ["A3", 297, 420], ["A4", 210, 297], ["A5", 148, 210], ["A6", 105, 148],
+    ["B4", 257, 364], ["B5", 182, 257], ["B6", 128, 182],
+    ["명함", 50, 90], ["엽서", 100, 148], ["4×6 사진", 102, 152], ["레터", 215.9, 279.4]
+  ];
+  $("#paper").innerHTML = PAPERS.map(([n, w, h], i) => `<option value="${i}" ${n === "A4" ? "selected" : ""}>${n} (${w} × ${h} mm)</option>`).join("") + `<option value="custom">직접 입력</option>`;
+  const f1 = v => (Math.round(v * 10) / 10).toLocaleString("ko-KR");
+  const quality = dpi => dpi >= 280 ? ["good", "선명해요"] : dpi >= 200 ? ["mid", "무난해요"] : dpi >= 150 ? ["mid", "떨어져서 보면 괜찮아요"] : ["bad", "흐릿할 수 있어요"];
+
+  document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => {
+    document.querySelectorAll("[data-tab]").forEach(x => x.setAttribute("aria-pressed", x === b));
+    document.querySelectorAll("[data-pane]").forEach(p => p.hidden = p.dataset.pane !== b.dataset.tab);
+  });
+  document.querySelectorAll("[data-dpi]").forEach(b => b.onclick = () => {
+    const tab = document.querySelector("[data-tab][aria-pressed=true]").dataset.tab;
+    $(tab === "a" ? "#adpi" : "#bdpi").value = b.dataset.dpi; calcA(); calcB();
+  });
+
+  /* 픽셀 → 인쇄 크기 */
+  TT.dropzone($("#drop"), async f => {
+    try { const b = await createImageBitmap(f[0]); $("#aw").value = b.width; $("#ah").value = b.height; b.close(); calcA(); }
+    catch { $("#aRes").innerHTML = `<p class="status err">이미지 크기를 읽지 못했어요. 숫자로 직접 넣어 주세요.</p>`; }
+  }, { accept: "image/*", multiple: false });
+  function calcA() {
+    const w = +$("#aw").value, h = +$("#ah").value, dpi = +$("#adpi").value;
+    if (!(w > 0 && h > 0 && dpi > 0)) { $("#aRes").innerHTML = `<p class="hint">픽셀 크기를 넣으면 실제로 몇 cm로 인쇄되는지 계산해요.</p>`; return; }
+    const mw = w / dpi * MM, mh = h / dpi * MM;
+    // 이 이미지를 각 용지에 꽉 채우면 몇 DPI가 되는지
+    const land = w > h;
+    const rows = PAPERS.filter(p => !["레터"].includes(p[0])).map(([n, pw, ph]) => {
+      const [W, H] = land ? [ph, pw] : [pw, ph];
+      const eff = Math.min(w / (W / MM), h / (H / MM));
+      const [cls, txt] = quality(eff);
+      return `<tr><td>${n}</td><td class="n">${Math.round(eff)} DPI</td><td><span class="tag ${cls}">${txt}</span></td></tr>`;
+    }).join("");
+    $("#aRes").innerHTML = `
+      <div><div class="big">${f1(mw / 10)} × ${f1(mh / 10)} cm</div>
+      <div class="sub">${f1(mw)} × ${f1(mh)} mm · ${f1(w / dpi)} × ${f1(h / dpi)} inch · ${dpi} DPI 기준</div></div>
+      <h2>이 이미지를 용지에 꽉 채우면</h2>
+      <div class="scroll"><table class="table"><thead><tr><th>용지</th><th>실제 해상도</th><th>예상 품질</th></tr></thead><tbody>${rows}</tbody></table></div>
+      <p class="hint">${land ? "가로로 긴 이미지라 용지를 가로로 놓은 기준이에요. " : ""}비율이 다르면 남는 부분이 생겨요.</p>`;
+  }
+  ["#aw", "#ah", "#adpi"].forEach(s => $(s).addEventListener("input", calcA));
+
+  /* 인쇄 크기 → 필요한 픽셀 */
+  function setPaper() {
+    const v = $("#paper").value; if (v === "custom") return;
+    let [, w, h] = PAPERS[+v]; if ($("#orient").value === "l") [w, h] = [h, w];
+    $("#bw").value = w; $("#bh").value = h; calcB();
+  }
+  function calcB() {
+    const w = +$("#bw").value, h = +$("#bh").value, dpi = +$("#bdpi").value, bl = Math.max(0, +$("#bleed").value || 0);
+    if (!(w > 0 && h > 0 && dpi > 0)) { $("#bRes").innerHTML = ""; return; }
+    const px = mm => Math.round(mm / MM * dpi);
+    const W = w + bl * 2, H = h + bl * 2;
+    $("#bRes").innerHTML = `
+      <div><div class="big">${px(W).toLocaleString()} × ${px(H).toLocaleString()} px</div>
+      <div class="sub">${f1(W)} × ${f1(H)} mm${bl ? ` (재단 여유 포함, 완성 크기 ${f1(w)} × ${f1(h)} mm = ${px(w).toLocaleString()} × ${px(h).toLocaleString()} px)` : ""} · ${dpi} DPI</div></div>
+      <p class="hint">작업 파일을 이 픽셀 크기 이상으로 만들면 ${dpi} DPI로 인쇄할 수 있어요.</p>`;
+  }
+  $("#paper").addEventListener("change", setPaper); $("#orient").addEventListener("change", setPaper);
+  ["#bw", "#bh"].forEach(s => $(s).addEventListener("input", () => { $("#paper").value = "custom"; calcB(); }));
+  ["#bdpi", "#bleed"].forEach(s => $(s).addEventListener("input", calcB));
+  setPaper();
+
+})();
+</script>
+</body>
+</html>
