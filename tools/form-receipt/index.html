@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>영수증 · 청구서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="간이 영수증·청구서를 칸만 채워 PDF로 저장하세요. 한글 금액 자동, 보관용 두 부, 도장 넣기. 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>영수증 · 청구서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-receipt"></span>
+    <div>
+      <h1>영수증 · 청구서 만들기</h1>
+      <p>돈을 주고받은 걸 확인해 주는 간단한 영수증이에요. 한 장에 보관용까지 두 부를 뽑고 가운데를 잘라 쓰면 돼요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p><b>현금영수증·세금계산서가 아니에요.</b> 세금 공제용 증빙이 필요하면 홈택스 등에서 따로 발행하세요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  const W = n => n ? TF.won(n) : "";
+  TF.make({
+    fileName: v => ["영수증", v.to, v.biz_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "영수 정보" },
+      { k: "to", label: "받는 분 (돈 낸 분)", ph: "이름이나 회사명을 입력하세요", half: true },
+      { k: "date", label: "날짜", type: "date", def: "today", half: true },
+      { k: "kind", label: "문서 종류", type: "select", opts: [["영수", "영수증 (돈을 받았어요)"], ["청구", "청구서 (돈을 받을 거예요)"]], half: true },
+      { k: "no", label: "번호 (선택)", ph: "예: 2026-001", half: true },
+      { k: "two", label: "한 장에 두 부 (보관용 함께)", type: "check", def: true },
+      { sec: "내역", hint: "단가만 넣으면 수량은 1로 계산해요." },
+      { table: "items" },
+      { sec: "받은 사람 (내 정보)" },
+    { k: "biz_name", label: "상호 · 이름", ph: "상호 · 이름을 입력하세요", half: true, mem: "biz" },
+    { k: "biz_ceo", label: "대표자 · 성명", ph: "이름을 입력하세요", half: true, mem: "biz" },
+    { k: "biz_no", label: "사업자등록번호", ph: "000-00-00000", half: true, mem: "biz" },
+    { k: "biz_tel", label: "전화", ph: "전화번호를 입력하세요", half: true, mem: "biz" },
+    { k: "biz_addr", label: "주소", ph: "주소를 입력하세요", mem: "biz" },
+    { k: "biz_type", label: "업태", ph: "예: 서비스", half: true, mem: "biz" },
+    { k: "biz_item", label: "종목", ph: "예: 디자인", half: true, mem: "biz" },
+      { stamp: "biz_stamp" },
+      { k: "note", label: "비고", ph: "필요하면 입력하세요" }
+    ],
+    tables: [{ k: "items", min: 5, start: 2, addLabel: "내역 추가", cols: [
+      { k: "name", label: "내역", ph: "내역을 입력하세요", size: "wide" },
+      { k: "qty", label: "수량", ph: "수량", type: "num", size: "third" },
+      { k: "price", label: "단가", ph: "단가 (원)", type: "money", size: "third" },
+      { k: "memo", label: "비고", ph: "비고", size: "third" }
+    ] }],
+    stamps: [{ k: "biz_stamp", label: "도장", mem: "biz", kind: "stamp" }],
+    render(v, H) {
+      const two = v.two, title = v.kind === "청구" ? "청구서" : "영수증";
+      let total = 0;
+      const rows = H.rows("items", two ? 5 : 10).map(r => {
+        if (!r) return `<tr class="blank"><td></td><td></td><td></td><td></td><td></td></tr>`;
+        const has = String(r.price || "").trim(), q = String(r.qty || "").trim() ? TF.num(r.qty) : 1, amt = has ? Math.round(q * TF.num(r.price)) : 0;
+        total += amt;
+        return `<tr><td>${H.esc(r.name)}</td><td class="c">${H.esc(r.qty)}</td><td class="n">${W(TF.num(r.price))}</td><td class="n">${W(amt)}</td><td>${H.esc(r.memo)}</td></tr>`;
+      }).join("");
+      const one = copy => `<div style="position:relative">
+        ${copy ? `<span class="d-copy">${copy}</span>` : ""}
+        <h1 class="d-title">${title}</h1>
+        ${H.has("no") ? `<p class="d-small d-muted" style="margin:-${two ? 3 : 6}mm 0 3mm">No. ${H.t("no")}</p>` : ""}
+        <div class="d-split">
+          <div><p class="d-big" style="margin:2mm 0 4mm"><span class="fill l" style="min-width:50mm;font-weight:700">${H.t("to") || "&nbsp;"}</span> 귀하</p>
+            <p class="d-p">날짜 · ${H.date("date")}</p></div>
+          ${H.party("biz", "공급자", "biz_stamp", "d-small")}
+        </div>
+        <div class="d-total"><span>금액</span><b>${H.amount(total)}</b></div>
+        <table class="d-tbl"><colgroup><col><col style="width:16mm"><col style="width:26mm"><col style="width:28mm"><col style="width:30mm"></colgroup>
+          <thead><tr><th>내역</th><th>수량</th><th>단가</th><th>금액</th><th>비고</th></tr></thead><tbody>${rows}</tbody>
+          <tfoot><tr><th colspan="3">합계</th><td class="n">${W(total)}</td><td></td></tr></tfoot></table>
+        ${H.has("note") ? `<p class="d-p"><b>비고</b> · ${H.t("note")}</p>` : ""}
+        <p class="d-center d-big" style="margin:${two ? 3 : 8}mm 0 0;letter-spacing:.1em">위 금액을 정히 ${v.kind === "청구" ? "청구" : "영수"}합니다.</p>
+      </div>`;
+      return two ? `<div class="d-compact">${one("공급자 보관용")}<div class="d-cut"></div>${one("공급받는자 보관용")}</div>` : one("");
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>차용증 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="차용증을 칸만 채워 PDF로 저장하세요. 원금 한글 표기, 이자·변제일·지연 손해금 조항, 서명 넣기. 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>차용증 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-iou"></span>
+    <div>
+      <h1>차용증 만들기</h1>
+      <p>돈을 빌리고 빌려줄 때 쓰는 차용증이에요. 원금은 한글과 숫자로 같이 적혀요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p><b>법률 자문이 아니에요.</b> 금액이 크거나 분쟁이 걱정되면 공증을 받거나 전문가와 상담하세요.</p>
+      <p>이자를 받는다면 이자제한법의 최고 이자율(연 20%)을 넘지 않게 정하세요. 넘는 부분은 무효예요.</p>
+      <p>빌려준 돈은 계좌로 보내 기록을 남기면 좋아요. 양쪽이 한 부씩 나눠 가지세요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  TF.make({
+    fileName: v => ["차용증", v.me_name, v.cr_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "빌린 돈" },
+      { k: "amount", label: "원금 (원)", ph: "금액을 입력하세요", type: "money", half: true },
+      { k: "borrow", label: "빌린 날", type: "date", def: "today", half: true },
+      { k: "due", label: "갚을 날", type: "date", half: true },
+      { k: "rate", label: "이자 (연 %)", ph: "없으면 0", type: "num", half: true, help: "이자제한법이 정한 최고 이자율(연 20%)을 넘는 부분은 무효예요." },
+      { k: "payday", label: "이자 내는 날 (매월)", ph: "예: 25", type: "num", half: true },
+      { k: "late", label: "늦으면 지연 이자 (연 %)", ph: "비우면 빈칸", type: "num", half: true },
+      { k: "bank", label: "갚을 계좌", ph: "은행 · 계좌번호 · 예금주 (채권자)" },
+      { k: "extra", label: "특약 (선택)", type: "textarea", ph: "나눠 갚기 등 따로 정한 내용을 입력하세요" },
+      { sec: "채무자 (빌린 사람)" },
+      { k: "me_name", label: "이름", ph: "이름을 입력하세요", half: true },
+      { k: "me_birth", label: "생년월일", type: "date", half: true },
+      { k: "me_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true },
+      { k: "me_addr", label: "주소", ph: "주소를 입력하세요" },
+      { stamp: "debtor_sign" },
+      { sec: "채권자 (빌려준 사람)" },
+      { k: "cr_name", label: "이름", ph: "이름을 입력하세요", half: true },
+      { k: "cr_birth", label: "생년월일", type: "date", half: true },
+      { k: "cr_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true },
+      { k: "cr_addr", label: "주소", ph: "주소를 입력하세요" },
+      { sec: "연대보증인 (선택)" },
+      { k: "gu_name", label: "이름", ph: "있을 때만 입력하세요", half: true },
+      { k: "gu_birth", label: "생년월일", type: "date", half: true },
+      { k: "gu_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true },
+      { k: "gu_addr", label: "주소", ph: "주소를 입력하세요" },
+      { sec: "작성" },
+      { k: "date", label: "작성일", type: "date", def: "today" }
+    ],
+    stamps: [{ k: "debtor_sign", label: "채무자 서명 · 도장", kind: "sign" }],
+    render(v, H) {
+      const amt = TF.num(v.amount), rate = String(v.rate ?? "").trim(), none = rate !== "" && TF.num(rate) === 0;
+      const who = (p, label) => `<tr><th class="vlabel" rowspan="2">${label}</th><th>성명</th><td>${H.t(p + "_name")}</td><th>생년월일</th><td>${H.kdate(v[p + "_birth"])}</td><th>연락처</th><td>${H.t(p + "_tel")}</td></tr>
+        <tr><th>주소</th><td colspan="5">${H.t(p + "_addr")}</td></tr>`;
+      const gu = H.has("gu_name");
+      const arts = [
+        ["차용일", `채무자는 채권자로부터 ${H.date("borrow")}에 위 금액을 빌렸다.`],
+        ["변제기일", `채무자는 ${H.date("due")}까지 원금 전액을 갚는다.`],
+        ["이자", none ? "이자는 없는 것으로 한다." : `이자는 연 ${rate ? H.esc(rate) : "　　"}%로 하며, 매월 ${H.t("payday") || "　　"}일에 지급한다.`],
+        ["변제 방법", `원금과 이자는 채권자의 다음 계좌로 보내 갚는다. ${H.has("bank") ? H.t("bank") : '<span class="fill" style="min-width:90mm">&nbsp;</span>'}`],
+        ["지연 손해금", `채무자가 변제기일까지 갚지 않으면 그다음 날부터 다 갚는 날까지 남은 원금에 연 ${H.t("late") || "　　"}%의 지연 손해금을 더하여 지급한다.`],
+        ["기한의 이익 상실", "채무자가 이자를 2회 이상 연체하거나 다른 채권자로부터 강제집행을 당하는 등 신용을 잃은 경우, 채권자는 변제기일 전이라도 남은 채무 전액을 한꺼번에 갚으라고 청구할 수 있다."],
+        H.has("extra") && ["특약", H.nl("extra")],
+        gu && ["연대보증", "연대보증인은 이 차용증에 따른 채무자의 모든 채무를 채무자와 연대하여 갚는다."]
+      ].filter(Boolean);
+      return `<h1 class="d-title">차용증</h1>
+        <div class="d-total"><span>원금</span><b>${H.amount(amt)}</b></div>
+        <table class="d-tbl d-kv d-small"><colgroup><col style="width:7mm"><col style="width:13mm"><col><col style="width:17mm"><col style="width:30mm"><col style="width:14mm"><col style="width:32mm"></colgroup>
+          ${who("me", "채무자")}${who("cr", "채권자")}${gu ? who("gu", "보증인") : ""}</table>
+        ${arts.map(([h, p], i) => `<div class="d-art"><h3>제${i + 1}조 (${h})</h3><p>${p}</p></div>`).join("")}
+        <p class="d-p" style="margin-top:5mm">채무자는 위 금액을 틀림없이 빌렸으며 위 조건을 지킬 것을 약속합니다.</p>
+        <div class="d-sign" style="margin-top:6mm">
+          <p class="date">${H.date("date")}</p>
+          <p class="who">채무자 <span class="fill" style="min-width:30mm">${H.t("me_name") || "&nbsp;"}</span> ${H.stamp("debtor_sign", "(서명 또는 인)")}</p>
+          ${gu ? `<p class="who">연대보증인 <span class="fill" style="min-width:30mm">${H.t("gu_name")}</span> <span class="stampbox">(서명 또는 인)</span></p>` : ""}
+        </div>
+        <p class="d-to">채권자 ${H.t("cr_name") || "　　　　　"} 귀하</p>`;
+    }
+  });
+})();
+</script>
+</body>
+</html>

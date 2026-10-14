@@ -33,7 +33,19 @@ window.TT_TOOLS = [
   { id: "image-to-pdf", cat: "doc", name: "이미지 → PDF", desc: "사진·스캔 이미지 여러 장을 PDF 한 파일로 만들어요. A4 맞춤 지원.", tags: ["pdf", "jpg", "png", "사진", "스캔", "서류"], status: "live" },
   { id: "pdf-to-image", cat: "doc", name: "PDF → 이미지", desc: "PDF 페이지를 PNG나 JPG 이미지로 뽑아요. 해상도 선택.", tags: ["pdf", "png", "jpg", "이미지", "변환"], status: "live" },
   { id: "qr-code", cat: "txt", name: "QR코드 만들기", desc: "링크, 와이파이, 연락처, 문자를 QR코드로. 색과 점 모양, 가운데 로고까지 넣어 PNG·SVG로 저장해요.", tags: ["qr", "큐알", "qr코드", "큐알코드", "와이파이", "명함", "링크"], status: "live" },
-  { id: "char-count", cat: "txt", name: "글자 수 세기", desc: "공백 포함·제외, 바이트, 줄 수를 한 번에. 목표 글자 수를 넣으면 남은 글자를 알려줘요.", tags: ["글자수", "글자 수", "자소서", "바이트", "byte", "공백", "문자", "카운터"], status: "live" }
+  { id: "char-count", cat: "txt", name: "글자 수 세기", desc: "공백 포함·제외, 바이트, 줄 수를 한 번에. 목표 글자 수를 넣으면 남은 글자를 알려줘요.", tags: ["글자수", "글자 수", "자소서", "바이트", "byte", "공백", "문자", "카운터"], status: "live" },
+  { id: "form-quote", cat: "form", name: "견적서 만들기", desc: "업종별 견적서를 칸만 채워 PDF로. 부가세·합계·한글 금액 자동, 도장 넣기.", tags: ["견적서", "견적", "양식", "서식", "부가세", "인테리어", "디자인", "pdf"], status: "live" },
+  { id: "form-statement", cat: "form", name: "거래명세서 만들기", desc: "공급자·공급받는자와 품목을 채워 PDF로. 한 장에 보관용 두 부도 돼요.", tags: ["거래명세서", "거래명세표", "명세서", "양식", "서식", "납품"], status: "live" },
+  { id: "form-receipt", cat: "form", name: "영수증 · 청구서 만들기", desc: "간이 영수증과 청구서를 칸만 채워 PDF로. 보관용 두 부, 자르는 선까지.", tags: ["영수증", "간이영수증", "청구서", "양식", "서식"], status: "live" },
+  { id: "form-resume", cat: "form", name: "이력서 만들기", desc: "사진·학력·경력·자격을 채워 A4 한 장 이력서로. 3가지 스타일.", tags: ["이력서", "입사지원서", "양식", "서식", "취업", "알바"], status: "live" },
+  { id: "form-labor", cat: "form", name: "표준근로계약서 만들기", desc: "고용노동부 표준근로계약서 항목 그대로. 정규직·계약직, 서명 넣기.", tags: ["근로계약서", "표준근로계약서", "계약서", "알바", "고용", "양식"], status: "live" },
+  { id: "form-service", cat: "form", name: "용역계약서 만들기", desc: "프리랜서·외주 계약을 위한 일반 용역계약서. 대금·검수·저작권 조항.", tags: ["용역계약서", "프리랜서", "외주", "계약서", "양식", "디자인 계약"], status: "live" },
+  { id: "form-iou", cat: "form", name: "차용증 만들기", desc: "원금을 한글·숫자로, 이자·갚을 날·지연 이자 조항까지 채워 PDF로.", tags: ["차용증", "차용", "돈 빌려줄 때", "각서", "양식"], status: "live" },
+  { id: "form-resign", cat: "form", name: "사직서 만들기", desc: "소속·입사일·퇴사 희망일·사유를 채워 바로 내는 사직서.", tags: ["사직서", "퇴사", "사표", "양식", "서식"], status: "live" },
+  { id: "form-poa", cat: "form", name: "위임장 만들기", desc: "서류 발급·신청을 맡길 때 쓰는 위임장. 위임인·수임인·위임 사항.", tags: ["위임장", "대리", "위임", "양식", "서식", "민원"], status: "live" },
+  { id: "form-employ", cat: "form", name: "재직증명서 만들기", desc: "회사가 발급하는 재직증명서. 회사 정보와 직인은 기기에 기억.", tags: ["재직증명서", "증명서", "인사", "양식", "서식"], status: "live" },
+  { id: "form-career", cat: "form", name: "경력증명서 만들기", desc: "근무 기간·담당 업무·부서 이력을 담은 경력증명서.", tags: ["경력증명서", "증명서", "퇴사", "인사", "양식"], status: "live" },
+  { id: "stamp-clean", cat: "form", name: "도장 · 서명 배경 지우기", desc: "흰 종이에 찍은 도장이나 서명 사진의 배경을 지워 투명 PNG로.", tags: ["도장", "인감", "서명", "사인", "배경 제거", "투명", "png", "누끼"], status: "live" }
 ];
 
 window.TT_CATS = {
@@ -42,7 +54,8 @@ window.TT_CATS = {
   vid: { label: "영상", color: "var(--vid)" },
   aud: { label: "오디오", color: "var(--aud)" },
   des: { label: "디자인", color: "var(--des)" },
-  txt: { label: "텍스트 · 생활", color: "var(--txt)" }
+  txt: { label: "텍스트 · 생활", color: "var(--txt)" },
+  form: { label: "양식", color: "var(--form)" }
 };
 
 const S = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
@@ -78,6 +91,18 @@ window.TT_ICONS = {
   "print-size": `<svg ${S}><path d="M6 9V2h12v7"/><rect x="2" y="9" width="20" height="8" rx="2"/><path d="M6 14h12v8H6z"/></svg>`,
   "placeholder": `<svg ${S}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="m3 3 18 18"/><path d="M21 3 3 21"/></svg>`,
   "korean-lorem": `<svg ${S}><path d="M4 6h16"/><path d="M4 10h16"/><path d="M4 14h10"/><path d="M4 18h12"/></svg>`,
+  "form-quote": `<svg ${S}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/><path d="M15 17h1"/></svg>`,
+  "form-statement": `<svg ${S}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 12h8"/><path d="M8 15h8"/><path d="M8 18h8"/><path d="M11 12v6"/></svg>`,
+  "form-receipt": `<svg ${S}><path d="M5 2v20l2.5-1.5L10 22l2-1.5 2 1.5 2.5-1.5L19 22V2l-2.5 1.5L14 2l-2 1.5L10 2 7.5 3.5z"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M9 16h3"/></svg>`,
+  "form-resume": `<svg ${S}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><circle cx="10" cy="12" r="2"/><path d="M7 18c.5-1.6 1.7-2.4 3-2.4s2.5.8 3 2.4"/></svg>`,
+  "form-labor": `<svg ${S}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="m8 18 1.5-1.5L11 18l1.5-1.5"/></svg>`,
+  "form-service": `<svg ${S}><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></svg>`,
+  "form-iou": `<svg ${S}><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01"/><path d="M18 12h.01"/></svg>`,
+  "form-resign": `<svg ${S}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>`,
+  "form-poa": `<svg ${S}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="m16 11 2 2 4-4"/></svg>`,
+  "form-employ": `<svg ${S}><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>`,
+  "form-career": `<svg ${S}><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/></svg>`,
+  "stamp-clean": `<svg ${S}><path d="M5 22h14"/><path d="M19.27 13.73A2.5 2.5 0 0 0 17.5 13h-11A2.5 2.5 0 0 0 4 15.5V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-.66-.26-1.3-.73-1.77Z"/><path d="M14 13V8.5C14 7 15 7 15 5a3 3 0 0 0-3-3c-1.69 0-3 1-3 3s1 2 1 3.5V13"/></svg>`,
   upload: `<svg ${S}><path d="M12 15V3"/><path d="m7 8 5-5 5 5"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>`,
   download: `<svg ${S}><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M20 15v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4"/></svg>`,
   x: `<svg ${S}><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>이력서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="표준 이력서 양식에 사진·학력·경력·자격을 채워 PDF로 저장하세요. 서명 넣기, 3가지 스타일. 무료, 가입 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>이력서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-resume"></span>
+    <div>
+      <h1>이력서 만들기</h1>
+      <p>사진과 학력·경력·자격을 칸에 채우면 A4 한 장 이력서가 돼요. 회사가 정한 양식이 있으면 그걸 먼저 쓰세요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p>사진은 가운데를 3 : 4로 잘라 넣어요. 자기소개를 적으면 두 번째 쪽에 들어가요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  TF.make({
+    fileName: v => ["이력서", v.me_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "인적 사항" },
+      { photo: "photo", label: "증명사진" },
+      { k: "me_name", label: "이름", ph: "이름을 입력하세요", half: true, mem: "me" },
+      { k: "me_en", label: "영문 이름", ph: "영문 이름 (선택)", half: true, mem: "me" },
+      { k: "me_birth", label: "생년월일", type: "date", half: true, mem: "me" },
+      { k: "me_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true, mem: "me" },
+      { k: "me_email", label: "이메일", ph: "이메일을 입력하세요", mem: "me" },
+      { k: "me_addr", label: "주소", ph: "주소를 입력하세요", mem: "me" },
+      { k: "apply", label: "지원 분야 (선택)", ph: "지원하는 분야나 직무를 입력하세요" },
+      { sec: "학력" }, { table: "edu" },
+      { sec: "경력" }, { table: "job" },
+      { sec: "자격 · 어학" }, { table: "lic" },
+      { sec: "활동 · 수상 (선택)" }, { table: "act" },
+      { sec: "자기소개 (선택)", hint: "적으면 문서 아래에 들어가요. 길면 다음 쪽으로 넘어가요." },
+      { k: "intro", label: "자기소개", type: "textarea", ph: "짧은 소개를 입력하세요" },
+      { sec: "확인" },
+      { k: "date", label: "작성일", type: "date", def: "today" },
+      { stamp: "me_sign" }
+    ],
+    tables: [
+      { k: "edu", min: 4, start: 2, addLabel: "학력 추가", cols: [
+        { k: "from", label: "입학", ph: "입학 (2018.03)", size: "third" }, { k: "to", label: "졸업", ph: "졸업 (2022.02)", size: "third" }, { k: "st", label: "구분", ph: "졸업·재학", size: "third" },
+        { k: "school", label: "학교명", ph: "학교명", size: "half" }, { k: "major", label: "전공", ph: "전공", size: "half" }] },
+      { k: "job", min: 4, start: 2, addLabel: "경력 추가", cols: [
+        { k: "from", label: "입사", ph: "입사 (2022.03)", size: "third" }, { k: "to", label: "퇴사", ph: "퇴사 (재직 중)", size: "third" }, { k: "pos", label: "직위", ph: "직위", size: "third" },
+        { k: "co", label: "회사명", ph: "회사명", size: "wide" }, { k: "work", label: "담당 업무", ph: "담당 업무", size: "wide" }] },
+      { k: "lic", min: 3, start: 2, addLabel: "자격 추가", cols: [
+        { k: "date", label: "취득일", ph: "취득일", size: "third" }, { k: "name", label: "자격 · 시험", ph: "자격증·어학 시험", size: "third" }, { k: "grade", label: "등급 · 점수", ph: "등급·점수", size: "third" },
+        { k: "org", label: "발행처", ph: "발행처", size: "wide" }] },
+      { k: "act", min: 2, start: 1, addLabel: "활동 추가", cols: [
+        { k: "when", label: "기간", ph: "기간", size: "third" }, { k: "name", label: "활동 · 수상", ph: "활동·수상 내용", size: "wide", }, { k: "org", label: "기관", ph: "기관", size: "half" }] }
+    ],
+    stamps: [{ k: "me_sign", label: "서명", mem: "me", kind: "sign" }],
+    render(v, H) {
+      const birth = H.kdate(v.me_birth);
+      const tbl = (k, min, heads, widths, cells) => `<table class="d-tbl"><colgroup>${widths.map(w => w ? `<col style="width:${w}mm">` : "<col>").join("")}</colgroup>
+        <thead><tr>${heads.map(h => `<th>${h}</th>`).join("")}</tr></thead>
+        <tbody>${H.rows(k, min).map(r => r ? `<tr>${cells(r).map(c => `<td${c[1] ? ` class="${c[1]}"` : ""}>${H.esc(c[0])}</td>`).join("")}</tr>` : `<tr class="blank">${heads.map(() => "<td></td>").join("")}</tr>`).join("")}</tbody></table>`;
+      const per = (r, a, b) => [r[a] || r[b] ? `${r[a] || ""} ~ ${r[b] || ""}` : "", "c"];
+      const act = (v.act || []).some(r => Object.values(r).some(x => String(x).trim()));
+      return `<h1 class="d-title">이력서</h1>
+        <div style="display:grid;grid-template-columns:30mm 1fr;gap:5mm;align-items:stretch;margin-bottom:2mm">
+          ${H.photo("photo")}
+          <table class="d-tbl d-kv" style="margin:0;height:40mm">
+            <tr><th>성명</th><td style="font-size:12pt;font-weight:700">${H.t("me_name")}</td><th>영문</th><td>${H.t("me_en")}</td></tr>
+            <tr><th>생년월일</th><td>${birth}</td><th>연락처</th><td>${H.t("me_tel")}</td></tr>
+            <tr><th>이메일</th><td colspan="3">${H.t("me_email")}</td></tr>
+            <tr><th>주소</th><td colspan="3">${H.t("me_addr")}</td></tr>
+            ${H.has("apply") ? `<tr><th>지원 분야</th><td colspan="3">${H.t("apply")}</td></tr>` : ""}
+          </table>
+        </div>
+        <p class="d-sec">학력 사항</p>${tbl("edu", 4, ["기간", "학교명", "전공", "구분"], [40, 0, 45, 22], r => [per(r, "from", "to"), [r.school], [r.major], [r.st, "c"]])}
+        <p class="d-sec">경력 사항</p>${tbl("job", 4, ["기간", "회사명", "직위", "담당 업무"], [40, 45, 22, 0], r => [per(r, "from", "to"), [r.co], [r.pos, "c"], [r.work]])}
+        <p class="d-sec">자격 · 어학</p>${tbl("lic", 3, ["취득일", "자격 · 시험", "등급 · 점수", "발행처"], [28, 0, 30, 45], r => [[r.date, "c"], [r.name], [r.grade, "c"], [r.org]])}
+        ${act ? `<p class="d-sec">활동 · 수상</p>${tbl("act", 1, ["기간", "내용", "기관"], [40, 0, 45], r => [[r.when, "c"], [r.name], [r.org]])}` : ""}
+        <div class="d-sign">
+          <p class="date" style="margin:0">위의 기재 사항은 사실과 다름없음을 확인합니다.</p>
+          <p class="date">${H.date("date")}</p>
+          <p class="who">작성자 <span class="fill" style="min-width:30mm">${H.t("me_name") || "&nbsp;"}</span> ${H.stamp("me_sign", "(서명)")}</p>
+        </div>
+        ${H.has("intro") ? `<div style="break-before:page;padding-top:2mm"><p class="d-sec">자기소개</p><div class="d-box" style="min-height:60mm">${H.nl("intro")}</div></div>` : ""}`;
+    }
+  });
+})();
+</script>
+</body>
+</html>

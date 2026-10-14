@@ -111,6 +111,9 @@
     render();
   });
   q.addEventListener("input", render);
+  // 주소 끝에 #form 처럼 분류를 붙이면 그 분류만 보여요
+  const h = location.hash.slice(1);
+  if (cats[h]) { cat = h; chips.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c.dataset.cat === h)); }
 
   function card(t) {
     const c = cats[t.cat].color;

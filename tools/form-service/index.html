@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>용역계약서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="프리랜서·외주 용역계약서를 칸만 채워 PDF로 저장하세요. 대금·검수·저작권·비밀유지 조항, 서명 넣기. 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>용역계약서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-service"></span>
+    <div>
+      <h1>용역계약서 만들기</h1>
+      <p>디자인·개발·영상 같은 외주 일을 맡기고 맡을 때 쓰는 일반 용역계약서예요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p><b>정부 표준 서식이 아니에요.</b> 자주 쓰는 조항을 모은 일반 서식이에요. 법률 자문이 아니니 금액이 크거나 조건이 복잡하면 전문가 검토를 받으세요.</p>
+      <p>업종별 표준계약서(예: 문화체육관광부 디자인·출판 분야, 공정거래위원회 표준하도급계약서)가 따로 있는 분야도 있어요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  const IP = { a: '용역 결과물에 대한 저작권 등 지식재산권은 대금 지급이 끝난 때에 "갑"에게 귀속된다. 다만 "을"은 포트폴리오 목적으로 결과물을 사용할 수 있다.',
+               b: '용역 결과물에 대한 저작권 등 지식재산권은 "을"에게 귀속되며, "갑"은 계약 목적 범위에서 결과물을 사용할 수 있다.',
+               c: '용역 결과물에 대한 지식재산권의 귀속은 "갑"과 "을"이 별도로 협의하여 정한다.' };
+  TF.make({
+    fileName: v => ["용역계약서", v.title, v.a_name, v.biz_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "계약 내용" },
+      { k: "title", label: "용역 건명", ph: "예: 쇼핑몰 상세페이지 제작" },
+      { k: "scope", label: "용역 내용", type: "textarea", ph: "작업 범위, 결과물, 수정 횟수 등을 구체적으로 입력하세요" },
+      { k: "start", label: "시작일", type: "date", half: true },
+      { k: "end", label: "종료일 (납품 기한)", type: "date", half: true },
+      { k: "amount", label: "계약 금액 (원)", ph: "금액을 입력하세요", type: "money", half: true },
+      { k: "vat", label: "부가세", type: "select", opts: [["ex", "별도"], ["in", "포함"], ["none", "표시 안 함"]], half: true },
+      { k: "pay", label: "대금 지급 방법", type: "textarea", ph: "예: 계약 시 착수금 30%, 검수 완료 후 7일 안에 잔금 70%" },
+      { k: "inspect", label: "검수 기간 (일)", ph: "예: 7", type: "num", half: true },
+      { k: "ip", label: "지식재산권", type: "select", opts: [["a", "갑(의뢰인)에게"], ["b", "을(수행자)에게"], ["c", "따로 협의"]], half: true },
+      { k: "court", label: "관할 법원 (선택)", ph: "비우면 법에 따른 관할 법원" },
+      { k: "extra", label: "특약 (선택)", type: "textarea", ph: "따로 정한 내용을 입력하세요" },
+      { sec: "갑 (의뢰하는 쪽)" },
+      { k: "a_name", label: "상호 · 이름", ph: "상호나 이름을 입력하세요", half: true },
+      { k: "a_ceo", label: "대표자", ph: "개인이면 비워요", half: true },
+      { k: "a_no", label: "사업자번호 · 생년월일", ph: "번호를 입력하세요", half: true },
+      { k: "a_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true },
+      { k: "a_addr", label: "주소", ph: "주소를 입력하세요" },
+      { stamp: "a_stamp" },
+      { sec: "을 (용역 수행 · 내 정보)" },
+      { k: "biz_name", label: "상호 · 이름", ph: "상호나 이름을 입력하세요", half: true, mem: "biz" },
+      { k: "biz_ceo", label: "대표자", ph: "개인이면 비워요", half: true, mem: "biz" },
+      { k: "biz_no", label: "사업자번호 · 생년월일", ph: "번호를 입력하세요", half: true, mem: "biz" },
+      { k: "biz_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true, mem: "biz" },
+      { k: "biz_addr", label: "주소", ph: "주소를 입력하세요", mem: "biz" },
+      { k: "biz_bank", label: "대금 받을 계좌", ph: "은행 · 계좌번호 · 예금주", mem: "biz" },
+      { stamp: "biz_stamp" },
+      { sec: "작성" },
+      { k: "date", label: "계약일", type: "date", def: "today" }
+    ],
+    stamps: [{ k: "a_stamp", label: "갑 서명 · 도장", kind: "stamp" }, { k: "biz_stamp", label: "을 서명 · 도장", mem: "biz", kind: "stamp" }],
+    render(v, H) {
+      const amt = TF.num(v.amount), vat = { ex: " (부가가치세 별도)", in: " (부가가치세 포함)", none: "" }[v.vat];
+      const title = H.t("title") || "　　　　　　　　";
+      const arts = [
+        ["목적", `이 계약은 "갑"이 "을"에게 맡긴 「${title}」 용역(이하 "용역")을 수행하는 데 필요한 사항을 정하는 것을 목적으로 한다.`],
+        ["용역 내용", H.has("scope") ? H.nl("scope") : '<span class="d-box" style="display:block;min-height:16mm;margin:1mm 0 0"></span>'],
+        ["계약 기간", `${H.date("start")}부터 ${H.date("end")}까지로 한다.`],
+        ["계약 금액", `${H.amount(amt)}${vat}으로 한다.`],
+        ["대금 지급", `${H.has("pay") ? H.nl("pay") : '"갑"은 아래 방법으로 대금을 지급한다. <span class="fill" style="min-width:80mm">&nbsp;</span>'}${H.has("biz_bank") ? `<br>지급 계좌 : ${H.t("biz_bank")}` : ""}`],
+        ["납품 및 검수", `"을"은 계약 기간 안에 결과물을 납품하고, "갑"은 납품받은 날부터 ${H.t("inspect") || "　　"}일 안에 검수 결과를 "을"에게 알린다. 이 기간 안에 알리지 않으면 검수에 합격한 것으로 본다.`],
+        ["지식재산권", IP[v.ip] || IP.a],
+        ["비밀 유지", '"갑"과 "을"은 이 계약을 수행하며 알게 된 상대방의 업무상 정보를 상대방의 서면 동의 없이 제3자에게 알리거나 이 계약 밖의 목적으로 쓰지 않는다. 이 의무는 계약이 끝난 뒤에도 유지된다.'],
+        ["계약 해지", '한쪽이 이 계약을 위반하고 상대방이 상당한 기간을 정하여 서면으로 바로잡을 것을 요구했는데도 고치지 않으면, 상대방은 이 계약을 해지할 수 있다. 해지할 때 "갑"은 해지일까지 수행된 용역에 해당하는 대금을 정산하여 지급한다.'],
+        ["손해 배상", '"갑" 또는 "을"이 고의나 과실로 이 계약을 위반하여 상대방에게 손해를 끼친 경우 그 손해를 배상한다.'],
+        ["분쟁 해결", `이 계약에 관한 분쟁은 서로 협의하여 해결하고, 협의가 되지 않으면 ${H.has("court") ? H.t("court") + "을(를) 관할 법원으로 한다" : "민사소송법에 따른 관할 법원에서 해결한다"}.`],
+        ["기타", `${H.has("extra") ? H.nl("extra") + "<br>" : ""}이 계약에 정하지 않은 사항은 관련 법령과 일반 상관례에 따른다.`]
+      ];
+      const side = (p, label, st) => `<table class="d-tbl d-kv d-small"><colgroup><col style="width:7mm"><col style="width:20mm"><col></colgroup>
+        <tr><th class="vlabel" rowspan="4">${label}</th><th>상호 · 성명</th><td>${H.t(p + "_name")}</td></tr>
+        <tr><th>등록번호</th><td>${H.t(p + "_no")}</td></tr>
+        <tr><th>주소</th><td>${H.t(p + "_addr")}</td></tr>
+        <tr><th>대표자</th><td><span class="d-namecell"><span>${H.t(p + "_ceo") || H.t(p + "_name")}</span>${H.stamp(st, "(인)")}</span></td></tr></table>`;
+      return `<div class="d-dense"><h1 class="d-title">용역계약서</h1>
+        <p class="d-p">${H.t("a_name") ? `<b>${H.t("a_name")}</b>` : "　　　　　"}(이하 "갑")과 ${H.t("biz_name") ? `<b>${H.t("biz_name")}</b>` : "　　　　　"}(이하 "을")은 다음과 같이 용역계약을 맺는다.</p>
+        ${arts.map(([h, p], i) => `<div class="d-art"><h3>제${i + 1}조 (${h})</h3><p>${p}</p></div>`).join("")}
+        <div class="d-end"><p class="d-p" style="margin-top:4mm">이 계약을 증명하기 위해 계약서 2부를 만들어 "갑"과 "을"이 서명(날인)한 뒤 각 1부씩 보관한다.</p>
+        <p class="d-center d-big" style="margin:4mm 0;letter-spacing:.08em">${H.date("date")}</p>
+        <div class="d-parties" style="margin-top:2mm">${side("a", "갑", "a_stamp")}${side("biz", "을", "biz_stamp")}</div></div></div>`;
+    }
+  });
+})();
+</script>
+</body>
+</html>

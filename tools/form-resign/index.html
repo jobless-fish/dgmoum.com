@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>사직서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="사직서를 칸만 채워 PDF로 저장하세요. 서명 넣기, 3가지 스타일. 무료, 가입 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>사직서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-resign"></span>
+    <div>
+      <h1>사직서 만들기</h1>
+      <p>소속·입사일·퇴사 희망일과 사유를 적으면 바로 낼 수 있는 사직서가 돼요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p>회사에 정해진 사직서 양식이 있으면 그 양식을 먼저 쓰세요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  TF.make({
+    fileName: v => ["사직서", v.me_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "회사" },
+      { k: "co", label: "회사명", ph: "회사명을 입력하세요", half: true },
+      { k: "ceo_title", label: "받는 분", ph: "예: 대표이사", half: true },
+      { sec: "본인" },
+      { k: "dept", label: "소속", ph: "부서를 입력하세요", half: true },
+      { k: "pos", label: "직위", ph: "직위를 입력하세요", half: true },
+      { k: "me_name", label: "이름", ph: "이름을 입력하세요", half: true, mem: "me" },
+      { k: "me_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true, mem: "me" },
+      { k: "join", label: "입사일", type: "date", half: true },
+      { k: "leave", label: "퇴사 희망일", type: "date", half: true },
+      { k: "reason", label: "사직 사유", type: "textarea", ph: "예: 일신상의 사유" },
+      { sec: "확인" },
+      { k: "date", label: "작성일", type: "date", def: "today" },
+      { stamp: "me_sign" }
+    ],
+    stamps: [{ k: "me_sign", label: "서명", mem: "me", kind: "sign" }],
+    render(v, H) {
+      return `<h1 class="d-title" style="margin-bottom:12mm">사직서</h1>
+        <table class="d-tbl d-kv">
+          <tr><th>소속</th><td>${H.t("dept")}</td><th>직위</th><td>${H.t("pos")}</td></tr>
+          <tr><th>성명</th><td>${H.t("me_name")}</td><th>연락처</th><td>${H.t("me_tel")}</td></tr>
+          <tr><th>입사일</th><td>${H.date("join")}</td><th>퇴사 희망일</th><td>${H.date("leave")}</td></tr>
+        </table>
+        <p class="d-box-label" style="margin-top:6mm">사직 사유</p><div class="d-box" style="min-height:50mm">${H.nl("reason")}</div>
+        <p class="d-p d-big" style="margin:12mm 0;line-height:2">상기 본인은 위와 같은 사유로 ${H.kdate(v.leave) || "　　　　년　　월　　일"}부로 사직하고자 하오니 재가하여 주시기 바랍니다.</p>
+        <div class="d-sign">
+          <p class="date">${H.date("date")}</p>
+          <p class="who">신청인 <span class="fill" style="min-width:30mm">${H.t("me_name") || "&nbsp;"}</span> ${H.stamp("me_sign", "(서명)")}</p>
+        </div>
+        <p class="d-to">${H.t("co") || "　　　　　　"} ${H.t("ceo_title") || "대표이사"} 귀하</p>`;
+    }
+  });
+})();
+</script>
+</body>
+</html>

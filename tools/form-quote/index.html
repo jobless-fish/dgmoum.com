@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>견적서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="업종별 견적서를 칸만 채워 PDF로 저장하세요. 부가세 자동 계산, 한글 금액, 도장 배경 지우기까지. 무료, 가입 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>견적서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-quote"></span>
+    <div>
+      <h1>견적서 만들기</h1>
+      <p>업종을 고르고 품목만 채우면 합계·부가세·한글 금액이 자동으로 들어가요. 도장 사진은 흰 배경을 지워서 찍어 줘요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p><b>세금계산서가 아니에요.</b> 견적서는 세금 신고용 증빙이 아니에요. 세금계산서는 홈택스 등에서 따로 발행하세요.</p>
+      <p>금액은 원 단위에서 반올림해요. 부가세 '포함'은 금액을 1.1로 나눠 공급가액과 세액을 나눠요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  // 줄마다 공급가액·세액을 계산해요
+  function calc(r, vat) {
+    if (!r || !String(r.price || "").trim()) return null;
+    const q = String(r.qty || "").trim() ? TF.num(r.qty) : 1, amt = Math.round(q * TF.num(r.price));
+    let s = amt, t = 0;
+    if (vat === "ex") t = Math.round(amt * 0.1);
+    if (vat === "in") { s = Math.round(amt / 1.1); t = amt - s; }
+    return { q, s, t, amt: s + t };
+  }
+  const W = n => n ? TF.won(n) : "";
+  const IND = {
+    general:  { name: "품명", spec: "규격", ph: ["품명을 입력하세요"], specPh: "규격", unitPh: "개", title: "견적 건명을 입력하세요" },
+    design:   { name: "작업 항목", spec: "세부 내용", ph: ["예: 로고 디자인", "예: 상세페이지", "예: 영상 편집"], specPh: "예: 시안 3종 · 수정 2회", unitPh: "건·컷·분", title: "예: 브랜드 로고 제작" },
+    interior: { name: "공종 · 품명", spec: "자재 · 규격", ph: ["예: 철거", "예: 도배", "예: 바닥 마루"], specPh: "예: 실크 벽지", unitPh: "㎡·m·식", title: "예: 32평 아파트 부분 리모델링" },
+    event:    { name: "항목", spec: "내용", ph: ["예: 음향 장비", "예: 사회자", "예: 무대 설치"], specPh: "예: 4시간 · 2인", unitPh: "식·명·시간", title: "예: 창립기념 행사 운영" },
+    supply:   { name: "품명", spec: "규격 · 모델", ph: ["품명을 입력하세요"], specPh: "예: 300×200mm", unitPh: "EA·BOX·kg", title: "예: 포장 박스 납품" },
+    service:  { name: "서비스 항목", spec: "내용 · 범위", ph: ["예: 입주 청소", "예: 에어컨 청소", "예: 포장 이사"], specPh: "예: 34평 · 베란다 포함", unitPh: "회·평·대", title: "예: 입주 청소" }
+  };
+  TF.make({
+    fileName: v => ["견적서", v.biz_name, v.to].filter(Boolean).join("_"),
+    fields: [
+      { sec: "견적 정보" },
+      { k: "industry", label: "업종", type: "select", opts: [["general", "일반"], ["design", "디자인 · 영상"], ["interior", "인테리어 · 시공"], ["event", "행사 · 공연"], ["supply", "납품 · 제조"], ["service", "청소 · 이사 · 서비스"]],
+        help: `원하는 업종이 없나요? <a href="${TF.REQUEST_URL}" target="_blank" rel="noopener">업종 추가 요청하기</a>` },
+      { k: "to", label: "받는 분 (수신)", ph: "회사명이나 이름을 입력하세요", half: true },
+      { k: "date", label: "견적일", type: "date", def: "today", half: true },
+      { k: "title", label: "건명", ph: "견적 건명을 입력하세요" },
+      { k: "period", label: "기간 · 납기", ph: "예: 계약 후 2주", half: true },
+      { k: "place", label: "장소 · 현장", ph: "필요하면 입력하세요", half: true },
+      { k: "vat", label: "부가세", type: "select", opts: [["ex", "별도 (+10%)"], ["in", "포함"], ["none", "없음 (면세 등)"]], half: true },
+      { k: "valid", label: "견적 유효기간", ph: "예: 견적일로부터 30일", half: true },
+      { sec: "품목", hint: "단가만 넣으면 수량은 1로 계산해요." },
+      { table: "items" },
+      { sec: "공급자 (내 정보)" },
+    { k: "biz_name", label: "상호", ph: "상호을 입력하세요", half: true, mem: "biz" },
+    { k: "biz_ceo", label: "대표자", ph: "이름을 입력하세요", half: true, mem: "biz" },
+    { k: "biz_no", label: "사업자등록번호", ph: "000-00-00000", half: true, mem: "biz" },
+    { k: "biz_tel", label: "전화", ph: "전화번호를 입력하세요", half: true, mem: "biz" },
+    { k: "biz_addr", label: "주소", ph: "주소를 입력하세요", mem: "biz" },
+    { k: "biz_type", label: "업태", ph: "예: 서비스", half: true, mem: "biz" },
+    { k: "biz_item", label: "종목", ph: "예: 디자인", half: true, mem: "biz" },
+      { k: "biz_bank", label: "입금 계좌", ph: "은행 · 계좌번호 · 예금주", mem: "biz" },
+      { stamp: "biz_stamp" },
+      { sec: "덧붙임" },
+      { k: "pay", label: "결제 조건", ph: "예: 계약금 50%, 완료 후 잔금 50%" },
+      { k: "note", label: "특이사항", type: "textarea", ph: "포함·제외 사항, 추가 비용 기준 등을 입력하세요" }
+    ],
+    tables: [{ k: "items", min: 10, start: 3, addLabel: "품목 추가", cols: [
+      { k: "name", label: "품명", size: "wide" },
+      { k: "spec", label: "규격", size: "wide" },
+      { k: "qty", label: "수량", ph: "수량", type: "num", size: "third" },
+      { k: "unit", label: "단위", ph: "단위", size: "third" },
+      { k: "price", label: "단가", ph: "단가 (원)", type: "money", size: "third" },
+      { k: "memo", label: "비고", ph: "비고", size: "wide" }
+    ] }],
+    stamps: [{ k: "biz_stamp", label: "공급자 도장", mem: "biz", kind: "stamp" }],
+    hints: v => { const I = IND[v.industry] || IND.general; return { "items.name": I.ph, "items.spec": I.specPh, "items.unit": I.unitPh, title: I.title }; },
+    render(v, H) {
+      const I = IND[v.industry] || IND.general, vat = v.vat;
+      let sup = 0, tax = 0;
+      const rows = H.rows("items", 10).map((r, i) => {
+        if (!r) return `<tr class="blank"><td></td><td></td><td></td><td></td><td></td><td></td>${vat !== "none" ? "<td></td>" : ""}<td></td></tr>`;
+        const c = calc(r, vat); if (c) { sup += c.s; tax += c.t; }
+        return `<tr><td class="c">${i + 1}</td><td>${H.esc(r.name)}</td><td>${H.esc(r.spec)}</td><td class="c">${H.esc(r.qty)}${r.unit ? " " + H.esc(r.unit) : ""}</td><td class="n">${W(TF.num(r.price))}</td><td class="n">${c ? W(c.s) : ""}</td>${vat !== "none" ? `<td class="n">${c ? W(c.t) : ""}</td>` : ""}<td>${H.esc(r.memo)}</td></tr>`;
+      }).join("");
+      const total = sup + tax;
+      const info = [["견적일", H.date("date")], ["건명", H.t("title")], H.has("period") && ["기간 · 납기", H.t("period")], H.has("place") && ["장소 · 현장", H.t("place")], H.has("valid") && ["유효기간", H.t("valid")]].filter(Boolean);
+      const vatNote = { ex: "공급가액 + 부가세", in: "부가세 포함", none: "부가세 없음" }[vat];
+      return `<h1 class="d-title">견적서</h1>
+        <div class="d-split">
+          <div>
+            <p class="d-big" style="margin:0 0 3mm"><span class="fill l" style="min-width:52mm;font-weight:700">${H.t("to") || "&nbsp;"}</span> 귀하</p>
+            <table class="d-tbl d-kv">${info.map(([a, b]) => `<tr><th>${a}</th><td>${b}</td></tr>`).join("")}</table>
+            <p class="d-p">아래와 같이 견적합니다.</p>
+          </div>
+          <div>${H.party("biz", "공급자", "biz_stamp")}</div>
+        </div>
+        <div class="d-total"><span>합계 금액 <small>(${vatNote})</small></span><b>${H.amount(total)}</b></div>
+        <table class="d-tbl">
+          <colgroup><col style="width:8mm"><col><col style="width:30mm"><col style="width:17mm"><col style="width:21mm"><col style="width:24mm">${vat !== "none" ? '<col style="width:20mm">' : ""}<col style="width:18mm"></colgroup>
+          <thead><tr><th>No</th><th>${I.name}</th><th>${I.spec}</th><th>수량</th><th>단가</th><th>${vat === "none" ? "금액" : "공급가액"}</th>${vat !== "none" ? "<th>세액</th>" : ""}<th>비고</th></tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot>
+            ${vat !== "none" ? `<tr><th colspan="5">공급가액 합계</th><td class="n" colspan="2">${W(sup)}</td><td></td></tr><tr><th colspan="5">세액 합계</th><td class="n" colspan="2">${W(tax)}</td><td></td></tr>` : ""}
+            <tr><th colspan="5">합계</th><td class="n" colspan="${vat !== "none" ? 2 : 1}">${W(total)}</td><td></td></tr>
+          </tfoot>
+        </table>
+        ${H.has("pay") ? `<p class="d-p"><b>결제 조건</b> · ${H.t("pay")}</p>` : ""}
+        ${H.has("biz_bank") ? `<p class="d-p"><b>입금 계좌</b> · ${H.t("biz_bank")}</p>` : ""}
+        <p class="d-box-label">특이사항</p><div class="d-box">${H.nl("note")}</div>`;
+    }
+  });
+})();
+</script>
+</body>
+</html>

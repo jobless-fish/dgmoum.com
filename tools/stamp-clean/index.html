@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>도장 · 서명 배경 지우기 (투명 PNG) · 뚝딱툴</title>
+<meta name="description" content="흰 종이에 찍은 도장이나 손글씨 서명 사진의 배경을 지워 투명 PNG로 만들어요. 인주 색 보정, 자동 잘라내기. 업로드 없이 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<script src="../../assets/forms.js"></script>
+<style>
+  body { --cat: var(--form); }
+
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .compare figure { margin: 0; display: grid; gap: 6px; }
+  .compare figcaption { font-size: 13px; color: var(--muted); }
+  .box { border: 1px solid var(--line); border-radius: 8px; min-height: 220px; display: grid; place-items: center; padding: 12px; background: #fff; }
+  .box.checker { background: repeating-conic-gradient(#f1f3f5 0 25%, #dde1e6 0 50%) 0 0 / 16px 16px; }
+  .box.dark { background: #222; }
+  .box img, .box canvas { max-width: 100%; max-height: 320px; }
+  @media (max-width: 640px) { .compare { grid-template-columns: 1fr; } }
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>도장 · 서명 배경 지우기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="stamp-clean"></span>
+    <div>
+      <h1>도장 · 서명 배경 지우기</h1>
+      <p>흰 종이에 찍은 도장이나 서명을 사진으로 올리면 종이 배경을 지우고 투명 PNG로 만들어 줘요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>도장 · 서명 사진을 올려 주세요</strong>
+        <span>흰 종이에 찍은 도장이나 손글씨 서명 · 붙여넣기도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <section class="panel" id="work" hidden>
+        <div class="panel-body">
+          <div class="compare">
+            <figure><figcaption>원본</figcaption><div class="box" id="orig"></div></figure>
+            <figure><figcaption>배경 지운 결과 <button class="btn btn-sm" id="bg" type="button" style="margin-left:6px">배경 바꿔 보기</button></figcaption><div class="box checker" id="out"></div></figure>
+          </div>
+        </div>
+      </section>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+
+        <h2>지우기</h2>
+        <div class="field"><label for="st">지우는 정도 <span class="num" id="stv">50</span></label><input type="range" id="st" min="0" max="100" value="50"></div>
+        <p class="hint">종이 얼룩이나 그림자가 남으면 올리고, 글씨가 끊기면 내리세요.</p>
+        <div class="field"><label>색</label>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="ink" id="ink-auto" value="auto" checked><label for="ink-auto">원래 색</label>
+            <input type="radio" name="ink" id="ink-red" value="red"><label for="ink-red">빨강</label>
+            <input type="radio" name="ink" id="ink-black" value="black"><label for="ink-black">검정</label>
+            <input type="radio" name="ink" id="ink-blue" value="blue"><label for="ink-blue">파랑</label>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="save" disabled>투명 PNG 받기</button>
+        <p class="status" id="status"></p>
+        <p class="hint">밝은 곳에서 그림자 없이 찍을수록 깨끗하게 지워져요. 받은 PNG는 문서·한글·워드에 그대로 붙일 수 있어요.</p>
+        <p class="hint">견적서·계약서 같은 <a href="../../#form">양식 만들기</a>에서도 바로 쓸 수 있어요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const say = TT.sayTo($("#status"));
+  let src = null, result = null, name = "stamp";
+  const run = () => {
+    if (!src) return;
+    $("#stv").textContent = $("#st").value;
+    result = TF.cleanInk(src, { strength: +$("#st").value, color: document.querySelector("input[name=ink]:checked").value });
+    $("#out").innerHTML = "";
+    if (!result) { say("도장이나 글씨를 찾지 못했어요. 지우는 정도를 내려 보세요.", "err"); $("#save").disabled = true; return; }
+    $("#out").appendChild(result); $("#save").disabled = false;
+    say(`${result.width} × ${result.height}px · 빈 곳은 잘라냈어요.`, "ok");
+  };
+  TT.dropzone($("#drop"), async ([f]) => {
+    try { src = await TF.readImage(f); } catch { say("이 이미지는 열 수 없어요.", "err"); return; }
+    name = TT.baseName(f.name);
+    $("#orig").innerHTML = ""; const c = document.createElement("canvas"); c.width = src.width; c.height = src.height; c.getContext("2d").drawImage(src, 0, 0); $("#orig").appendChild(c);
+    $("#work").hidden = false; run();
+  }, { accept: "image/*", multiple: false });
+  $("#st").addEventListener("input", run);
+  document.querySelectorAll("input[name=ink]").forEach(r => r.addEventListener("change", run));
+  $("#bg").onclick = () => { const b = $("#out"); b.classList.toggle("dark"); b.classList.toggle("checker"); };
+  $("#save").onclick = () => result && result.toBlob(b => TT.download(b, name + "_투명.png"), "image/png");
+
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>거래명세서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="거래명세서를 칸만 채워 PDF로 저장하세요. 공급자·공급받는자, 부가세 자동 계산, 두 부 인쇄, 도장 넣기. 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>거래명세서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-statement"></span>
+    <div>
+      <h1>거래명세서 만들기</h1>
+      <p>물건이나 서비스를 넘길 때 주고받는 거래명세서예요. 한 장에 공급자·공급받는자 보관용 두 부를 같이 뽑을 수도 있어요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p><b>세금계산서가 아니에요.</b> 거래 내용을 확인하는 문서예요. 세금계산서는 홈택스 등에서 따로 발행하세요.</p>
+      <p>부가세 '포함'은 금액을 1.1로 나눠 공급가액과 세액을 나눠요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  // 줄마다 공급가액·세액을 계산해요
+  function calc(r, vat) {
+    if (!r || !String(r.price || "").trim()) return null;
+    const q = String(r.qty || "").trim() ? TF.num(r.qty) : 1, amt = Math.round(q * TF.num(r.price));
+    let s = amt, t = 0;
+    if (vat === "ex") t = Math.round(amt * 0.1);
+    if (vat === "in") { s = Math.round(amt / 1.1); t = amt - s; }
+    return { q, s, t, amt: s + t };
+  }
+  const W = n => n ? TF.won(n) : "";
+  TF.make({
+    fileName: v => ["거래명세서", v.biz_name, v.to_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "거래 정보" },
+      { k: "date", label: "거래일자", type: "date", def: "today", half: true },
+      { k: "vat", label: "부가세", type: "select", opts: [["ex", "별도 (+10%)"], ["in", "포함"], ["none", "없음 (면세 등)"]], half: true },
+      { k: "two", label: "한 장에 두 부 (공급자 · 공급받는자 보관용)", type: "check" },
+      { sec: "품목", hint: "월일은 비우면 거래일자를 따라가요." },
+      { table: "items" },
+      { sec: "공급받는자 (거래처)" },
+    { k: "to_name", label: "상호", ph: "상호을 입력하세요", half: true },
+    { k: "to_ceo", label: "대표자", ph: "이름을 입력하세요", half: true },
+    { k: "to_no", label: "사업자등록번호", ph: "000-00-00000", half: true },
+    { k: "to_tel", label: "전화", ph: "전화번호를 입력하세요", half: true },
+    { k: "to_addr", label: "주소", ph: "주소를 입력하세요" },
+    { k: "to_type", label: "업태", ph: "예: 서비스", half: true },
+    { k: "to_item", label: "종목", ph: "예: 디자인", half: true },
+      { sec: "공급자 (내 정보)" },
+    { k: "biz_name", label: "상호", ph: "상호을 입력하세요", half: true, mem: "biz" },
+    { k: "biz_ceo", label: "대표자", ph: "이름을 입력하세요", half: true, mem: "biz" },
+    { k: "biz_no", label: "사업자등록번호", ph: "000-00-00000", half: true, mem: "biz" },
+    { k: "biz_tel", label: "전화", ph: "전화번호를 입력하세요", half: true, mem: "biz" },
+    { k: "biz_addr", label: "주소", ph: "주소를 입력하세요", mem: "biz" },
+    { k: "biz_type", label: "업태", ph: "예: 서비스", half: true, mem: "biz" },
+    { k: "biz_item", label: "종목", ph: "예: 디자인", half: true, mem: "biz" },
+      { stamp: "biz_stamp" },
+      { sec: "덧붙임" },
+      { k: "prev", label: "전 잔액 (선택)", ph: "이전 미수금이 있으면 입력하세요", type: "money", half: true },
+      { k: "paid", label: "입금액 (선택)", ph: "이번에 받은 금액", type: "money", half: true },
+      { k: "note", label: "비고", type: "textarea", ph: "필요하면 입력하세요" }
+    ],
+    tables: [{ k: "items", min: 14, start: 3, addLabel: "품목 추가", cols: [
+      { k: "md", label: "월일", ph: "월일 (10/14)", size: "third" },
+      { k: "name", label: "품목", ph: "품목을 입력하세요", size: "wide" },
+      { k: "spec", label: "규격", ph: "규격", size: "third" },
+      { k: "qty", label: "수량", ph: "수량", type: "num", size: "third" },
+      { k: "price", label: "단가", ph: "단가 (원)", type: "money", size: "half" },
+      { k: "memo", label: "비고", ph: "비고", size: "half" }
+    ] }],
+    stamps: [{ k: "biz_stamp", label: "공급자 도장", mem: "biz", kind: "stamp" }],
+    render(v, H) {
+      const vat = v.vat, two = v.two, d = (v.date || "").match(/\d{4}-(\d{2})-(\d{2})/), md0 = d ? `${+d[1]}/${+d[2]}` : "";
+      const one = copy => {
+        let sup = 0, tax = 0;
+        const rows = H.rows("items", two ? 6 : 14).map(r => {
+          if (!r) return `<tr class="blank"><td></td><td></td><td></td><td></td><td></td><td></td>${vat !== "none" ? "<td></td>" : ""}<td></td></tr>`;
+          const c = calc(r, vat); if (c) { sup += c.s; tax += c.t; }
+          return `<tr><td class="c">${H.esc(r.md) || (c ? md0 : "")}</td><td>${H.esc(r.name)}</td><td>${H.esc(r.spec)}</td><td class="c">${H.esc(r.qty)}</td><td class="n">${W(TF.num(r.price))}</td><td class="n">${c ? W(c.s) : ""}</td>${vat !== "none" ? `<td class="n">${c ? W(c.t) : ""}</td>` : ""}<td>${H.esc(r.memo)}</td></tr>`;
+        }).join("");
+        const total = sup + tax, prev = TF.num(v.prev), paid = TF.num(v.paid), extra = prev || paid;
+        return `<div style="position:relative${two ? "" : ""}">
+          <span class="d-copy">${copy}</span>
+          <h1 class="d-title">거래명세서</h1>
+          <p class="d-p d-center" style="margin-top:-${two ? 2 : 5}mm">거래일자 · ${H.date("date")}</p>
+          <div class="d-split d-small">${H.party("to", "공급받는자", "")}${H.party("biz", "공급자", "biz_stamp")}</div>
+          <div class="d-total"><span>합계 금액 <small>(${{ ex: "공급가액 + 부가세", in: "부가세 포함", none: "부가세 없음" }[vat]})</small></span><b>${H.amount(total)}</b></div>
+          <table class="d-tbl">
+            <colgroup><col style="width:14mm"><col><col style="width:24mm"><col style="width:13mm"><col style="width:21mm"><col style="width:24mm">${vat !== "none" ? '<col style="width:20mm">' : ""}<col style="width:17mm"></colgroup>
+            <thead><tr><th>월일</th><th>품목</th><th>규격</th><th>수량</th><th>단가</th><th>${vat === "none" ? "금액" : "공급가액"}</th>${vat !== "none" ? "<th>세액</th>" : ""}<th>비고</th></tr></thead>
+            <tbody>${rows}</tbody>
+            <tfoot><tr><th colspan="5">합계</th><td class="n">${W(sup)}</td>${vat !== "none" ? `<td class="n">${W(tax)}</td>` : ""}<td></td></tr>
+            ${extra ? `<tr><th colspan="5">전 잔액 ${W(prev) || 0} · 입금 ${W(paid) || 0}</th><th colspan="${vat !== "none" ? 2 : 1}">잔액</th><td class="n">${W(prev + total - paid) || 0}</td></tr>` : ""}</tfoot>
+          </table>
+          ${H.has("note") ? `<p class="d-p"><b>비고</b> · ${H.nl("note")}</p>` : ""}
+          <p class="d-right" style="margin:3mm 0 0">인수자 <span class="fill" style="min-width:30mm">&nbsp;</span> <span class="stampbox">(인)</span></p>
+        </div>`;
+      };
+      return two ? `<div class="d-compact">${one("공급자 보관용")}<div class="d-cut"></div>${one("공급받는자 보관용")}</div>` : one("공급받는자 보관용");
+    }
+  });
+})();
+</script>
+</body>
+</html>

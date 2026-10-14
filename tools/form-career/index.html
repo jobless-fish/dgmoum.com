@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>경력증명서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="경력증명서를 칸만 채워 PDF로 저장하세요. 근무 기간·담당 업무·부서 이력, 회사 직인. 무료, 가입 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>경력증명서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-career"></span>
+    <div>
+      <h1>경력증명서 만들기</h1>
+      <p>퇴사한 직원의 근무 기간과 업무를 회사가 확인해 주는 경력증명서예요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p>회사가 발급하는 문서예요. 직원이 직접 만들어 내면 안 돼요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  TF.make({
+    fileName: v => ["경력증명서", v.name, v.biz_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "직원" },
+      { k: "name", label: "이름", ph: "이름을 입력하세요", half: true },
+      { k: "birth", label: "생년월일", type: "date", half: true },
+      { k: "addr", label: "주소 (선택)", ph: "주소를 입력하세요" },
+      { sec: "경력 내용" },
+      { k: "dept", label: "부서", ph: "부서를 입력하세요", half: true },
+      { k: "pos", label: "직위", ph: "직위를 입력하세요", half: true },
+      { k: "join", label: "입사일", type: "date", half: true },
+      { k: "leave", label: "퇴사일", type: "date", half: true },
+      { k: "work", label: "담당 업무", ph: "담당 업무를 입력하세요" },
+      { sec: "부서 · 직위 이력 (선택)", hint: "옮긴 적이 있으면 줄을 추가하세요." }, { table: "hist" },
+      { k: "purpose", label: "용도 · 제출처", ph: "예: 은행 제출용", half: true },
+      { k: "no", label: "발급 번호 (선택)", ph: "예: 2026-015", half: true },
+      { sec: "회사 (발급하는 곳)" },
+      { k: "biz_name", label: "회사명", ph: "회사명을 입력하세요", half: true, mem: "biz" },
+      { k: "biz_ceo", label: "대표자", ph: "이름을 입력하세요", half: true, mem: "biz" },
+      { k: "biz_no", label: "사업자등록번호", ph: "000-00-00000", half: true, mem: "biz" },
+      { k: "biz_tel", label: "전화", ph: "전화번호를 입력하세요", half: true, mem: "biz" },
+      { k: "biz_addr", label: "주소", ph: "주소를 입력하세요", mem: "biz" },
+      { k: "date", label: "발급일", type: "date", def: "today" },
+      { stamp: "biz_stamp" }
+    ],
+    tables: [{ k: "hist", min: 0, start: 0, addLabel: "이력 추가", cols: [
+      { k: "from", label: "시작", ph: "시작 (2020.03)", size: "third" }, { k: "to", label: "끝", ph: "끝 (2022.12)", size: "third" }, { k: "pos", label: "직위", ph: "직위", size: "third" },
+      { k: "dept", label: "부서", ph: "부서", size: "half" }, { k: "work", label: "업무", ph: "업무", size: "half" }] }],
+    stamps: [{ k: "biz_stamp", label: "회사 직인", mem: "biz", kind: "stamp" }],
+    render(v, H) {
+      const emp = false;
+      const period = emp ? `${H.date("join")} ~ ${H.kdate(v.until) || "현재"}` : `${H.date("join")} ~ ${H.date("leave")}`;
+      const hist = H.rows("hist", 0);
+      return `${H.has("no") ? `<p class="d-small d-muted" style="margin:0 0 4mm">제 ${H.t("no")} 호</p>` : ""}
+        <h1 class="d-title" style="margin-bottom:10mm">경력증명서</h1>
+        <p class="d-sec">인적 사항</p>
+        <table class="d-tbl d-kv"><tr><th>성명</th><td>${H.t("name")}</td><th>생년월일</th><td>${H.kdate(v.birth)}</td></tr>
+          <tr><th>주소</th><td colspan="3">${H.t("addr")}</td></tr></table>
+        <p class="d-sec">${emp ? "재직 사항" : "경력 사항"}</p>
+        <table class="d-tbl d-kv"><tr><th>회사명</th><td>${H.t("biz_name")}</td><th>부서</th><td>${H.t("dept")}</td></tr>
+          <tr><th>직위</th><td>${H.t("pos")}</td><th>${emp ? "재직 기간" : "근무 기간"}</th><td>${period}</td></tr>
+          <tr><th>담당 업무</th><td colspan="3">${H.t("work")}</td></tr>
+          <tr><th>용도</th><td colspan="3">${H.t("purpose")}</td></tr></table>
+        ${hist.length ? `<p class="d-sec">부서 · 직위 이력</p><table class="d-tbl"><colgroup><col style="width:44mm"><col style="width:36mm"><col style="width:24mm"><col></colgroup>
+          <thead><tr><th>기간</th><th>부서</th><th>직위</th><th>업무</th></tr></thead>
+          <tbody>${hist.map(r => `<tr><td class="c">${H.esc(r.from)} ~ ${H.esc(r.to)}</td><td>${H.esc(r.dept)}</td><td class="c">${H.esc(r.pos)}</td><td>${H.esc(r.work)}</td></tr>`).join("")}</tbody></table>` : ""}
+        <p class="d-center d-big" style="margin:16mm 0 4mm;letter-spacing:.06em">${emp ? "위 사람은 당사에 재직하고 있음을 증명합니다." : "위와 같이 경력을 증명합니다."}</p>
+        <div class="d-sign" style="justify-items:center">
+          <p class="date">${H.date("date")}</p>
+        </div>
+        <table class="d-tbl d-kv" style="width:120mm;margin:6mm auto 0">
+          <tr><th>회사명</th><td>${H.t("biz_name")}</td></tr>
+          <tr><th>사업자번호</th><td class="d-mono">${H.t("biz_no")}</td></tr>
+          <tr><th>주소</th><td>${H.t("biz_addr")}</td></tr>
+          <tr><th>전화</th><td>${H.t("biz_tel")}</td></tr>
+          <tr><th>대표자</th><td><span class="d-namecell"><span>${H.t("biz_ceo")}</span>${H.stamp("biz_stamp", "(직인)")}</span></td></tr>
+        </table>`;
+    }
+  });
+})();
+</script>
+</body>
+</html>
