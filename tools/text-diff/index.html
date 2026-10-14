@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>텍스트 비교 (두 글 차이 찾기) · 뚝딱툴</title>
+<meta name="description" content="두 글을 붙여넣으면 바뀐 줄과 바뀐 글자를 색으로 보여줘요. 나란히·한 줄 보기, 띄어쓰기 무시, 파일 열기(EUC-KR 포함). 업로드 없이 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--txt); }
+
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .pair .panel-body { gap: 8px; }
+  .pair .head { display: flex; align-items: center; gap: 8px; }
+  .pair .head b { font-size: 14px; flex: 1; }
+  .pair .head .num { font-size: 12px; color: var(--muted); }
+  .pair textarea { width: 100%; min-height: 220px; resize: vertical; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); color: var(--ink); padding: 10px 12px; font: 14px/1.6 var(--f-mono), var(--f-body); tab-size: 4; }
+  .pair textarea:focus { outline: 2px solid color-mix(in srgb, var(--cat) 50%, transparent); outline-offset: 1px; }
+  .mid { display: flex; justify-content: center; margin: -4px 0; }
+  @media (max-width: 760px) { .pair { grid-template-columns: 1fr; } }
+
+  :root { --d-del: #ffe1e1; --d-del2: #ffb3b3; --d-ins: #dcf5e0; --d-ins2: #9ee3ab; --d-gap: var(--surface-2); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --d-del: #3d2224; --d-del2: #7a2f34; --d-ins: #1d3524; --d-ins2: #2f6b3d; } }
+  :root[data-theme="dark"] { --d-del: #3d2224; --d-del2: #7a2f34; --d-ins: #1d3524; --d-ins2: #2f6b3d; }
+
+  .result { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+  .result table { width: 100%; border-collapse: collapse; table-layout: fixed; font: 13.5px/1.6 var(--f-mono), var(--f-body); }
+  .result td { padding: 1px 8px; vertical-align: top; white-space: pre-wrap; overflow-wrap: anywhere; word-break: break-all; }
+  .result td.ln { width: 46px; text-align: right; color: var(--muted); font-size: 12px; user-select: none; background: var(--surface-2); padding-right: 6px; }
+  .result td.sg { width: 18px; text-align: center; color: var(--muted); user-select: none; padding: 1px 0; }
+  .result .side td.txt { width: calc(50% - 46px); }
+  .result .side td.ln + td { border-right: 1px solid var(--line); }
+  .result tr.del td.txt.l, .result tr.del td.txt.u { background: var(--d-del); }
+  .result tr.ins td.txt.u, .result td.txt.r.ins { background: var(--d-ins); }
+  .result td.txt.l.del { background: var(--d-del); }
+  .result td.txt.r.ins { background: var(--d-ins); }
+  .result td.txt.empty { background: repeating-linear-gradient(135deg, var(--d-gap) 0 6px, var(--surface) 6px 12px); }
+  .result del, .result ins { text-decoration: none; border-radius: 2px; }
+  .result del { background: var(--d-del2); }
+  .result ins { background: var(--d-ins2); }
+  .result tr.fold td { background: var(--surface-2); text-align: center; color: var(--muted); font-family: var(--f-body); font-size: 12.5px; cursor: pointer; padding: 4px; }
+  .result tr.fold td:hover { color: var(--ink); }
+  .result .same { padding: 28px 16px; text-align: center; color: var(--muted); font-family: var(--f-body); }
+  .stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .stat { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: var(--surface-2); }
+  .stat b { display: block; font: 600 20px var(--f-mono); font-variant-numeric: tabular-nums; }
+  .stat span { font-size: 12px; color: var(--muted); }
+  .stat.add b { color: var(--ok); } .stat.rem b { color: var(--err); }
+  .resbar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .resbar h2 { margin: 0; flex: 1; }
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>텍스트 비교</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="text-diff"></span>
+    <div>
+      <h1>텍스트 비교</h1>
+      <p>원래 글과 고친 글을 넣으면 더한 곳, 지운 곳, 고친 글자를 색으로 보여줘요. 계약서나 원고 수정본을 확인할 때 써요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="pair">
+        <section class="panel"><div class="panel-body">
+          <div class="head"><b>원래 글</b><span class="num" id="cA"></span><button class="btn btn-sm" data-open="a">파일 열기</button></div>
+          <textarea id="a" placeholder="원래 글을 붙여넣으세요" spellcheck="false" aria-label="원래 글"></textarea>
+        </div></section>
+        <section class="panel"><div class="panel-body">
+          <div class="head"><b>고친 글</b><span class="num" id="cB"></span><button class="btn btn-sm" data-open="b">파일 열기</button></div>
+          <textarea id="b" placeholder="고친 글을 붙여넣으세요" spellcheck="false" aria-label="고친 글"></textarea>
+        </div></section>
+      </div>
+      <div class="mid"><button class="btn btn-sm" id="swap" title="두 글 자리 바꾸기">⇄ 자리 바꾸기</button></div>
+      <input type="file" id="fileIn" accept=".txt,.md,.csv,.tsv,.json,.html,.htm,.xml,.srt,.vtt,.log,.js,.css,.py,text/*" hidden>
+      <section class="panel"><div class="panel-body">
+        <div class="resbar"><h2>비교 결과</h2>
+          <div class="seg" role="radiogroup" style="width:auto">
+            <input type="radio" name="view" id="v-side" value="side" checked><label for="v-side" style="padding:6px 12px">나란히</label>
+            <input type="radio" name="view" id="v-uni" value="uni"><label for="v-uni" style="padding:6px 12px">한 줄로</label>
+          </div>
+        </div>
+        <div class="result" id="result"><div class="same">두 칸에 글을 넣으면 바로 비교해요.</div></div>
+      </div></section>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>바뀐 정도</h2>
+        <div class="stats">
+          <div class="stat add"><b id="sAdd">0</b><span>더한 줄</span></div>
+          <div class="stat rem"><b id="sDel">0</b><span>지운 줄</span></div>
+          <div class="stat"><b id="sMod">0</b><span>고친 줄</span></div>
+          <div class="stat"><b id="sChar">0</b><span>바뀐 글자</span></div>
+        </div>
+        <h2>비교 방법</h2>
+        <label class="check"><input type="checkbox" id="oSpace"> 띄어쓰기 · 공백 무시</label>
+        <label class="check"><input type="checkbox" id="oCase"> 영어 대소문자 무시</label>
+        <label class="check"><input type="checkbox" id="oBlank"> 빈 줄 무시</label>
+        <label class="check"><input type="checkbox" id="oFold" checked> 바뀐 곳 주변만 보기</label>
+        <p class="hint">바뀐 줄 안에서는 바뀐 글자만 진하게 표시해요. 한글은 글자 하나, 영어는 단어 하나씩 비교해요.</p>
+        <button class="btn btn-block" id="copy">결과를 글로 복사</button>
+        <button class="btn btn-block" id="clear">모두 비우기</button>
+        <p class="status" id="status"></p>
+        <p class="hint">글은 이 브라우저 안에서만 비교하고 어디에도 보내지 않아요. 계약서·원고 수정본 비교에 써도 돼요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>글은 이 브라우저 안에서만 비교해요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const A = $("#a"), B = $("#b"), out = $("#result");
+  const say = TT.sayTo($("#status"));
+  const esc = s => s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+
+  /* ---------- 마이어스 비교 (가장 적게 바꾸는 길을 찾아요) ---------- */
+  function diff(a, b) {
+    // 앞뒤 같은 부분은 미리 떼어내요
+    let s = 0; while (s < a.length && s < b.length && a[s] === b[s]) s++;
+    let ea = a.length, eb = b.length; while (ea > s && eb > s && a[ea - 1] === b[eb - 1]) { ea--; eb--; }
+    const A = a.slice(s, ea), Bb = b.slice(s, eb), N = A.length, M = Bb.length, MAX = N + M;
+    const ops = [];
+    for (let i = 0; i < s; i++) ops.push(["=", i, i]);
+    if (N === 0) for (let j = 0; j < M; j++) ops.push(["+", -1, s + j]);
+    else if (M === 0) for (let i = 0; i < N; i++) ops.push(["-", s + i, -1]);
+    else {
+      const off = MAX + 1, V = new Int32Array(2 * MAX + 3), trace = [];
+      let found = false;
+      for (let d = 0; d <= MAX && !found; d++) {
+        trace.push(V.slice());
+        for (let k = -d; k <= d; k += 2) {
+          let x = (k === -d || (k !== d && V[off + k - 1] < V[off + k + 1])) ? V[off + k + 1] : V[off + k - 1] + 1;
+          let y = x - k;
+          while (x < N && y < M && A[x] === Bb[y]) { x++; y++; }
+          V[off + k] = x;
+          if (x >= N && y >= M) { found = true; break; }
+        }
+      }
+      // 거꾸로 따라가며 길을 복원해요
+      let x = N, y = M; const rev = [];
+      for (let d = trace.length - 1; d >= 0; d--) {
+        const Vd = trace[d], k = x - y;
+        const pk = (k === -d || (k !== d && Vd[off + k - 1] < Vd[off + k + 1])) ? k + 1 : k - 1;
+        const px = Vd[off + pk], py = px - pk;
+        while (x > px && y > py) { rev.push(["=", s + x - 1, s + y - 1]); x--; y--; }
+        if (d > 0) { if (x === px) rev.push(["+", -1, s + y - 1]); else rev.push(["-", s + x - 1, -1]); }
+        x = px; y = py;
+      }
+      ops.push(...rev.reverse());
+    }
+    for (let i = 0; i < a.length - ea; i++) ops.push(["=", ea + i, eb + i]);
+    return ops;
+  }
+
+  /* ---------- 줄 안의 글자 비교 ---------- */
+  // 한글은 글자 하나, 영어·숫자는 단어 하나, 공백은 덩어리로
+  const tok = s => s.match(/[가-힣ㄱ-ㅎㅏ-ㅣ]|[A-Za-z0-9_]+|\s+|./gu) || [];
+  function inline(la, lb, o) {
+    const ta = tok(la), tb = tok(lb);
+    const key = t => { if (o.space && /^\s+$/.test(t)) return null; return o.case ? t.toLowerCase() : t; };
+    const ia = ta.map((t, i) => [key(t), i]).filter(x => x[0] !== null), ib = tb.map((t, i) => [key(t), i]).filter(x => x[0] !== null);
+    const ops = diff(ia.map(x => x[0]), ib.map(x => x[0]));
+    const ca = new Set(), cb = new Set(); let same = 0, chars = 0;
+    for (const [t, i, j] of ops) {
+      if (t === "=") same += ia[i][0].length;
+      else if (t === "-") { ca.add(ia[i][1]); chars += ta[ia[i][1]].length; }
+      else { cb.add(ib[j][1]); chars += tb[ib[j][1]].length; }
+    }
+    const paint = (ts, ch, tag) => { let h = "", run = ""; ts.forEach((t, i) => { if (ch.has(i)) run += t; else { if (run) { h += `<${tag}>${esc(run)}</${tag}>`; run = ""; } h += esc(t); } }); if (run) h += `<${tag}>${esc(run)}</${tag}>`; return h; };
+    const sim = (2 * same) / Math.max(1, la.length + lb.length);
+    return { a: paint(ta, ca, "del"), b: paint(tb, cb, "ins"), sim, chars };
+  }
+
+  /* ---------- 비교하고 그리기 ---------- */
+  const opt = () => ({ space: $("#oSpace").checked, case: $("#oCase").checked, blank: $("#oBlank").checked, fold: $("#oFold").checked, view: document.querySelector("input[name=view]:checked").value });
+  let expanded = new Set(), last = null;
+  function compare() {
+    const o = opt(), ta = A.value.replace(/\r\n?/g, "\n"), tb = B.value.replace(/\r\n?/g, "\n");
+    $("#cA").textContent = ta ? `${ta.split("\n").length}줄 · ${ta.length.toLocaleString()}자` : "";
+    $("#cB").textContent = tb ? `${tb.split("\n").length}줄 · ${tb.length.toLocaleString()}자` : "";
+    if (!ta && !tb) { out.innerHTML = `<div class="same">두 칸에 글을 넣으면 바로 비교해요.</div>`; stats(0, 0, 0, 0); last = null; return; }
+    let la = ta.split("\n"), lb = tb.split("\n");
+    // 빈 줄 무시: 비교할 줄만 골라 두고 번호는 원래대로
+    const pick = ls => ls.map((t, n) => ({ t, n })).filter(x => !(o.blank && !x.t.trim()));
+    const pa = pick(la), pb = pick(lb);
+    const norm = t => { if (o.space) t = t.replace(/\s+/g, ""); if (o.case) t = t.toLowerCase(); return t; };
+    const ops = diff(pa.map(x => norm(x.t)), pb.map(x => norm(x.t)));
+    // 같은 줄 / 바뀐 묶음으로 나눠요
+    const blocks = []; let cur = null;
+    for (const [t, i, j] of ops) {
+      if (t === "=") { cur = null; const l = blocks[blocks.length - 1]; if (l && l.eq) l.rows.push([pa[i], pb[j]]); else blocks.push({ eq: true, rows: [[pa[i], pb[j]]] }); }
+      else { if (!cur) { cur = { eq: false, del: [], ins: [] }; blocks.push(cur); } (t === "-" ? cur.del : cur.ins).push(t === "-" ? pa[i] : pb[j]); }
+    }
+    let add = 0, del = 0, mod = 0, chars = 0;
+    // 바뀐 묶음 안에서 비슷한 줄끼리 짝을 지어요
+    for (const b of blocks) if (!b.eq) {
+      b.pairs = [];
+      const n = Math.min(b.del.length, b.ins.length);
+      for (let k = 0; k < n; k++) {
+        const r = inline(b.del[k].t, b.ins[k].t, o);
+        if (r.sim >= 0.35) { b.pairs.push({ l: b.del[k], r: b.ins[k], ha: r.a, hb: r.b }); mod++; chars += r.chars; }
+        else { b.pairs.push({ l: b.del[k], r: null }, { l: null, r: b.ins[k] }); del++; add++; chars += b.del[k].t.length + b.ins[k].t.length; }
+      }
+      b.del.slice(n).forEach(x => { b.pairs.push({ l: x, r: null }); del++; chars += x.t.length; });
+      b.ins.slice(n).forEach(x => { b.pairs.push({ l: null, r: x }); add++; chars += x.t.length; });
+    }
+    stats(add, del, mod, chars);
+    last = { blocks, o };
+    if (!add && !del && !mod) { out.innerHTML = `<div class="same">두 글이 같아요.${o.space || o.case || o.blank ? " (무시하기로 한 차이는 빼고)" : ""}</div>`; return; }
+    draw();
+  }
+  function stats(a, d, m, c) { $("#sAdd").textContent = a.toLocaleString(); $("#sDel").textContent = d.toLocaleString(); $("#sMod").textContent = m.toLocaleString(); $("#sChar").textContent = c.toLocaleString(); }
+
+  function draw() {
+    const { blocks, o } = last, side = o.view === "side", CTX = 3;
+    let h = "";
+    const eqRow = (x, y) => side
+      ? `<tr><td class="ln">${x.n + 1}</td><td class="txt">${esc(x.t)}</td><td class="ln">${y.n + 1}</td><td class="txt">${esc(y.t)}</td></tr>`
+      : `<tr><td class="ln">${x.n + 1}</td><td class="ln">${y.n + 1}</td><td class="sg"></td><td class="txt">${esc(y.t)}</td></tr>`;
+    blocks.forEach((b, bi) => {
+      if (b.eq) {
+        const rows = b.rows, fold = o.fold && !expanded.has(bi) && rows.length > CTX * 2 + 2;
+        const first = bi === 0, lastB = bi === blocks.length - 1;
+        if (!fold) { rows.forEach(([x, y]) => h += eqRow(x, y)); return; }
+        const head = first ? [] : rows.slice(0, CTX), tail = lastB ? [] : rows.slice(-CTX), hidden = rows.length - head.length - tail.length;
+        head.forEach(([x, y]) => h += eqRow(x, y));
+        h += `<tr class="fold" data-b="${bi}"><td colspan="4">⋯ 같은 줄 ${hidden.toLocaleString()}개 펼치기</td></tr>`;
+        tail.forEach(([x, y]) => h += eqRow(x, y));
+        return;
+      }
+      if (side) {
+        for (const p of b.pairs) {
+          const L = p.l ? `<td class="ln">${p.l.n + 1}</td><td class="txt l del">${p.ha ?? `<del>${esc(p.l.t)}</del>`}</td>` : `<td class="ln"></td><td class="txt empty"></td>`;
+          const R = p.r ? `<td class="ln">${p.r.n + 1}</td><td class="txt r ins">${p.hb ?? `<ins>${esc(p.r.t)}</ins>`}</td>` : `<td class="ln"></td><td class="txt empty"></td>`;
+          h += `<tr>${L}${R}</tr>`;
+        }
+      } else {
+        const dels = b.pairs.filter(p => p.l), ins = b.pairs.filter(p => p.r);
+        dels.forEach(p => h += `<tr class="del"><td class="ln">${p.l.n + 1}</td><td class="ln"></td><td class="sg">−</td><td class="txt u">${p.ha ?? `<del>${esc(p.l.t)}</del>`}</td></tr>`);
+        ins.forEach(p => h += `<tr class="ins"><td class="ln"></td><td class="ln">${p.r.n + 1}</td><td class="sg">+</td><td class="txt u">${p.hb ?? `<ins>${esc(p.r.t)}</ins>`}</td></tr>`);
+      }
+    });
+    out.innerHTML = `<table class="${side ? "side" : "uni"}">${side ? "" : '<colgroup><col style="width:46px"><col style="width:46px"><col style="width:18px"><col></colgroup>'}${h}</table>`;
+  }
+  out.addEventListener("click", e => { const f = e.target.closest("tr.fold"); if (f) { expanded.add(+f.dataset.b); draw(); } });
+
+  let t = 0;
+  const later = () => { clearTimeout(t); t = setTimeout(() => { expanded = new Set(); compare(); }, 250); };
+  A.addEventListener("input", later); B.addEventListener("input", later);
+  ["oSpace", "oCase", "oBlank", "oFold"].forEach(id => $("#" + id).addEventListener("change", () => { expanded = new Set(); compare(); }));
+  document.querySelectorAll("input[name=view]").forEach(r => r.addEventListener("change", () => last && draw()));
+  if (innerWidth < 760) $("#v-uni").checked = true;
+
+  $("#swap").onclick = () => { [A.value, B.value] = [B.value, A.value]; compare(); };
+  $("#clear").onclick = () => { A.value = B.value = ""; compare(); say(""); };
+
+  // 파일 열기 (한글 txt가 EUC-KR이어도 읽어요)
+  let target = null;
+  document.querySelectorAll("[data-open]").forEach(b => b.onclick = () => { target = b.dataset.open === "a" ? A : B; $("#fileIn").click(); });
+  async function readText(f) {
+    const buf = await f.arrayBuffer();
+    try { return new TextDecoder("utf-8", { fatal: true }).decode(buf).replace(/^﻿/, ""); }
+    catch { return new TextDecoder("euc-kr").decode(buf); }
+  }
+  $("#fileIn").onchange = async e => {
+    const f = e.target.files[0]; e.target.value = ""; if (!f || !target) return;
+    if (f.size > 5 * 1024 * 1024) { say("5MB보다 큰 파일은 너무 느려서 열지 않아요.", "err"); return; }
+    target.value = await readText(f); say(`${f.name}을 열었어요.`, "ok"); compare();
+  };
+  // 글 칸에 파일을 끌어다 놓아도 돼요
+  [A, B].forEach(el => {
+    el.addEventListener("dragover", e => { if ([...e.dataTransfer.types].includes("Files")) e.preventDefault(); });
+    el.addEventListener("drop", async e => { const f = e.dataTransfer.files[0]; if (!f) return; e.preventDefault(); el.value = await readText(f); compare(); });
+  });
+
+  // 결과를 글로 복사 (- 지운 줄, + 더한 줄)
+  $("#copy").onclick = async () => {
+    if (!last) { say("비교할 글이 없어요.", "err"); return; }
+    const lines = [];
+    for (const b of last.blocks) {
+      if (b.eq) { b.rows.forEach(([, y]) => lines.push("  " + y.t)); continue; }
+      b.pairs.filter(p => p.l).forEach(p => lines.push("- " + p.l.t));
+      b.pairs.filter(p => p.r).forEach(p => lines.push("+ " + p.r.t));
+    }
+    try { await navigator.clipboard.writeText(lines.join("\n")); say("복사했어요. 지운 줄은 -, 더한 줄은 +로 표시돼요.", "ok"); }
+    catch { say("복사하지 못했어요. 브라우저가 막았을 수 있어요.", "err"); }
+  };
+
+})();
+</script>
+</body>
+</html>
