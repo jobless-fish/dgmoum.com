@@ -18,7 +18,7 @@ window.TT_TOOLS = [
   { id: "favicon", cat: "des", name: "파비콘 만들기", desc: "이미지 하나로 favicon.ico와 홈 화면 아이콘 여러 크기를 한 번에. HTML 코드까지.", tags: ["파비콘", "favicon", "ico", "아이콘", "웹사이트", "앱 아이콘"], status: "live" },
   { id: "video-trim", cat: "vid", name: "영상 자르기", desc: "원하는 구간만 골라 잘라 저장해요. 소리도 같이 들어가요.", tags: ["동영상", "video", "trim", "컷", "편집", "mp4"], status: "live" },
   { id: "video-gif", cat: "vid", name: "영상 → GIF", desc: "영상에서 짧은 구간을 골라 움짤(GIF)로 만들어요. 크기와 프레임 수 조절.", tags: ["gif", "움짤", "짤", "동영상", "변환"], status: "live" },
-  { id: "shorts-maker", cat: "vid", name: "쇼츠 · 릴스 세로 변환", desc: "가로 영상을 9:16 세로로 바꾸고 자막을 얹어요. 두꺼운 한글 글꼴, 격자에 맞춘 정렬, 가림 영역 표시, SRT 불러오기.", tags: ["쇼츠", "릴스", "틱톡", "세로", "9:16", "자막", "shorts", "reels", "srt", "세로 영상"], status: "live" },
+  { id: "shorts-maker", cat: "vid", name: "쇼츠 · 릴스 · 틱톡 세로 변환", desc: "가로 영상을 9:16 세로로 바꿔요. 남는 곳은 흐린 배경으로 채우거나, 꽉 채운 뒤 보여줄 부분을 골라요.", tags: ["쇼츠", "릴스", "틱톡", "세로", "9:16", "shorts", "reels", "tiktok", "세로 영상", "변환"], status: "live" },
   { id: "audio-edit", cat: "aud", name: "음원 자르기 · 피치 조절", desc: "파형을 보며 구간을 자르고, 키(반음)와 속도를 따로 바꿔 WAV·MP3로 저장해요.", tags: ["오디오", "mp3", "wav", "키", "피치", "속도", "mr", "벨소리"], status: "live" },
   { id: "pdf-merge", cat: "doc", name: "PDF 합치기", desc: "여러 PDF를 원하는 순서대로 하나로 묶어요.", tags: ["pdf", "합치기", "병합", "merge"], status: "live" },
   { id: "pdf-split", cat: "doc", name: "PDF 나누기 · 정리", desc: "페이지를 보면서 빼고, 돌리고, 순서를 바꾸고, 필요한 페이지만 뽑거나 한 장씩 나눠요.", tags: ["pdf", "나누기", "분할", "추출", "삭제", "회전", "split"], status: "live" },
