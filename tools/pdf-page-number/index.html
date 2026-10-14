@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PDF 쪽 번호 넣기 · 뚝딱툴</title>
+<meta name="description" content="PDF에 쪽 번호(페이지 번호)를 넣어요. 위치·형식·크기·시작 번호, 표지 빼기, 양면 인쇄용 좌우 바꾸기. 무료, 업로드 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--doc); }
+
+  .pvs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+  .pvs figure { margin: 0; display: grid; gap: 6px; text-align: center; font-size: 12.5px; color: var(--muted); }
+  .pvs canvas { width: 100%; height: auto; background: #fff; box-shadow: var(--shadow); border-radius: 2px; }
+  .posgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; width: 132px; padding: 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); aspect-ratio: 210 / 297; align-content: space-between; }
+  .posgrid input { position: absolute; opacity: 0; pointer-events: none; }
+  .posgrid label { height: 26px; border-radius: 4px; border: 1px dashed var(--line); cursor: pointer; display: grid; place-items: center; font-size: 11px; color: var(--muted); background: var(--surface); }
+  .posgrid input:checked + label { background: var(--doc); border: 1px solid var(--doc); color: #fff; font-weight: 600; }
+  .posgrid input:focus-visible + label { outline: 2px solid var(--doc); outline-offset: 2px; }
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>PDF 쪽 번호 넣기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="pdf-page-number"></span>
+    <div>
+      <h1>PDF 쪽 번호 넣기</h1>
+      <p>PDF 모든 쪽에 번호를 넣어요. 위치와 모양을 고르면 미리보기로 바로 보여줘요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>PDF를 올려 주세요</strong>
+        <span>쪽 번호를 넣을 PDF 한 개</span>
+        <input type="file" id="file">
+      </div>
+      <section class="panel" id="work" hidden>
+        <div class="panel-body">
+          <div class="list-head"><p id="summary"></p><button class="btn btn-sm" id="clear">다른 파일</button></div>
+          <div class="pvs" id="pvs"></div>
+        </div>
+      </section>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>위치</h2>
+        <div class="posgrid" role="radiogroup" aria-label="번호 위치">
+          <input type="radio" name="pos" id="p-tl" value="tl"><label for="p-tl" aria-label="위 왼쪽">↖</label>
+          <input type="radio" name="pos" id="p-tc" value="tc"><label for="p-tc" aria-label="위 가운데">↑</label>
+          <input type="radio" name="pos" id="p-tr" value="tr"><label for="p-tr" aria-label="위 오른쪽">↗</label>
+          <input type="radio" name="pos" id="p-bl" value="bl"><label for="p-bl" aria-label="아래 왼쪽">↙</label>
+          <input type="radio" name="pos" id="p-bc" value="bc" checked><label for="p-bc" aria-label="아래 가운데">↓</label>
+          <input type="radio" name="pos" id="p-br" value="br"><label for="p-br" aria-label="아래 오른쪽">↘</label>
+        </div>
+        <label class="check"><input type="checkbox" id="mirror"> 양면 인쇄용 (짝수 쪽은 좌우 바꾸기)</label>
+        <h2>모양</h2>
+        <div class="field"><label for="style">형식</label>
+          <select id="style"><option value="n">1</option><option value="nt">1 / 12</option><option value="dash" selected>- 1 -</option><option value="page">Page 1</option><option value="pageof">Page 1 of 12</option></select></div>
+        <div class="ftwo" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field"><label for="size">글자 크기 (pt)</label><input type="text" inputmode="decimal" id="size" value="10"></div>
+          <div class="field"><label for="margin">가장자리 여백 (mm)</label><input type="text" inputmode="decimal" id="margin" value="10"></div>
+        </div>
+        <div class="field"><span class="label">글자 색</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="col" id="c-k" value="k" checked><label for="c-k">검정</label>
+            <input type="radio" name="col" id="c-g" value="g"><label for="c-g">회색</label>
+          </div></div>
+        <h2>범위</h2>
+        <div class="ftwo" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="field"><label for="from">번호 넣을 첫 쪽</label><input type="text" inputmode="numeric" id="from" value="1"></div>
+          <div class="field"><label for="start">시작 번호</label><input type="text" inputmode="numeric" id="start" value="1"></div>
+        </div>
+        <p class="hint">표지에 번호를 빼려면 첫 쪽을 2로 두세요. 시작 번호를 1로 두면 둘째 쪽부터 1, 2, 3…이 붙어요.</p>
+        <button class="btn btn-primary btn-block" id="run" disabled>쪽 번호 넣기</button>
+        <p class="status" id="status"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const say = TT.sayTo($("#status"));
+  const MM = 72 / 25.4;
+  let file = null, bytes = null, pdfjsDoc = null, total = 0, sizes = [];
+  const opt = () => {
+    const from = Math.max(1, parseInt($("#from").value) || 1);
+    return {
+      pos: document.querySelector("input[name=pos]:checked").value, mirror: $("#mirror").checked,
+      style: $("#style").value, size: Math.min(40, Math.max(5, parseFloat($("#size").value) || 10)),
+      margin: Math.min(60, Math.max(0, parseFloat($("#margin").value) || 0)),
+      gray: document.querySelector("input[name=col]:checked").value === "g",
+      from, start: parseInt($("#start").value) || 1
+    };
+  };
+  // i: 0부터 시작하는 쪽 순서. 번호가 없으면 null
+  const label = (i, o) => {
+    if (i + 1 < o.from) return null;
+    const n = o.start + (i + 1 - o.from), last = o.start + (total - o.from);
+    return { n: `${n}`, nt: `${n} / ${last}`, dash: `- ${n} -`, page: `Page ${n}`, pageof: `Page ${n} of ${last}` }[o.style];
+  };
+  // 보이는 화면 기준 위치 (왼쪽 아래가 0,0, 단위 pt) → 글자 왼쪽 아래 점
+  function place(vw, vh, tw, i, o) {
+    let p = o.pos; if (o.mirror && (i + 1) % 2 === 0) p = p.replace("l", "R").replace("r", "l").replace("R", "r");
+    const m = o.margin * MM, top = p[0] === "t";
+    const x = p[1] === "l" ? m : p[1] === "r" ? vw - m - tw : (vw - tw) / 2;
+    const y = top ? vh - m - o.size * 0.72 : m;
+    return [x, y];
+  }
+
+  async function preview() {
+    if (!pdfjsDoc) return;
+    const o = opt(), wrap = $("#pvs");
+    const pick = [...new Set([0, 1, Math.max(0, o.from - 1), total - 1])].filter(i => i < total).sort((a, b) => a - b).slice(0, 4);
+    wrap.innerHTML = "";
+    for (const i of pick) {
+      const pg = await pdfjsDoc.getPage(i + 1), vp0 = pg.getViewport({ scale: 1 }), s = 300 / vp0.width, vp = pg.getViewport({ scale: s });
+      const c = document.createElement("canvas"); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+      const fig = document.createElement("figure"); fig.append(c, Object.assign(document.createElement("figcaption"), { textContent: `${i + 1}쪽` })); wrap.appendChild(fig);
+      await pg.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+      const t = label(i, o); if (!t) { fig.lastChild.textContent += " · 번호 없음"; continue; }
+      const g = c.getContext("2d"); g.font = `${o.size * s}px Helvetica, Arial, sans-serif`;
+      const tw = g.measureText(t).width / s, [x, y] = place(vp0.width, vp0.height, tw, i, o);
+      g.fillStyle = o.gray ? "#666" : "#000"; g.fillText(t, x * s, c.height - y * s);
+    }
+  }
+  let pvT = 0; const schedule = () => { clearTimeout(pvT); pvT = setTimeout(preview, 120); };
+  document.querySelector("aside").addEventListener("input", schedule);
+  document.querySelector("aside").addEventListener("change", schedule);
+
+  TT.dropzone($("#drop"), async ([f]) => {
+    say("PDF를 읽고 있어요…");
+    try {
+      bytes = new Uint8Array(await f.arrayBuffer());
+      const lib = await TT.pdfjs();
+      pdfjsDoc = await lib.getDocument({ data: bytes.slice() }).promise;
+      total = pdfjsDoc.numPages;
+    } catch (e) { say(e && e.name === "PasswordException" ? "암호가 걸린 PDF는 열 수 없어요." : "PDF를 열지 못했어요.", "err"); return; }
+    file = f; $("#drop").hidden = true; $("#work").hidden = false; $("#run").disabled = false;
+    $("#summary").textContent = `${f.name} · ${total}쪽 · ${TT.bytes(f.size)}`;
+    say(""); preview();
+  }, { accept: "application/pdf,.pdf", multiple: false });
+  $("#clear").onclick = () => { file = bytes = pdfjsDoc = null; $("#drop").hidden = false; $("#work").hidden = true; $("#run").disabled = true; $("#pvs").innerHTML = ""; say(""); };
+
+  $("#run").onclick = async () => {
+    const btn = $("#run"); btn.disabled = true; say("번호를 넣고 있어요…");
+    try {
+      const { PDFDocument, StandardFonts, rgb, degrees } = PDFLib;
+      const doc = await PDFDocument.load(bytes, { ignoreEncryption: true });
+      const font = await doc.embedFont(StandardFonts.Helvetica), o = opt(), col = o.gray ? rgb(0.4, 0.4, 0.4) : rgb(0, 0, 0);
+      doc.getPages().forEach((pg, i) => {
+        const t = label(i, o); if (!t) return;
+        const box = pg.getCropBox(), W = box.width, H = box.height, rot = ((pg.getRotation().angle % 360) + 360) % 360;
+        const vw = rot % 180 ? H : W, vh = rot % 180 ? W : H;
+        const tw = font.widthOfTextAtSize(t, o.size), [vx, vy] = place(vw, vh, tw, i, o);
+        // 돌아간 쪽은 보이는 방향에 맞춰 좌표와 글자 방향을 바꿔요
+        let x = vx, y = vy;
+        if (rot === 90) { x = W - vy; y = vx; }
+        if (rot === 180) { x = W - vx; y = H - vy; }
+        if (rot === 270) { x = vy; y = H - vx; }
+        pg.drawText(t, { x: box.x + x, y: box.y + y, size: o.size, font, color: col, rotate: degrees(rot) });
+      });
+      const out = await doc.save();
+      TT.download(new Blob([out], { type: "application/pdf" }), TT.baseName(file.name) + "_쪽번호.pdf");
+      say(`${total}쪽에 번호를 넣었어요.`, "ok");
+    } catch (e) { say("번호를 넣지 못했어요. 암호가 걸린 PDF일 수 있어요.", "err"); }
+    btn.disabled = false;
+  };
+
+})();
+</script>
+</body>
+</html>

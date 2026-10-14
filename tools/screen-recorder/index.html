@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>화면 녹화 (설치 없이) · 뚝딱툴</title>
+<meta name="description" content="프로그램 설치 없이 브라우저에서 바로 화면·창·탭을 녹화해 MP4로 저장해요. 화면 소리·마이크 함께 녹음, 일시정지. 무료, 업로드 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--vid); }
+
+  .recbox { display: grid; gap: 14px; justify-items: center; text-align: center; padding: 26px 16px; }
+  .clock { font-family: var(--f-mono); font-size: clamp(40px, 9vw, 64px); font-weight: 600; letter-spacing: .02em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--muted); margin-right: 10px; vertical-align: middle; }
+  .is-rec .dot { background: var(--err); animation: blink 1s steps(2) infinite; }
+  .is-paused .dot { background: var(--warn); }
+  @keyframes blink { 50% { opacity: .25; } }
+  @media (prefers-reduced-motion: reduce) { .is-rec .dot { animation: none; } }
+  .recbtns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .recbtns .btn { min-width: 120px; justify-content: center; }
+  .btn-rec { background: var(--err); border-color: var(--err); color: #fff; font-weight: 600; }
+  .btn-rec:hover:not(:disabled) { filter: brightness(1.08); }
+  .recnote { font-size: 13px; color: var(--muted); max-width: 46ch; }
+  .take { grid-template-columns: 56px minmax(0, 1fr) auto; }
+  .take .thumb { display: grid; place-items: center; color: var(--cat); background: color-mix(in srgb, var(--cat) 12%, var(--surface)); font-family: var(--f-mono); font-size: 12px; font-weight: 600; }
+  .take .name { border: 0; background: none; padding: 0; font: inherit; font-weight: 600; font-size: 14px; color: var(--ink); width: 100%; }
+  .take .name:focus { outline: 1px dashed var(--line); }
+  .take .acts .btn { white-space: nowrap; }
+  @media (max-width: 560px) { .take { grid-template-columns: minmax(0, 1fr); } .take .thumb { display: none; } }
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>화면 녹화</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="screen-recorder"></span>
+    <div>
+      <h1>화면 녹화</h1>
+      <p>설치 없이 바로 화면이나 창, 브라우저 탭을 녹화해요. 화면 소리와 내 목소리를 같이 넣을 수 있어요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <section class="panel" id="stageP">
+        <div class="recbox" id="box">
+          <video id="live" muted playsinline hidden style="max-width:100%;max-height:340px;border-radius:8px;background:#000"></video>
+          <div class="clock"><span class="dot"></span><span id="clock">00:00</span></div>
+          <div class="recbtns">
+            <button class="btn btn-rec" id="start">녹화 시작</button>
+            <button class="btn" id="pause" hidden>일시정지</button>
+            <button class="btn" id="stop" hidden>녹화 끝내기</button>
+          </div>
+          <p class="recnote" id="note">시작을 누르면 녹화할 화면·창·탭을 고르는 창이 떠요. 끝낼 때는 이 화면의 "녹화 끝내기"나 브라우저의 "공유 중지"를 누르세요.</p>
+        </div>
+      </section>
+      <div id="listWrap" hidden>
+        <div class="list-head"><p id="summary">녹화한 영상</p></div>
+        <div class="files" id="files"></div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>소리</h2>
+        <label class="check"><input type="checkbox" id="sys" checked> 화면 소리 같이 녹음</label>
+        <p class="hint">공유 창에서 "소리 공유"를 켜야 들어가요. 크롬·엣지에서 <b>탭</b>은 어디서나, <b>화면 전체</b>는 윈도우에서만 소리를 함께 넣을 수 있어요.</p>
+        <label class="check"><input type="checkbox" id="mic"> 마이크(내 목소리) 같이 녹음</label>
+        <h2>화질</h2>
+        <div class="field"><label for="res">해상도</label>
+          <select id="res"><option value="0">공유한 화면 그대로</option><option value="1080" selected>최대 1080p</option><option value="720">최대 720p (가볍게)</option></select></div>
+        <div class="field"><span class="label">초당 프레임</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="fps" id="fps30" value="30" checked><label for="fps30">30 (보통)</label>
+            <input type="radio" name="fps" id="fps60" value="60"><label for="fps60">60 (게임·스크롤)</label>
+          </div></div>
+        <label class="check"><input type="checkbox" id="count" checked> 시작 전 3초 세기</label>
+        <p class="status" id="status"></p>
+        <p class="hint" id="fmtHint"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>녹화한 영상은 이 브라우저 안에만 있어요. 창을 닫기 전에 받아 두세요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const pad = n => String(n).padStart(2, "0");
+  const clock = ms => { const s = Math.floor(ms / 1000); return (s >= 3600 ? Math.floor(s / 3600) + ":" : "") + pad(Math.floor(s / 60) % 60) + ":" + pad(s % 60); };
+  const stamp = () => { const d = new Date(); return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`; };
+  // 녹화 시간 (멈춘 시간은 빼요)
+  const timer = { acc: 0, since: 0, run(){ this.since = performance.now(); }, hold(){ if (this.since) { this.acc += performance.now() - this.since; this.since = 0; } }, get ms(){ return this.acc + (this.since ? performance.now() - this.since : 0); }, reset(){ this.acc = 0; this.since = 0; } };
+
+  const $ = s => document.querySelector(s);
+  const say = TT.sayTo($("#status"));
+  const MIMES = ["video/mp4;codecs=avc1.42E01E,mp4a.40.2", "video/mp4", "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"];
+  const mime = window.MediaRecorder ? MIMES.find(m => MediaRecorder.isTypeSupported(m)) : null;
+  const ext = mime && mime.startsWith("video/mp4") ? "mp4" : "webm";
+  const canShare = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia);
+  if (!canShare || !mime) {
+    $("#start").disabled = true;
+    $("#note").textContent = "이 브라우저는 화면 녹화를 지원하지 않아요. 컴퓨터의 크롬·엣지·파이어폭스에서 열어 주세요. (휴대폰 브라우저는 화면 공유가 안 돼요.)";
+  } else $("#fmtHint").textContent = ext === "mp4" ? "MP4로 저장돼요." : "이 브라우저는 WEBM으로 저장돼요. MP4가 필요하면 최신 크롬·엣지를 쓰세요.";
+
+  let rec = null, streams = [], actx = null, chunks = [], tick = 0, n = 0;
+  const box = $("#box");
+  const setState = s => {
+    box.classList.toggle("is-rec", s === "rec"); box.classList.toggle("is-paused", s === "paused");
+    $("#start").hidden = s !== "idle"; $("#pause").hidden = $("#stop").hidden = s === "idle" || s === "count";
+    $("#pause").textContent = s === "paused" ? "이어서 녹화" : "일시정지";
+    ["sys", "mic", "res", "count"].forEach(id => $("#" + id).disabled = s !== "idle");
+    document.querySelectorAll("input[name=fps]").forEach(r => r.disabled = s !== "idle");
+  };
+  const draw = () => { $("#clock").textContent = clock(timer.ms); };
+  const leaveGuard = e => { e.preventDefault(); e.returnValue = ""; };
+
+  $("#start").onclick = async () => {
+    say("");
+    const fps = +document.querySelector("input[name=fps]:checked").value, res = +$("#res").value;
+    const video = { frameRate: { ideal: fps } };
+    if (res) video.height = { max: res };
+    let disp;
+    try {
+      disp = await navigator.mediaDevices.getDisplayMedia({ video, audio: $("#sys").checked ? { echoCancellation: false, noiseSuppression: false, autoGainControl: false } : false, selfBrowserSurface: "exclude", systemAudio: "include", surfaceSwitching: "include" });
+    } catch (e) { say(e.name === "NotAllowedError" ? "화면 공유를 취소했어요." : "화면을 가져오지 못했어요: " + e.message, e.name === "NotAllowedError" ? "" : "err"); return; }
+    streams = [disp];
+    let mic = null;
+    if ($("#mic").checked) {
+      try { mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } }); streams.push(mic); }
+      catch { say("마이크를 쓸 수 없어서 마이크 없이 녹화해요.", "err"); }
+    }
+    const vt = disp.getVideoTracks()[0];
+    const auds = streams.filter(s => s.getAudioTracks().length);
+    let tracks = [vt];
+    if (auds.length === 1) tracks.push(auds[0].getAudioTracks()[0]);
+    else if (auds.length > 1) {
+      // 화면 소리와 마이크를 하나로 섞어요
+      actx = new AudioContext(); const dest = actx.createMediaStreamDestination();
+      auds.forEach(s => actx.createMediaStreamSource(s).connect(dest));
+      tracks.push(dest.stream.getAudioTracks()[0]);
+    }
+    if ($("#sys").checked && !disp.getAudioTracks().length) say("화면 소리는 들어가지 않아요. 공유 창에서 '소리 공유'를 켜지 않았거나, 고른 화면이 소리를 공유할 수 없어요." + (mic ? " 마이크 소리만 녹음돼요." : ""));
+    const live = $("#live"); live.srcObject = new MediaStream([vt]); live.hidden = false; live.play().catch(() => {});
+    vt.addEventListener("ended", () => { if (rec && rec.state !== "inactive") rec.stop(); else cleanup(); });
+
+    if ($("#count").checked) {
+      setState("count");
+      for (let i = 3; i > 0; i--) { $("#clock").textContent = String(i); await new Promise(r => setTimeout(r, 1000)); if (vt.readyState === "ended") return; }
+    }
+    const h = vt.getSettings().height || 1080;
+    chunks = [];
+    rec = new MediaRecorder(new MediaStream(tracks), { mimeType: mime, videoBitsPerSecond: h >= 1000 ? 8e6 : h >= 700 ? 5e6 : 3e6 });
+    rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+    rec.onstop = finish;
+    rec.start(1000);
+    timer.reset(); timer.run(); setState("rec");
+    tick = setInterval(draw, 250);
+    addEventListener("beforeunload", leaveGuard);
+  };
+  $("#pause").onclick = () => {
+    if (!rec) return;
+    if (rec.state === "recording") { rec.pause(); timer.hold(); setState("paused"); }
+    else if (rec.state === "paused") { rec.resume(); timer.run(); setState("rec"); }
+  };
+  $("#stop").onclick = () => { if (rec && rec.state !== "inactive") rec.stop(); };
+
+  function cleanup() {
+    clearInterval(tick); timer.hold(); draw();
+    streams.forEach(s => s.getTracks().forEach(t => t.stop())); streams = [];
+    if (actx) { actx.close(); actx = null; }
+    const live = $("#live"); live.srcObject = null; live.hidden = true;
+    removeEventListener("beforeunload", leaveGuard);
+    setState("idle");
+  }
+  function finish() {
+    const ms = timer.ms; cleanup();
+    const blob = new Blob(chunks, { type: mime.split(";")[0] }); chunks = []; rec = null;
+    if (!blob.size) { say("녹화된 내용이 없어요.", "err"); return; }
+    n++;
+    const url = URL.createObjectURL(blob), name = `화면녹화_${stamp()}`;
+    const row = document.createElement("div"); row.className = "file take";
+    row.innerHTML = `<video class="thumb" src="${url}#t=0.5" muted preload="metadata" style="object-fit:cover"></video>
+      <div class="meta"><input class="name" value="${name}" aria-label="파일 이름"><div class="info">${clock(ms)} · ${TT.bytes(blob.size)} · ${ext.toUpperCase()}</div></div>
+      <div class="acts"><button class="btn btn-sm" data-a="see">보기</button><button class="btn btn-sm btn-primary" data-a="dl">받기</button><button class="btn btn-sm" data-a="rm" aria-label="지우기">${TT.icon("x")}</button></div>`;
+    row.onclick = e => {
+      const a = e.target.closest("[data-a]")?.dataset.a; if (!a) return;
+      if (a === "dl") TT.download(blob, (row.querySelector(".name").value.trim() || name) + "." + ext);
+      if (a === "see") { const v = $("#live"); v.srcObject = null; v.src = url; v.muted = false; v.controls = true; v.hidden = false; v.play().catch(() => {}); v.scrollIntoView({ behavior: "smooth", block: "center" }); }
+      if (a === "rm") { row.remove(); URL.revokeObjectURL(url); if (!$("#files").children.length) $("#listWrap").hidden = true; }
+    };
+    $("#files").prepend(row); $("#listWrap").hidden = false;
+    $("#clock").textContent = "00:00";
+    say("녹화를 마쳤어요. 아래에서 보고 받으세요.", "ok");
+  }
+  setState("idle");
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>이퀄라이저 (저음·고음 조절) · 뚝딱툴</title>
+<meta name="description" content="음원의 저음·중음·고음을 5밴드 이퀄라이저로 조절하고 MP3·WAV로 저장해요. 목소리 또렷하게·저음 강조 프리셋, 들으면서 조절. 무료, 업로드 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--aud); }
+
+  .eqp { display: grid; gap: 14px; }
+  .eqwave { width: 100%; height: 84px; display: block; cursor: pointer; border-radius: 6px; background: var(--surface-2); }
+  .eqcurve { width: 100%; height: 150px; display: block; border-radius: 6px; background: var(--surface-2); }
+  .bands { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 2px; text-align: center; }
+  .bandscale { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: -6px; }
+  .band { display: grid; gap: 6px; justify-items: center; }
+  .band input[type=range] { writing-mode: vertical-lr; direction: rtl; height: 170px; width: 24px; accent-color: var(--aud); }
+  .band b { font-family: var(--f-mono); font-size: 11.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .band span { font-size: 12px; color: var(--muted); line-height: 1.3; }
+  .playrow { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .playrow .num { font-family: var(--f-mono); font-size: 13px; color: var(--muted); margin-left: auto; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .presets .btn[aria-pressed=true] { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>이퀄라이저</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="audio-eq"></span>
+    <div>
+      <h1>이퀄라이저</h1>
+      <p>저음·중음·고음을 올리고 내려서 소리 색깔을 바꿔요. 재생하면서 바로 들어 보고 저장하세요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>음원 파일을 올려 주세요</strong>
+        <span>MP3 · WAV · M4A · FLAC · OGG · 영상 파일의 소리도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <section class="panel" id="work" hidden>
+        <div class="panel-body eqp">
+          <div class="playrow">
+            <button class="btn btn-primary" id="play">재생</button>
+            <label class="check"><input type="checkbox" id="bypass"> 원본으로 듣기</label>
+            <span class="num" id="pos">0:00 / 0:00</span>
+          </div>
+          <canvas class="eqwave" id="wave" title="누른 곳부터 재생해요"></canvas>
+          <canvas class="eqcurve" id="curve"></canvas>
+          <div class="bands" id="bands"></div>
+          <div class="bandscale"><span>← 저음</span><span>중음</span><span>고음 →</span></div>
+        </div>
+      </section>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>바로 고르기</h2>
+        <div class="presets" id="presets"></div>
+        <label class="check"><input type="checkbox" id="lowcut"> 80Hz 아래 자르기 (바람·책상 울림 제거)</label>
+        <div class="field"><label for="out">전체 볼륨 <span class="num" id="outv">0 dB</span></label><input type="range" id="out" min="-12" max="6" step="0.5" value="0"></div>
+        <button class="btn btn-sm" id="reset">모두 0으로</button>
+        <h2>저장</h2>
+        <div class="field">
+          <span class="label">저장 형식</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="fmt" id="f-mp3" value="mp3" checked><label for="f-mp3">MP3</label>
+            <input type="radio" name="fmt" id="f-wav" value="wav"><label for="f-wav">WAV</label>
+          </div>
+        </div>
+        <div class="field" id="brField"><label for="br">MP3 음질</label>
+          <select id="br"><option value="320">320 kbps (최고)</option><option value="192" selected>192 kbps (보통)</option><option value="128">128 kbps (가볍게)</option></select></div>
+        <label class="check"><input type="checkbox" id="limit" checked> 소리 깨짐 방지</label>
+        <p class="hint">소리를 키우면 큰 부분이 찢어질 수 있어요. 켜 두면 가장 큰 소리를 살짝 눌러 줘요.</p>
+        <button class="btn btn-primary btn-block" id="run" disabled>적용해서 저장</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+<script src="../../assets/audio.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const say = TT.sayTo($("#status"));
+  const fmt = () => document.querySelector("input[name=fmt]:checked").value;
+  if (!window.lamejs) { $("#f-wav").checked = true; $("#f-mp3").disabled = true; }
+  const syncFmt = () => { $("#brField").hidden = fmt() !== "mp3"; };
+  document.querySelectorAll("input[name=fmt]").forEach(r => r.addEventListener("change", syncFmt)); syncFmt();
+
+  // 10밴드 그래픽 이퀄라이저 (국제 표준 옥타브 주파수)
+  const HZ = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
+  const BANDS = HZ.map((f, i) => ({ f, type: i === 0 ? "lowshelf" : i === HZ.length - 1 ? "highshelf" : "peaking", q: 1.41, hz: f >= 1000 ? f / 1000 + "k" : String(f) }));
+  const PRESETS = [
+    ["평탄", [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], false],
+    ["저음 강조", [6, 5, 4, 2, 0, 0, 0, 0, 0, 0], false],
+    ["고음 강조", [0, 0, 0, 0, 0, 0, 1, 3, 5, 6], false],
+    ["V자 (생생하게)", [4, 3, 1, -1, -2, -2, -1, 1, 3, 4], false],
+    ["목소리 또렷하게", [-4, -3, -2, -1, 0, 2, 4, 4, 2, 0], true],
+    ["웅웅거림 줄이기", [0, 0, -2, -4, -3, 0, 0, 0, 0, 0], false],
+    ["치찰음 줄이기", [0, 0, 0, 0, 0, 0, 0, -2, -5, -2], false],
+    ["팝", [-1, 1, 3, 4, 3, 0, -1, -1, 0, 1], false],
+    ["록", [4, 3, -1, -2, -1, 1, 3, 4, 4, 4], false],
+    ["어쿠스틱", [2, 2, 1, 0, 1, 1, 2, 3, 2, 1], false],
+    ["부드럽게", [1, 1, 1, 0, 0, 0, -1, -3, -4, -5], false],
+    ["전화 목소리", [-12, -12, -10, -6, 2, 4, 3, -4, -12, -12], true]
+  ];
+  const gains = HZ.map(() => 0);
+  let outDb = 0;
+  const bandsEl = $("#bands");
+  bandsEl.innerHTML = BANDS.map((b, i) => `<label class="band"><b id="gv${i}">0</b><input type="range" min="-12" max="12" step="0.5" value="0" data-i="${i}" aria-label="${b.hz}Hz"><span>${b.hz}</span></label>`).join("");
+  $("#presets").innerHTML = PRESETS.map((p, i) => `<button class="btn btn-sm" data-p="${i}" aria-pressed="${i === 0}">${p[0]}</button>`).join("");
+
+  const chain = ctx => {
+    const nodes = BANDS.map((b, i) => { const n = ctx.createBiquadFilter(); n.type = b.type; n.frequency.value = b.f; if (b.q) n.Q.value = b.q; n.gain.value = gains[i]; return n; });
+    if ($("#lowcut").checked) { const h = ctx.createBiquadFilter(); h.type = "highpass"; h.frequency.value = 80; h.Q.value = 0.7; nodes.unshift(h); }
+    const out = ctx.createGain(); out.gain.value = Math.pow(10, outDb / 20); nodes.push(out);
+    nodes.reduce((a, b) => (a.connect(b), b));
+    return nodes;
+  };
+
+  /* 주파수 곡선 */
+  const curve = $("#curve"), cg = curve.getContext("2d");
+  const probe = new OfflineAudioContext(1, 1, 44100);
+  function drawCurve() {
+    const r = curve.getBoundingClientRect(), k = Math.min(2, devicePixelRatio || 1);
+    curve.width = Math.round(r.width * k); curve.height = Math.round(r.height * k);
+    const W = curve.width, H = curve.height, N = 256, fr = new Float32Array(N);
+    for (let i = 0; i < N; i++) fr[i] = 20 * Math.pow(1000, i / (N - 1));
+    const tot = new Float32Array(N).fill(0), mag = new Float32Array(N), ph = new Float32Array(N);
+    for (const n of chain(probe)) { if (!n.getFrequencyResponse) continue; n.getFrequencyResponse(fr, mag, ph); for (let i = 0; i < N; i++) tot[i] += 20 * Math.log10(Math.max(mag[i], 1e-6)); }
+    for (let i = 0; i < N; i++) tot[i] += outDb;
+    const css = getComputedStyle(document.body), col = css.getPropertyValue("--aud").trim(), line = css.getPropertyValue("--line").trim(), mute = css.getPropertyValue("--muted").trim();
+    const y = db => H / 2 - Math.max(-18, Math.min(18, db)) / 18 * (H / 2 - 8 * k);
+    cg.clearRect(0, 0, W, H); cg.lineWidth = k; cg.strokeStyle = line; cg.fillStyle = mute; cg.font = `${10 * k}px ${css.getPropertyValue("--f-mono")}`;
+    [100, 1000, 10000].forEach(f => { const x = Math.log10(f / 20) / 3 * W; cg.beginPath(); cg.moveTo(x, 0); cg.lineTo(x, H); cg.stroke(); cg.fillText(f >= 1000 ? f / 1000 + "k" : f, x + 3 * k, H - 4 * k); });
+    [-12, 0, 12].forEach(d => { cg.beginPath(); cg.moveTo(0, y(d)); cg.lineTo(W, y(d)); cg.stroke(); cg.fillText((d > 0 ? "+" : "") + d + "dB", 3 * k, y(d) - 3 * k); });
+    cg.beginPath(); for (let i = 0; i < N; i++) { const x = i / (N - 1) * W; i ? cg.lineTo(x, y(tot[i])) : cg.moveTo(x, y(tot[i])); }
+    cg.strokeStyle = col; cg.lineWidth = 2.5 * k; cg.stroke();
+    cg.lineTo(W, H / 2); cg.lineTo(0, H / 2); cg.closePath(); cg.fillStyle = col + "22"; cg.fill();
+  }
+
+  /* 실시간 미리 듣기 */
+  let chs = null, sr = 44100, buf = null, actx = null, src = null, live = [], startAt = 0, offset = 0, name = "eq";
+  const dur = () => chs ? chs[0].length / sr : 0;
+  const now = () => src ? Math.min(dur(), offset + actx.currentTime - startAt) : offset;
+  function connect() {
+    if (!src) return;
+    src.disconnect(); live.forEach(n => n.disconnect()); live = [];
+    if ($("#bypass").checked) src.connect(actx.destination);
+    else { live = chain(actx); src.connect(live[0]); live[live.length - 1].connect(actx.destination); }
+  }
+  function play(at = offset) {
+    stopPlay();
+    actx ||= new AudioContext(); actx.resume();
+    if (!buf || buf.sampleRate !== sr) { buf = actx.createBuffer(chs.length, chs[0].length, sr); chs.forEach((d, i) => buf.copyToChannel(d, i)); }
+    src = actx.createBufferSource(); src.buffer = buf; connect();
+    offset = at >= dur() ? 0 : at; startAt = actx.currentTime; src.start(0, offset);
+    const me = src; src.onended = () => { if (src === me) { offset = 0; src = null; $("#play").textContent = "재생"; } };
+    $("#play").textContent = "멈춤"; loop();
+  }
+  function stopPlay() { if (src) { offset = now(); const s = src; src = null; try { s.stop(); } catch {} } $("#play").textContent = "재생"; }
+  const fmtT = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+  const wave = $("#wave");
+  let waveImg = null;
+  function drawWave() {
+    TA.drawWave(wave, chs, sr, { color: getComputedStyle(document.body).getPropertyValue("--aud").trim() });
+    waveImg = wave.getContext("2d").getImageData(0, 0, wave.width, wave.height);
+  }
+  function loop() {
+    const t = now();
+    $("#pos").textContent = `${fmtT(t)} / ${fmtT(dur())}`;
+    if (waveImg) { const g = wave.getContext("2d"); g.putImageData(waveImg, 0, 0); const x = t / dur() * wave.width; g.fillStyle = getComputedStyle(document.body).getPropertyValue("--ink"); g.fillRect(x, 0, 2, wave.height); }
+    if (src) requestAnimationFrame(loop);
+  }
+  wave.onclick = e => { const r = wave.getBoundingClientRect(); const t = (e.clientX - r.left) / r.width * dur(); if (src) play(t); else { offset = t; loop(); } };
+  $("#play").onclick = () => src ? stopPlay() : play();
+
+  const update = () => { drawCurve(); if (src) connect(); };
+  bandsEl.addEventListener("input", e => {
+    const i = +e.target.dataset.i; gains[i] = +e.target.value; $("#gv" + i).textContent = (gains[i] > 0 ? "+" : "") + gains[i];
+    document.querySelectorAll("#presets .btn").forEach(b => b.setAttribute("aria-pressed", "false"));
+    // 재생 중이면 끊김 없이 값만 바꿔요
+    const off = $("#lowcut").checked ? 1 : 0;
+    if (live.length) live[i + off].gain.setTargetAtTime(gains[i], actx.currentTime, 0.02);
+    drawCurve();
+  });
+  function setGains(arr) { arr.forEach((v, i) => { gains[i] = v; const el = bandsEl.querySelector(`[data-i="${i}"]`); el.value = v; $("#gv" + i).textContent = (v > 0 ? "+" : "") + v; }); }
+  $("#presets").onclick = e => {
+    const b = e.target.closest("[data-p]"); if (!b) return;
+    const p = PRESETS[+b.dataset.p]; setGains(p[1]); $("#lowcut").checked = p[2];
+    document.querySelectorAll("#presets .btn").forEach(x => x.setAttribute("aria-pressed", x === b));
+    update();
+  };
+  $("#reset").onclick = () => { setGains(HZ.map(() => 0)); setOut(0); $("#lowcut").checked = false; document.querySelectorAll("#presets .btn").forEach((x, i) => x.setAttribute("aria-pressed", i === 0)); update(); };
+  $("#lowcut").onchange = update;
+  // 전체 볼륨 (올린 만큼 깨질 수 있으니 기본은 0)
+  function setOut(v) { outDb = v; $("#outv").textContent = (v > 0 ? "+" : "") + v + " dB"; $("#out").value = v; if (live.length) live[live.length - 1].gain.setTargetAtTime(Math.pow(10, v / 20), actx.currentTime, 0.02); drawCurve(); }
+  $("#out").addEventListener("input", e => setOut(+e.target.value));
+  $("#bypass").onchange = connect;
+  new ResizeObserver(() => { if (chs) { drawWave(); loop(); } drawCurve(); }).observe($("#work"));
+
+  TT.dropzone($("#drop"), async ([f]) => {
+    stopPlay(); say("음원을 읽고 있어요…");
+    try { const b = await TA.decode(f); chs = TA.chans(b); sr = b.sampleRate; buf = null; offset = 0; }
+    catch { say("이 파일은 열 수 없어요. 다른 형식으로 바꿔서 올려 보세요.", "err"); return; }
+    name = TT.baseName(f.name);
+    $("#work").hidden = false; $("#run").disabled = false;
+    drawWave(); drawCurve(); loop();
+    say(`${f.name} · ${fmtT(dur())}`, "ok");
+  }, { accept: "audio/*,video/*", multiple: false });
+
+  $("#run").onclick = async () => {
+    stopPlay(); const btn = $("#run"); btn.disabled = true;
+    const prog = $("#prog"), bar = prog.firstElementChild; prog.hidden = false; bar.style.width = "5%";
+    try {
+      say("소리를 바꾸고 있어요…");
+      const off = new OfflineAudioContext(chs.length, chs[0].length, sr);
+      const b = off.createBuffer(chs.length, chs[0].length, sr); chs.forEach((d, i) => b.copyToChannel(d, i));
+      const s = off.createBufferSource(); s.buffer = b; const nodes = chain(off);
+      s.connect(nodes[0]); nodes[nodes.length - 1].connect(off.destination); s.start();
+      let out = TA.chans(await off.startRendering()); bar.style.width = "35%"; await TA.yieldUI();
+      const pk = TA.peak(out);
+      if ($("#limit").checked && pk > Math.pow(10, -1 / 20)) out = TA.applyGain(out, sr, 0, { limit: true, ceilDb: -1 });
+      bar.style.width = "45%";
+      const blob = await TA.encode(out, sr, fmt(), +$("#br").value, p => bar.style.width = (45 + p * 55) + "%");
+      TT.download(blob, `${name}_EQ.${TA.ext(fmt())}`);
+      say(`저장했어요 · ${TT.bytes(blob.size)}${pk > 1 && !$("#limit").checked ? " · 소리가 깨진 곳이 있을 수 있어요" : ""}`, "ok");
+    } catch (e) { say("저장하지 못했어요. 파일이 너무 길면 WAV로 받아 보세요.", "err"); }
+    btn.disabled = false; setTimeout(() => prog.hidden = true, 600);
+  };
+  drawCurve();
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>음성 녹음 (MP3 저장) · 뚝딱툴</title>
+<meta name="description" content="브라우저에서 바로 마이크로 녹음해 MP3·WAV로 저장해요. 잡음 줄이기, 일시정지, 여러 개 녹음. 무료, 업로드 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--aud); }
+
+  .recbox { display: grid; gap: 14px; justify-items: center; text-align: center; padding: 26px 16px; }
+  .clock { font-family: var(--f-mono); font-size: clamp(40px, 9vw, 64px); font-weight: 600; letter-spacing: .02em; font-variant-numeric: tabular-nums; line-height: 1; }
+  .dot { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--muted); margin-right: 10px; vertical-align: middle; }
+  .is-rec .dot { background: var(--err); animation: blink 1s steps(2) infinite; }
+  .is-paused .dot { background: var(--warn); }
+  @keyframes blink { 50% { opacity: .25; } }
+  @media (prefers-reduced-motion: reduce) { .is-rec .dot { animation: none; } }
+  .recbtns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+  .recbtns .btn { min-width: 120px; justify-content: center; }
+  .btn-rec { background: var(--err); border-color: var(--err); color: #fff; font-weight: 600; }
+  .btn-rec:hover:not(:disabled) { filter: brightness(1.08); }
+  .recnote { font-size: 13px; color: var(--muted); max-width: 46ch; }
+  .take { grid-template-columns: 56px minmax(0, 1fr) auto; }
+  .take .thumb { display: grid; place-items: center; color: var(--cat); background: color-mix(in srgb, var(--cat) 12%, var(--surface)); font-family: var(--f-mono); font-size: 12px; font-weight: 600; }
+  .take .name { border: 0; background: none; padding: 0; font: inherit; font-weight: 600; font-size: 14px; color: var(--ink); width: 100%; }
+  .take .name:focus { outline: 1px dashed var(--line); }
+  .take .acts .btn { white-space: nowrap; }
+  @media (max-width: 560px) { .take { grid-template-columns: minmax(0, 1fr); } .take .thumb { display: none; } }
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>음성 녹음</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="voice-recorder"></span>
+    <div>
+      <h1>음성 녹음</h1>
+      <p>마이크로 바로 녹음해서 MP3나 WAV로 받아요. 여러 번 녹음해도 목록에 차례로 남아요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <section class="panel">
+        <div class="recbox" id="box">
+          <canvas id="wave" style="width:100%;height:90px;display:block"></canvas>
+          <div class="clock"><span class="dot"></span><span id="clock">00:00</span></div>
+          <div class="recbtns">
+            <button class="btn btn-rec" id="start">녹음 시작</button>
+            <button class="btn" id="pause" hidden>일시정지</button>
+            <button class="btn" id="stop" hidden>녹음 끝내기</button>
+          </div>
+          <p class="recnote" id="note">처음 시작할 때 마이크 사용을 허락해 달라는 창이 떠요.</p>
+        </div>
+      </section>
+      <div id="listWrap" hidden>
+        <div class="list-head"><p id="summary">녹음한 파일</p></div>
+        <div class="files" id="files"></div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>마이크</h2>
+        <div class="field"><label for="dev">쓸 마이크</label><select id="dev"><option value="">기본 마이크</option></select></div>
+        <label class="check"><input type="checkbox" id="clean" checked> 목소리 보정 (잡음·울림 줄이기, 자동 볼륨)</label>
+        <p class="hint">말·강의·회의는 켜 두세요. 노래나 악기는 끄는 게 소리가 자연스러워요.</p>
+        <h2>저장</h2>
+        <div class="field">
+          <span class="label">저장 형식</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="fmt" id="f-mp3" value="mp3" checked><label for="f-mp3">MP3</label>
+            <input type="radio" name="fmt" id="f-wav" value="wav"><label for="f-wav">WAV</label>
+          </div>
+        </div>
+        <div class="field" id="brField">
+          <label for="br">MP3 음질</label>
+          <select id="br"><option value="192">192 kbps (좋게)</option><option value="128" selected>128 kbps (보통)</option><option value="64">64 kbps (말 녹음, 가볍게)</option></select>
+        </div>
+        <label class="check"><input type="checkbox" id="mono" checked> 모노로 저장 (용량 절반)</label>
+        <p class="status" id="status"></p>
+        <p class="hint">앞뒤를 자르거나 소리를 키우려면 <a href="../audio-edit/">음원 자르기</a>, <a href="../audio-volume/">볼륨 키우기</a>를 이어서 쓰세요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>녹음은 이 브라우저 안에만 있어요. 창을 닫기 전에 받아 두세요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+<script src="../../assets/audio.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const pad = n => String(n).padStart(2, "0");
+  const clock = ms => { const s = Math.floor(ms / 1000); return (s >= 3600 ? Math.floor(s / 3600) + ":" : "") + pad(Math.floor(s / 60) % 60) + ":" + pad(s % 60); };
+  const stamp = () => { const d = new Date(); return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`; };
+  // 녹화 시간 (멈춘 시간은 빼요)
+  const timer = { acc: 0, since: 0, run(){ this.since = performance.now(); }, hold(){ if (this.since) { this.acc += performance.now() - this.since; this.since = 0; } }, get ms(){ return this.acc + (this.since ? performance.now() - this.since : 0); }, reset(){ this.acc = 0; this.since = 0; } };
+
+  const $ = s => document.querySelector(s);
+  const say = TT.sayTo($("#status"));
+  const fmt = () => document.querySelector("input[name=fmt]:checked").value;
+  if (!window.lamejs) { $("#f-wav").checked = true; $("#f-mp3").disabled = true; }
+  const syncFmt = () => { $("#brField").hidden = fmt() !== "mp3"; };
+  document.querySelectorAll("input[name=fmt]").forEach(r => r.addEventListener("change", syncFmt)); syncFmt();
+
+  const AMIMES = ["audio/webm;codecs=opus", "audio/mp4", "audio/ogg;codecs=opus", "audio/webm"];
+  const amime = window.MediaRecorder ? AMIMES.find(m => MediaRecorder.isTypeSupported(m)) : null;
+  if (!navigator.mediaDevices?.getUserMedia || !amime) { $("#start").disabled = true; $("#note").textContent = "이 브라우저는 녹음을 지원하지 않아요. 최신 크롬·엣지·사파리·파이어폭스를 써 주세요."; }
+
+  async function listDevices() {
+    try {
+      const ds = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === "audioinput");
+      const cur = $("#dev").value;
+      $("#dev").innerHTML = `<option value="">기본 마이크</option>` + ds.filter(d => d.deviceId && d.deviceId !== "default").map((d, i) => `<option value="${d.deviceId}">${TT_esc(d.label || "마이크 " + (i + 1))}</option>`).join("");
+      $("#dev").value = cur;
+    } catch {}
+  }
+  const TT_esc = s => s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  listDevices();
+
+  let rec = null, stream = null, actx = null, an = null, chunks = [], raf = 0, tick = 0, n = 0;
+  const box = $("#box"), cv = $("#wave"), g = cv.getContext("2d");
+  const hist = [];
+  const setState = s => {
+    box.classList.toggle("is-rec", s === "rec"); box.classList.toggle("is-paused", s === "paused");
+    $("#start").hidden = s !== "idle"; $("#pause").hidden = $("#stop").hidden = s === "idle";
+    $("#pause").textContent = s === "paused" ? "이어서 녹음" : "일시정지";
+    $("#dev").disabled = $("#clean").disabled = s !== "idle";
+  };
+  // 지나가는 파형 (최근 소리 크기)
+  function drawWave() {
+    const r = cv.getBoundingClientRect(), k = Math.min(2, devicePixelRatio || 1);
+    if (cv.width !== Math.round(r.width * k)) { cv.width = Math.round(r.width * k); cv.height = Math.round(r.height * k); }
+    const W = cv.width, H = cv.height, col = getComputedStyle(document.body).getPropertyValue("--aud").trim() || "#6a4cc3";
+    if (an && rec && rec.state === "recording") {
+      const d = new Float32Array(an.fftSize); an.getFloatTimeDomainData(d);
+      let p = 0; for (const x of d) p = Math.max(p, Math.abs(x));
+      hist.push(p); if (hist.length > 400) hist.shift();
+    }
+    g.clearRect(0, 0, W, H);
+    const bw = W / 200, mid = H / 2;
+    g.fillStyle = col;
+    hist.slice(-200).forEach((p, i) => { const h = Math.max(2 * k, Math.min(1, p * 1.4) * H * 0.92); g.fillRect(i * bw, mid - h / 2, Math.max(1, bw - 1 * k), h); });
+    raf = requestAnimationFrame(drawWave);
+  }
+  drawWave();
+
+  $("#start").onclick = async () => {
+    say("");
+    const c = $("#clean").checked, dev = $("#dev").value;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: dev ? { exact: dev } : undefined, echoCancellation: c, noiseSuppression: c, autoGainControl: c } });
+    } catch (e) { say(e.name === "NotAllowedError" ? "마이크 사용이 막혀 있어요. 주소창 왼쪽 아이콘에서 마이크를 허용해 주세요." : "마이크를 찾지 못했어요.", "err"); return; }
+    listDevices();
+    actx = new AudioContext(); an = actx.createAnalyser(); an.fftSize = 1024; actx.createMediaStreamSource(stream).connect(an);
+    chunks = []; hist.length = 0;
+    rec = new MediaRecorder(stream, { mimeType: amime, audioBitsPerSecond: 192000 });
+    rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+    rec.onstop = finish;
+    rec.start(500); timer.reset(); timer.run(); setState("rec");
+    tick = setInterval(() => $("#clock").textContent = clock(timer.ms), 200);
+  };
+  $("#pause").onclick = () => {
+    if (rec.state === "recording") { rec.pause(); timer.hold(); setState("paused"); }
+    else { rec.resume(); timer.run(); setState("rec"); }
+  };
+  $("#stop").onclick = () => rec && rec.state !== "inactive" && rec.stop();
+
+  async function finish() {
+    clearInterval(tick); timer.hold();
+    stream.getTracks().forEach(t => t.stop()); stream = null;
+    actx.close(); actx = null; an = null; setState("idle");
+    const blob = new Blob(chunks, { type: amime.split(";")[0] }); chunks = []; rec = null;
+    say("녹음을 정리하고 있어요…");
+    let buf;
+    try { buf = await TA.decode(blob); } catch { say("녹음을 읽지 못했어요. 다시 시도해 주세요.", "err"); return; }
+    n++;
+    const take = { chs: TA.chans(buf), sr: buf.sampleRate, name: `녹음_${stamp()}` };
+    addRow(take);
+    $("#clock").textContent = "00:00"; hist.length = 0;
+    say("저장할 준비가 됐어요. 아래에서 듣고 받으세요.", "ok");
+  }
+
+  function addRow(t) {
+    const row = document.createElement("div"); row.className = "file take";
+    const dur = t.chs[0].length / t.sr;
+    row.innerHTML = `<div class="thumb">${n}</div>
+      <div class="meta"><input class="name" value="${t.name}" aria-label="파일 이름"><div class="info">${clock(dur * 1000)}</div></div>
+      <div class="acts"><button class="btn btn-sm" data-a="play">듣기</button><button class="btn btn-sm btn-primary" data-a="dl">받기</button><button class="btn btn-sm" data-a="rm" aria-label="지우기">${TT.icon("x")}</button></div>`;
+    const pb = row.querySelector("[data-a=play]");
+    row.onclick = async e => {
+      const a = e.target.closest("[data-a]")?.dataset.a; if (!a) return;
+      if (a === "play") {
+        if (pb.textContent === "멈춤") { TA.stop(); pb.textContent = "듣기"; return; }
+        document.querySelectorAll("[data-a=play]").forEach(b => b.textContent = "듣기");
+        pb.textContent = "멈춤"; TA.play(t.chs, t.sr, () => pb.textContent = "듣기");
+      }
+      if (a === "dl") {
+        const b = e.target.closest("button"); b.disabled = true;
+        try {
+          const chs = $("#mono").checked ? TA.mono(t.chs) : t.chs;
+          const blob = await TA.encode(chs, t.sr, fmt(), +$("#br").value);
+          TT.download(blob, (row.querySelector(".name").value.trim() || t.name) + "." + TA.ext(fmt()));
+        } catch { say("저장하지 못했어요. WAV로 받아 보세요.", "err"); }
+        b.disabled = false;
+      }
+      if (a === "rm") { TA.stop(); row.remove(); if (!$("#files").children.length) $("#listWrap").hidden = true; }
+    };
+    $("#files").prepend(row); $("#listWrap").hidden = false;
+  }
+  setState("idle");
+
+})();
+</script>
+</body>
+</html>
