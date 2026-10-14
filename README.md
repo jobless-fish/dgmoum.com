@@ -9,6 +9,7 @@ index.html                 카탈로그 (도구 목록 · 검색 · 분류)
 assets/
   site.css                 공용 스타일 (색·글꼴·버튼·드롭존 등)
   common.js                공용 함수 + 도구 목록(TT_TOOLS)
+  audio.js                 오디오 공용 함수 (읽기 · MP3/WAV 저장 · LUFS · 리미터 · 파형)
 tools/
   image-convert/  이미지 포맷 변환 (PNG·JPG·WEBP)
   image-resize/   이미지 크기 조절 (긴 변 / 픽셀 / 퍼센트)
@@ -27,6 +28,10 @@ tools/
   video-gif/      영상 → GIF
   shorts-maker/   쇼츠 · 릴스 · 틱톡 세로 변환 (9:16·4:5·1:1, 흐린 배경·꽉 채우기)
   audio-edit/     음원 자르기 · 키 · 빠르기 · 페이드
+  audio-convert/  오디오 형식 변환 (M4A·FLAC·OGG·WAV → MP3·WAV)
+  video-to-audio/ 영상에서 소리 추출 (MP4·MOV → MP3·WAV)
+  audio-volume/   볼륨 키우기 · 맞추기 (LUFS 측정, 깨짐 방지 리미터)
+  audio-silence/  무음 자르기 (앞뒤·중간 긴 침묵, 자동 기준)
   pdf-merge/      PDF 합치기
   pdf-split/      PDF 나누기 · 정리 (삭제·회전·순서·추출·분할)
   image-to-pdf/   이미지 → PDF (A4 맞춤)

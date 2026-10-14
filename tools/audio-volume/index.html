@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>볼륨 키우기 · 맞추기 · 뚝딱툴</title>
+<meta name="description" content="작게 녹음된 음원 소리 키우기, 여러 파일 소리 크기 똑같이 맞추기(LUFS 노멀라이즈). 깨짐 방지 리미터, MP3·WAV 저장. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--aud); }
+  .file .thumb { display: grid; place-items: center; color: var(--aud); background: color-mix(in srgb, var(--aud) 12%, var(--surface)); }
+  .file .thumb svg { width: 24px; height: 24px; }
+  .file .acts .icon-btn.on { color: var(--aud); }
+  .meter { font-family: var(--f-mono); font-size: 12px; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>볼륨 키우기 · 맞추기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="audio-volume"></span>
+    <div>
+      <h1>볼륨 키우기 · 맞추기</h1>
+      <p>작게 녹음된 소리를 키우거나, 여러 파일의 소리 크기를 똑같이 맞춰요. 큰 소리만 살짝 눌러서 깨지지 않게 해줘요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>음원 파일을 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>여러 개를 넣으면 모두 같은 크기로 맞춰요</span>
+        <input type="file" id="file">
+      </div>
+      <div id="listWrap" hidden>
+        <div class="list-head">
+          <p id="summary"></p>
+          <button class="btn btn-sm" id="clear">모두 비우기</button>
+        </div>
+        <div class="files" id="files"></div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>크기 설정</h2>
+        <div class="seg" role="radiogroup">
+          <input type="radio" name="mode" id="m-t" value="target" checked><label for="m-t">목표 크기로 맞추기</label>
+          <input type="radio" name="mode" id="m-g" value="gain"><label for="m-g">직접 키우기</label>
+        </div>
+        <div class="field" data-mode="target">
+          <label for="target">목표 크기</label>
+          <select id="target">
+            <option value="-14" selected>-14 LUFS · 유튜브·음원 사이트</option>
+            <option value="-16">-16 LUFS · 팟캐스트·강의</option>
+            <option value="-19">-19 LUFS · 조금 작게</option>
+            <option value="-23">-23 LUFS · 방송 기준</option>
+          </select>
+          <p class="hint">LUFS는 사람 귀에 들리는 크기 단위예요. 여러 파일을 같은 값에 맞추면 듣는 크기가 비슷해져요.</p>
+        </div>
+        <div class="field" data-mode="gain" hidden>
+          <label for="gain">키우는 정도 <span class="num" id="gv">+6 dB</span></label>
+          <input type="range" id="gain" min="-12" max="30" value="6">
+          <p class="hint">+6 dB면 대략 두 배로 크게 들려요.</p>
+        </div>
+        <label class="check"><input type="checkbox" id="limit" checked> 소리가 깨지지 않게 큰 소리 눌러주기</label>
+        <p class="hint">끄면 깨지기 직전까지만 키워요. 켜면 순간적으로 튀는 소리만 눌러서 전체를 더 키울 수 있어요.</p>
+        <div class="field">
+          <span class="label">저장 형식</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="fmt" id="f-mp3" value="mp3" checked><label for="f-mp3">MP3</label>
+            <input type="radio" name="fmt" id="f-wav" value="wav"><label for="f-wav">WAV</label>
+          </div>
+          <p class="hint">MP3는 가볍고 어디서나 재생돼요. WAV는 음질 손실이 없지만 파일이 커요.</p>
+        </div>
+        <div class="field" id="brField">
+          <label for="br">MP3 음질</label>
+          <select id="br">
+            <option value="320">320 kbps (최고)</option>
+            <option value="192" selected>192 kbps (보통)</option>
+            <option value="128">128 kbps (가볍게)</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled>적용해서 저장</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+        <button class="btn btn-block" id="zip" hidden data-icon="download"> 전부 zip으로 받기</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../../assets/audio.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const fmt = () => document.querySelector("input[name=fmt]:checked").value;
+  if (!window.lamejs) { document.getElementById("f-wav").checked = true; document.getElementById("f-mp3").disabled = true; }
+  const syncFmt = () => { document.getElementById("brField").hidden = fmt() !== "mp3"; };
+  document.querySelectorAll("input[name=fmt]").forEach(r => r.addEventListener("change", () => { syncFmt(); if (typeof stale === "function") stale(); }));
+  syncFmt();
+
+  const $ = s => document.querySelector(s);
+  const mode = () => document.querySelector("input[name=mode]:checked").value;
+  const filesEl = $("#files"), runBtn = $("#run"), zipBtn = $("#zip"), prog = $("#prog"), bar = prog.firstElementChild;
+  const say = TT.sayTo($("#status"));
+  const items = [];
+  const CEIL = -1;
+
+  document.querySelectorAll("input[name=mode]").forEach(r => r.onchange = () => { document.querySelectorAll("[data-mode]").forEach(el => el.hidden = el.dataset.mode !== mode()); stale(); });
+  $("#gain").oninput = e => { const v = +e.target.value; $("#gv").textContent = (v > 0 ? "+" : "") + v + " dB"; stale(); };
+  ["#target", "#limit", "#br"].forEach(s => $(s).addEventListener("change", stale));
+
+  TT.dropzone($("#drop"), add, { accept: "audio/*,video/*,.m4a,.flac,.ogg" });
+
+  async function add(files) {
+    for (const file of files) {
+      const it = { file }; items.push(it); filesEl.appendChild(row(it)); refresh();
+      try {
+        const buf = await TA.decode(file);
+        it.sr = buf.sampleRate; it.chs = TA.chans(buf);
+        it.lufs = TA.loudness(it.chs, it.sr); it.peak = TA.db(TA.peak(it.chs));
+      } catch (e) { it.bad = true; }
+      info(it); refresh();
+    }
+  }
+  function row(it) {
+    const el = document.createElement("div"); el.className = "file";
+    el.innerHTML = `<div class="thumb">${TT.icon("audio-volume")}</div>
+      <div class="meta"><div class="name"></div><div class="info meter">분석 중…</div></div>
+      <div class="acts"><button class="icon-btn pl" title="바꾼 소리 듣기">${TT.icon("play")}</button><button class="icon-btn dl" title="받기" hidden>${TT.icon("download")}</button><button class="icon-btn rm" title="빼기">${TT.icon("x")}</button></div>`;
+    el.querySelector(".name").textContent = it.file.name;
+    el.querySelector(".rm").onclick = () => { TA.stop(); items.splice(items.indexOf(it), 1); el.remove(); refresh(); };
+    el.querySelector(".dl").onclick = () => it.out && TT.download(it.out.blob, it.out.name);
+    el.querySelector(".pl").onclick = () => togglePlay(it);
+    it.el = el; return el;
+  }
+
+  // 이 파일에 적용할 키움 정도 (dB)
+  function plan(it) {
+    if (it.bad || !isFinite(it.lufs)) return null;
+    let g = mode() === "target" ? +$("#target").value - it.lufs : +$("#gain").value;
+    let capped = false;
+    if (!$("#limit").checked && it.peak + g > CEIL) { g = CEIL - it.peak; capped = true; }
+    return { g, capped };
+  }
+  const sign = v => (v >= 0 ? "+" : "") + v.toFixed(1);
+  function info(it) {
+    const el = it.el.querySelector(".info");
+    if (it.bad) { el.textContent = "소리를 읽지 못했어요"; return; }
+    if (it.chs === undefined) { el.textContent = "분석 중…"; return; }
+    if (!isFinite(it.lufs)) { el.textContent = "소리가 거의 없는 파일이에요"; return; }
+    const p = plan(it);
+    const after = mode() === "target" && !p.capped ? +$("#target").value : it.lufs + p.g;
+    el.innerHTML = `지금 ${it.lufs.toFixed(1)} LUFS · 최대 ${it.peak.toFixed(1)} dB → <b class="${p.g < 0 ? "up" : ""}">${sign(p.g)} dB</b> · 약 ${after.toFixed(1)} LUFS${p.capped ? " · 깨지기 직전까지만" : ""}`;
+  }
+  function refresh() {
+    $("#listWrap").hidden = !items.length;
+    const ready = items.filter(i => i.chs && isFinite(i.lufs));
+    runBtn.disabled = !ready.length;
+    $("#summary").textContent = `${items.length}개 파일`;
+    zipBtn.hidden = !(ready.length > 1 && ready.every(i => i.out));
+  }
+  function stale() { TA.stop(); items.forEach(i => { i.out = null; i.done = null; if (i.el) { i.el.querySelector(".dl").hidden = true; if (i.chs) info(i); } }); setIcons(); refresh(); }
+  $("#clear").onclick = () => { TA.stop(); items.length = 0; filesEl.innerHTML = ""; refresh(); say(""); };
+
+  function process(it) {
+    const p = plan(it);
+    if (!it.done) it.done = TA.applyGain(it.chs, it.sr, p.g, { limit: $("#limit").checked, ceilDb: CEIL });
+    return it.done;
+  }
+  let playing = null;
+  function setIcons() { items.forEach(i => { const b = i.el?.querySelector(".pl"); if (b) { b.innerHTML = TT.icon(i === playing ? "stop" : "play"); b.classList.toggle("on", i === playing); } }); }
+  function togglePlay(it) {
+    if (playing === it) { TA.stop(); playing = null; setIcons(); return; }
+    if (!plan(it)) return;
+    playing = it; setIcons();
+    TA.play(process(it), it.sr, () => { playing = null; setIcons(); });
+  }
+
+  runBtn.onclick = async () => {
+    TA.stop(); playing = null; setIcons();
+    const todo = items.filter(i => plan(i));
+    runBtn.disabled = true; prog.hidden = false;
+    let n = 0;
+    for (const it of todo) {
+      say(`처리 중… ${n + 1}/${todo.length}`); await TA.yieldUI();
+      const out = process(it);
+      const blob = await TA.encode(out, it.sr, fmt(), +$("#br").value, p => bar.style.width = ((n + p) / todo.length * 100) + "%");
+      it.out = { blob, name: `${TT.baseName(it.file.name)}_볼륨.${TA.ext(fmt())}` };
+      it.el.querySelector(".dl").hidden = false;
+      n++; bar.style.width = (n / todo.length * 100) + "%";
+    }
+    prog.hidden = true; bar.style.width = 0; runBtn.disabled = false;
+    say(`${n}개 저장했어요.`, "ok");
+    if (todo.length === 1) TT.download(todo[0].out.blob, todo[0].out.name);
+    refresh();
+  };
+  zipBtn.onclick = () => TT.downloadZip(items.filter(i => i.out).map(i => i.out), "volume.zip");
+
+})();
+</script>
+</body>
+</html>

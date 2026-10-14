@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>무음 자르기 · 뚝딱툴</title>
+<meta name="description" content="녹음 파일 앞뒤 무음 제거, 중간 긴 침묵 자동으로 줄이기. 강의·팟캐스트·인터뷰 녹음 정리. 무음 기준 자동 설정, MP3·WAV 저장. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--aud); }
+  .wave-wrap { padding: 14px 16px 16px; display: grid; gap: 12px; }
+  .wave { position: relative; height: 140px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; }
+  .wave canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); align-items: center; }
+  .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; }
+  .stats { display: flex; gap: 10px 18px; flex-wrap: wrap; font-size: 14px; }
+  .stats b { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+  .thr { display: flex; gap: 8px; align-items: center; }
+  .thr input[type=range] { flex: 1; }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>무음 자르기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="audio-silence"></span>
+    <div>
+      <h1>무음 자르기</h1>
+      <p>녹음 앞뒤의 빈 시간과 중간의 긴 침묵을 찾아서 잘라요. 빨갛게 표시된 곳이 잘려 나갈 부분이에요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>음원이나 녹음 파일을 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>MP3 · M4A · WAV · 영상 파일의 소리도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <div class="panel" id="editor" hidden>
+        <div class="wave-wrap">
+          <div class="wave"><canvas id="cv"></canvas></div>
+          <div class="legend"><span><i style="background:var(--aud)"></i>남는 부분</span><span><i style="background:color-mix(in srgb, var(--err) 30%, transparent)"></i>잘라낼 무음</span></div>
+          <div class="stats" id="stats"></div>
+          <div class="controls">
+            <button class="btn btn-sm" id="playOrig" data-icon="play"> 원본 듣기</button>
+            <button class="btn btn-sm btn-primary" id="playOut" data-icon="play"> 자른 결과 듣기</button>
+          </div>
+          <div class="drop compact" id="drop2" tabindex="0" role="button" aria-label="다른 파일 고르기">
+            <span data-icon="upload"></span><span>다른 파일 고르기</span><input type="file">
+          </div>
+        </div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>자르는 범위</h2>
+        <div class="seg" role="radiogroup">
+          <input type="radio" name="mode" id="m-e" value="edges"><label for="m-e">앞뒤만</label>
+          <input type="radio" name="mode" id="m-a" value="all" checked><label for="m-a">중간 무음도</label>
+        </div>
+        <div class="field">
+          <label for="thr">무음 기준 <span class="num" id="tv">-45 dB</span></label>
+          <div class="thr"><input type="range" id="thr" min="-70" max="-20" value="-45"><button class="btn btn-sm" id="auto">자동</button></div>
+          <p class="hint">이보다 작은 소리를 무음으로 봐요. 잡음이 깔린 녹음이면 오른쪽으로 올리세요. "자동"은 녹음의 바닥 소음에 맞춰줘요.</p>
+        </div>
+        <div class="field" id="minField">
+          <label for="minLen">이보다 긴 무음만 <span class="num" id="mv">0.6초</span></label>
+          <input type="range" id="minLen" min="0.2" max="3" step="0.1" value="0.6">
+          <p class="hint">말 사이 짧은 쉼은 남기고, 긴 침묵만 줄여요.</p>
+        </div>
+        <div class="field">
+          <label for="pad">무음 자리에 남길 여유 <span class="num" id="pdv">0.15초</span></label>
+          <input type="range" id="pad" min="0" max="0.6" step="0.05" value="0.15">
+          <p class="hint">0이면 말이 바짝 붙어서 부자연스러울 수 있어요.</p>
+        </div>
+        <div class="field">
+          <span class="label">저장 형식</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="fmt" id="f-mp3" value="mp3" checked><label for="f-mp3">MP3</label>
+            <input type="radio" name="fmt" id="f-wav" value="wav"><label for="f-wav">WAV</label>
+          </div>
+          <p class="hint">MP3는 가볍고 어디서나 재생돼요. WAV는 음질 손실이 없지만 파일이 커요.</p>
+        </div>
+        <div class="field" id="brField">
+          <label for="br">MP3 음질</label>
+          <select id="br">
+            <option value="320">320 kbps (최고)</option>
+            <option value="192" selected>192 kbps (보통)</option>
+            <option value="128">128 kbps (가볍게)</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled>잘라서 저장</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lamejs/1.2.1/lame.min.js"></script>
+<script src="../../assets/audio.js"></script>
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const fmt = () => document.querySelector("input[name=fmt]:checked").value;
+  if (!window.lamejs) { document.getElementById("f-wav").checked = true; document.getElementById("f-mp3").disabled = true; }
+  const syncFmt = () => { document.getElementById("brField").hidden = fmt() !== "mp3"; };
+  document.querySelectorAll("input[name=fmt]").forEach(r => r.addEventListener("change", () => { syncFmt(); if (typeof stale === "function") stale(); }));
+  syncFmt();
+
+  const $ = s => document.querySelector(s);
+  const mode = () => document.querySelector("input[name=mode]:checked").value;
+  const cv = $("#cv"), say = TT.sayTo($("#status")), bar = $("#prog").firstElementChild;
+  let file = null, chs = null, sr = 44100, frameDb = null, FR = 441, cuts = [], outCache = null;
+
+  TT.dropzone($("#drop"), f => load(f[0]), { accept: "audio/*,video/*,.m4a,.flac,.ogg", multiple: false });
+  TT.dropzone($("#drop2"), f => load(f[0]), { accept: "audio/*,video/*,.m4a,.flac,.ogg", multiple: false, paste: false });
+
+  async function load(f) {
+    if (!f) return;
+    TA.stop(); say("소리를 읽는 중…");
+    try { const buf = await TA.decode(f); chs = TA.chans(buf); sr = buf.sampleRate; }
+    catch { say("소리를 읽지 못했어요. 다른 파일로 해 보세요.", "err"); return; }
+    file = f; FR = Math.round(sr * 0.01);
+    // 10ms마다 소리 크기(dB)를 재 둬요
+    const n = chs[0].length, nf = Math.ceil(n / FR);
+    frameDb = new Float32Array(nf);
+    for (let f2 = 0; f2 < nf; f2++) {
+      let best = 0;
+      for (const d of chs) { let s = 0; const a = f2 * FR, b = Math.min(n, a + FR); for (let i = a; i < b; i++) s += d[i] * d[i]; best = Math.max(best, s / Math.max(1, b - a)); }
+      frameDb[f2] = 10 * Math.log10(Math.max(best, 1e-12));
+    }
+    $("#drop").hidden = true; $("#editor").hidden = false; $("#run").disabled = false;
+    autoThr(); say("");
+  }
+  function autoThr() {
+    const sorted = [...frameDb].filter(v => v > -100).sort((a, b) => a - b);
+    const floor = sorted.length ? sorted[Math.floor(sorted.length * 0.1)] : -60;
+    $("#thr").value = Math.round(Math.max(-70, Math.min(-25, floor + 10)));
+    update();
+  }
+  $("#auto").onclick = autoThr;
+
+  function detect() {
+    const thr = +$("#thr").value, minF = Math.round(+$("#minLen").value * 100), padS = Math.round(+$("#pad").value * sr);
+    const n = chs[0].length, nf = frameDb.length, runs = [];
+    let s = -1;
+    for (let f = 0; f <= nf; f++) {
+      const quiet = f < nf && frameDb[f] < thr;
+      if (quiet && s < 0) s = f;
+      if (!quiet && s >= 0) { runs.push([s, f]); s = -1; }
+    }
+    const out = [];
+    for (const [a, b] of runs) {
+      const sa = a * FR, sb = Math.min(n, b * FR);
+      if (a === 0 && b === nf) continue; // 전부 무음
+      if (a === 0) { if (sb - padS > 0) out.push([0, sb - padS]); }
+      else if (b === nf) { if (sa + padS < n) out.push([sa + padS, n]); }
+      else if (mode() === "all" && b - a >= minF && sb - sa - 2 * padS > 0) out.push([sa + padS, sb - padS]);
+    }
+    return out;
+  }
+  function update() {
+    $("#tv").textContent = $("#thr").value + " dB"; $("#mv").textContent = (+$("#minLen").value).toFixed(1) + "초"; $("#pdv").textContent = (+$("#pad").value).toFixed(2) + "초";
+    $("#minField").hidden = mode() !== "all";
+    if (!chs) return;
+    TA.stop(); resetBtns();
+    cuts = detect(); outCache = null;
+    const css = getComputedStyle(document.body);
+    TA.drawWave(cv, chs, sr, { color: css.getPropertyValue("--aud").trim(), dim: "rgba(150,150,150,.45)", regions: cuts.map(([a, b]) => ({ s: a / sr, e: b / sr, color: "rgba(220,60,60,.18)" })) });
+    const total = chs[0].length / sr, removed = cuts.reduce((s, [a, b]) => s + (b - a), 0) / sr;
+    $("#stats").innerHTML = `<span>원래 <b>${TT.time(total)}</b></span><span>결과 <b>${TT.time(total - removed)}</b></span><span>줄어든 시간 <b>${TT.time(removed)}</b></span><span>잘라낸 곳 <b>${cuts.length}</b>군데</span>`;
+    $("#run").disabled = false;
+  }
+  document.querySelectorAll("aside input[type=range], input[name=mode]").forEach(el => el.addEventListener("input", update));
+  new ResizeObserver(() => chs && update()).observe(cv);
+
+  // 남길 부분을 이어붙이고, 이음새마다 아주 짧게 페이드해서 '틱' 소리를 막아요
+  function build() {
+    if (outCache) return outCache;
+    const n = chs[0].length, keep = [];
+    let pos = 0;
+    for (const [a, b] of cuts) { if (a > pos) keep.push([pos, a]); pos = Math.max(pos, b); }
+    if (pos < n) keep.push([pos, n]);
+    const len = keep.reduce((s, [a, b]) => s + b - a, 0), fade = Math.round(sr * 0.004);
+    outCache = chs.map(d => {
+      const o = new Float32Array(Math.max(1, len)); let w = 0;
+      keep.forEach(([a, b], k) => {
+        o.set(d.subarray(a, b), w);
+        const L = b - a, f = Math.min(fade, L >> 1);
+        if (k > 0) for (let i = 0; i < f; i++) o[w + i] *= i / f;
+        if (k < keep.length - 1) for (let i = 0; i < f; i++) o[w + L - 1 - i] *= i / f;
+        w += L;
+      });
+      return o;
+    });
+    return outCache;
+  }
+
+  function resetBtns() { $("#playOrig").innerHTML = TT.icon("play") + " 원본 듣기"; $("#playOut").innerHTML = TT.icon("play") + " 자른 결과 듣기"; playing = null; }
+  let playing = null;
+  function toggle(which) {
+    if (playing === which) { TA.stop(); resetBtns(); return; }
+    resetBtns(); playing = which;
+    $(which === "orig" ? "#playOrig" : "#playOut").innerHTML = TT.icon("stop") + " 정지";
+    TA.play(which === "orig" ? chs : build(), sr, resetBtns);
+  }
+  $("#playOrig").onclick = () => toggle("orig");
+  $("#playOut").onclick = () => toggle("out");
+
+  $("#run").onclick = async () => {
+    TA.stop(); resetBtns();
+    $("#run").disabled = true; $("#prog").hidden = false;
+    try {
+      say("만드는 중…"); await TA.yieldUI();
+      const blob = await TA.encode(build(), sr, fmt(), +$("#br").value, p => bar.style.width = (p * 100) + "%");
+      TT.download(blob, `${TT.baseName(file.name)}_무음제거.${TA.ext(fmt())}`);
+      say(`저장했어요 · ${TT.bytes(blob.size)}`, "ok");
+    } catch (e) { console.error(e); say("저장하지 못했어요. WAV로 다시 해 보세요.", "err"); }
+    finally { $("#run").disabled = false; $("#prog").hidden = true; bar.style.width = 0; }
+  };
+
+})();
+</script>
+</body>
+</html>
