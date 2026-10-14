@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>도트 아트 만들기 (8비트 · 16비트) · 뚝딱툴</title>
+<meta name="description" content="사진을 8비트·16비트 게임 같은 도트(픽셀) 아트로 바꿔요. 패미컴·게임보이·PICO-8 팔레트, 색 수 직접, 디더링. 업로드 없이 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--img); }
+
+  .stage { position: relative; display: grid; place-items: center; background: repeating-conic-gradient(var(--surface-2) 0 25%, var(--line) 0 50%) 0 0 / 16px 16px; border-radius: 8px; padding: 12px; min-height: 240px; }
+  .stage canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; box-shadow: 0 2px 12px rgba(0,0,0,.25); }
+  .stage .grid { position: absolute; pointer-events: none; }
+  .presets { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .presets button { text-align: left; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-2); cursor: pointer; font: inherit; color: var(--ink); }
+  .presets button b { display: block; font-size: 13.5px; }
+  .presets button span { font-size: 11.5px; color: var(--muted); }
+  .presets button[aria-pressed=true] { border-color: var(--cat); background: color-mix(in srgb, var(--cat) 12%, var(--surface)); box-shadow: inset 0 0 0 1px var(--cat); }
+  .pal { display: flex; flex-wrap: wrap; gap: 2px; }
+  .pal i { width: 14px; height: 14px; border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .bar .sp { flex: 1; }
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>도트 아트 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="pixel-art"></span>
+    <div>
+      <h1>도트 아트 만들기</h1>
+      <p>사진을 옛날 게임 화면 같은 도트 그림으로 바꿔요. 8비트·16비트 게임기, 게임보이 같은 색 묶음을 고르세요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>사진을 올려 주세요</strong>
+        <span>JPG · PNG · WEBP · 붙여넣기도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <section class="panel" id="work" hidden>
+        <div class="panel-body">
+          <div class="bar"><span class="hint" id="info"></span><span class="sp"></span>
+            <label class="check" style="font-size:13px"><input type="checkbox" id="grid"> 격자 보기</label>
+            <button class="btn btn-sm" id="orig">누르는 동안 원본</button></div>
+          <div class="stage" id="stage"><canvas id="cv"></canvas><canvas class="grid" id="gridCv"></canvas></div>
+          <div><p class="hint" style="margin:0 0 6px">쓰인 색 <span id="ncol"></span></p><div class="pal" id="pal"></div></div>
+        </div>
+      </section>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>스타일</h2>
+        <div class="presets" id="presets"><button type="button" data-p="nes"><b>8비트 게임기</b><span>패미컴 느낌 · 54색</span></button><button type="button" data-p="snes"><b>16비트 게임기</b><span>슈퍼패미컴 느낌 · 64색</span></button><button type="button" data-p="gb"><b>게임보이</b><span>초록 4색</span></button><button type="button" data-p="pico"><b>PICO-8</b><span>선명한 16색</span></button><button type="button" data-p="cga"><b>옛날 PC (CGA)</b><span>청록·자홍 4색</span></button><button type="button" data-p="mono"><b>1비트 흑백</b><span>점으로만 그리기</span></button><button type="button" data-p="auto"><b>색 수 직접</b><span>2 ~ 256색</span></button></div>
+        <div class="field" id="ncRow"><label for="nc">색 수</label>
+          <select id="nc"><option value="2">2색 (1비트)</option><option value="4">4색 (2비트)</option><option value="8">8색 (3비트)</option><option value="16" selected>16색 (4비트)</option><option value="32">32색 (5비트)</option><option value="64">64색 (6비트)</option><option value="128">128색 (7비트)</option><option value="256">256색 (8비트 색)</option></select></div>
+        <h2>도트</h2>
+        <div class="field"><label for="w">가로 도트 수 <span class="num" id="wV">80</span></label><input type="range" id="w" min="16" max="320" step="4" value="80"></div>
+        <div class="field"><span class="label">점 섞기 (디더링)</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="dith" id="d-n" value="none"><label for="d-n">없음</label>
+            <input type="radio" name="dith" id="d-b" value="bayer"><label for="d-b">바둑판</label>
+            <input type="radio" name="dith" id="d-f" value="fs"><label for="d-f">퍼짐</label>
+          </div>
+          <p class="hint">색이 적을수록 점을 섞어야 그러데이션이 살아나요.</p></div>
+        <div class="field"><label for="con">대비 <span class="num" id="conV">10</span></label><input type="range" id="con" min="-50" max="100" value="10"></div>
+        <div class="field"><label for="sat">채도 <span class="num" id="satV">20</span></label><input type="range" id="sat" min="-100" max="100" value="20"></div>
+        <h2>저장</h2>
+        <div class="field"><label for="scale">저장 크기</label>
+          <select id="scale"><option value="fit" selected>원본 사진 크기에 맞춰 키우기</option><option value="1">도트 그대로 (1배)</option><option value="4">4배</option><option value="8">8배</option><option value="16">16배</option></select></div>
+        <button class="btn btn-primary btn-block" id="save" disabled>PNG 받기</button>
+        <p class="status" id="status"></p>
+        <p class="hint">8비트·16비트는 옛날 게임기 이름에서 온 말이에요. 진짜 기기 화면처럼 색 묶음과 해상도를 줄여서 비슷한 느낌을 내요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const say = TT.sayTo($("#status"));
+  const hx = s => s.split(" ").map(h => [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]);
+  const PAL = {
+    nes: hx("7C7C7C 0000FC 0000BC 4428BC 940084 A80020 A81000 881400 503000 007800 006800 005800 004058 000000 BCBCBC 0078F8 0058F8 6844FC D800CC E40058 F83800 E45C10 AC7C00 00B800 00A800 00A844 008888 F8F8F8 3CBCFC 6888FC 9878F8 F878F8 F85898 F87858 FCA044 F8B800 B8F818 58D854 58F898 00E8D8 787878 FCFCFC A4E4FC B8B8F8 D8B8F8 F8B8F8 F8A4C0 F0D0B0 FCE0A8 F8D878 D8F878 B8F8B8 B8F8D8 00FCFC F8D8F8"),
+    gb: hx("0F380F 306230 8BAC0F 9BBC0F"),
+    pico: hx("000000 1D2B53 7E2553 008751 AB5236 5F574F C2C3C7 FFF1E8 FF004D FFA300 FFEC27 00E436 29ADFF 83769C FF77A8 FFCCAA"),
+    cga: hx("000000 55FFFF FF55FF FFFFFF"),
+    mono: hx("000000 FFFFFF")
+  };
+  const PRESET = {
+    nes: { w: 80, dith: "none", con: 15, sat: 25 }, snes: { w: 160, dith: "none", con: 10, sat: 15, n: 64, bits5: true },
+    gb: { w: 80, dith: "bayer", con: 20, sat: 0 }, pico: { w: 96, dith: "none", con: 15, sat: 30 },
+    cga: { w: 120, dith: "bayer", con: 20, sat: 30 }, mono: { w: 140, dith: "fs", con: 15, sat: 0 }, auto: { w: 120, dith: "bayer", con: 10, sat: 20 }
+  };
+  let img = null, name = "pixel", preset = "nes", out = null, palUsed = [];
+
+  function setPreset(p) {
+    preset = p; const v = PRESET[p];
+    document.querySelectorAll("#presets button").forEach(b => b.setAttribute("aria-pressed", b.dataset.p === p));
+    $("#w").value = v.w; $("#con").value = v.con; $("#sat").value = v.sat;
+    document.querySelector(`input[name=dith][value=${v.dith}]`).checked = true;
+    $("#ncRow").hidden = p !== "auto";
+    syncNums(); run();
+  }
+  const syncNums = () => ["w", "con", "sat"].forEach(id => $("#" + id + "V").textContent = $("#" + id).value);
+
+  // 사람 눈에 가까운 색 거리 (redmean)
+  const dist = (r, g, b, p) => { const rm = (r + p[0]) / 2, dr = r - p[0], dg = g - p[1], db = b - p[2]; return (2 + rm / 256) * dr * dr + 4 * dg * dg + (2 + (255 - rm) / 256) * db * db; };
+  function nearestFn(pal) {
+    const cache = new Map();
+    return (r, g, b) => {
+      r = Math.max(0, Math.min(255, r)); g = Math.max(0, Math.min(255, g)); b = Math.max(0, Math.min(255, b));
+      const k = ((r >> 2) << 12) | ((g >> 2) << 6) | (b >> 2);
+      let i = cache.get(k); if (i !== undefined) return i;
+      let best = 0, bd = Infinity; for (let j = 0; j < pal.length; j++) { const d = dist(r, g, b, pal[j]); if (d < bd) { bd = d; best = j; } }
+      cache.set(k, best); return best;
+    };
+  }
+  // 사진에서 색 N개 뽑기 (메디안 컷 + 몇 번 다듬기)
+  function adaptive(px, n) {
+    const cols = []; for (let i = 0; i < px.length; i += 4) cols.push([px[i], px[i + 1], px[i + 2]]);
+    let boxes = [cols];
+    while (boxes.length < n) {
+      let bi = -1, br = -1, bc = 0;
+      boxes.forEach((bx, i) => { if (bx.length < 2) return; for (let c = 0; c < 3; c++) { let lo = 255, hi = 0; for (const p of bx) { if (p[c] < lo) lo = p[c]; if (p[c] > hi) hi = p[c]; } if (hi - lo > br) { br = hi - lo; bi = i; bc = c; } } });
+      if (bi < 0 || br <= 0) break;
+      const bx = boxes[bi].sort((a, b) => a[bc] - b[bc]), m = bx.length >> 1;
+      boxes.splice(bi, 1, bx.slice(0, m), bx.slice(m));
+    }
+    let pal = boxes.map(bx => [0, 1, 2].map(c => bx.reduce((s, p) => s + p[c], 0) / bx.length));
+    for (let it = 0; it < 4; it++) {
+      const sum = pal.map(() => [0, 0, 0, 0]), nf = nearestFn(pal);
+      for (const p of cols) { const j = nf(p[0], p[1], p[2]); sum[j][0] += p[0]; sum[j][1] += p[1]; sum[j][2] += p[2]; sum[j][3]++; }
+      pal = pal.map((q, j) => sum[j][3] ? [sum[j][0] / sum[j][3], sum[j][1] / sum[j][3], sum[j][2] / sum[j][3]] : q);
+    }
+    return pal.map(p => p.map(Math.round));
+  }
+  const BAYER = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5].map(v => (v + 0.5) / 16 - 0.5);
+
+  function run() {
+    if (!img) return;
+    const W = +$("#w").value, H = Math.max(1, Math.round(W * img.height / img.width));
+    const con = +$("#con").value / 100, sat = +$("#sat").value / 100, dith = document.querySelector("input[name=dith]:checked").value;
+    const c = document.createElement("canvas"); c.width = W; c.height = H;
+    const g = c.getContext("2d", { willReadFrequently: true }); g.imageSmoothingQuality = "high"; g.drawImage(img, 0, 0, W, H);
+    const id = g.getImageData(0, 0, W, H), d = id.data;
+    // 대비 · 채도 먼저
+    for (let i = 0; i < d.length; i += 4) {
+      let r = d[i], gg = d[i + 1], b = d[i + 2]; const y = r * 0.299 + gg * 0.587 + b * 0.114;
+      r = y + (r - y) * (1 + sat); gg = y + (gg - y) * (1 + sat); b = y + (b - y) * (1 + sat);
+      d[i] = (r - 128) * (1 + con) + 128; d[i + 1] = (gg - 128) * (1 + con) + 128; d[i + 2] = (b - 128) * (1 + con) + 128;
+    }
+    let pal;
+    if (preset === "auto") pal = adaptive(d, +$("#nc").value);
+    else if (preset === "snes") pal = adaptive(d, 64).map(p => p.map(v => Math.round(Math.round(v / 255 * 31) / 31 * 255)));
+    else pal = PAL[preset];
+    const nf = nearestFn(pal), spread = 255 / Math.max(1, Math.cbrt(pal.length)) * 0.9;
+    const buf = new Float32Array(W * H * 3); for (let i = 0, j = 0; i < d.length; i += 4, j += 3) { buf[j] = d[i]; buf[j + 1] = d[i + 1]; buf[j + 2] = d[i + 2]; }
+    const used = new Set();
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const j = (y * W + x) * 3; let r = buf[j], gg = buf[j + 1], b = buf[j + 2];
+      if (dith === "bayer") { const t = BAYER[(y & 3) * 4 + (x & 3)] * spread; r += t; gg += t; b += t; }
+      const k = nf(r, gg, b), p = pal[k]; used.add(k);
+      if (dith === "fs") {
+        const er = buf[j] - p[0], eg = buf[j + 1] - p[1], eb = buf[j + 2] - p[2];
+        const push = (dx, dy, f) => { const xx = x + dx, yy = y + dy; if (xx < 0 || xx >= W || yy >= H) return; const q = (yy * W + xx) * 3; buf[q] += er * f; buf[q + 1] += eg * f; buf[q + 2] += eb * f; };
+        push(1, 0, 7 / 16); push(-1, 1, 3 / 16); push(0, 1, 5 / 16); push(1, 1, 1 / 16);
+      }
+      const o = (y * W + x) * 4; d[o] = p[0]; d[o + 1] = p[1]; d[o + 2] = p[2];
+    }
+    g.putImageData(id, 0, 0);
+    out = c; palUsed = [...used].map(k => pal[k]);
+    const cv = $("#cv"); cv.width = W; cv.height = H; cv.getContext("2d").drawImage(c, 0, 0);
+    $("#info").textContent = `${W} × ${H} 도트 · 팔레트 ${pal.length}색`;
+    $("#ncol").textContent = `${palUsed.length}색`;
+    $("#pal").innerHTML = palUsed.sort((a, b) => (a[0] * .3 + a[1] * .59 + a[2] * .11) - (b[0] * .3 + b[1] * .59 + b[2] * .11)).map(p => `<i style="background:rgb(${p})" title="#${p.map(v => v.toString(16).padStart(2, "0")).join("")}"></i>`).join("");
+    drawGrid(); $("#save").disabled = false;
+  }
+  // 작은 도트 그림을 화면 크기에 맞게 키워서 보여줘요
+  function fitView() {
+    const cv = $("#cv"), st = $("#stage"); if (!cv.width) return;
+    const aw = st.clientWidth - 24, ah = Math.min(innerHeight * 0.64, 900), k = Math.min(aw / cv.width, ah / cv.height);
+    cv.style.width = Math.floor(cv.width * k) + "px"; cv.style.height = Math.floor(cv.height * k) + "px";
+  }
+  // 격자: 화면에 보이는 크기에 맞춰 그려요
+  function drawGrid() {
+    fitView();
+    const gc = $("#gridCv"), cv = $("#cv");
+    if (!$("#grid").checked || !out) { gc.hidden = true; return; }
+    const r = cv.getBoundingClientRect(), st = $("#stage").getBoundingClientRect(), k = Math.min(2, devicePixelRatio || 1);
+    gc.hidden = false; gc.style.left = (r.left - st.left) + "px"; gc.style.top = (r.top - st.top) + "px"; gc.style.width = r.width + "px"; gc.style.height = r.height + "px";
+    gc.width = r.width * k; gc.height = r.height * k;
+    const g = gc.getContext("2d"), sx = gc.width / out.width, sy = gc.height / out.height;
+    if (sx < 4) { gc.hidden = true; return; }
+    g.strokeStyle = "rgba(0,0,0,.25)"; g.lineWidth = 1; g.beginPath();
+    for (let x = 1; x < out.width; x++) { g.moveTo(Math.round(x * sx) + .5, 0); g.lineTo(Math.round(x * sx) + .5, gc.height); }
+    for (let y = 1; y < out.height; y++) { g.moveTo(0, Math.round(y * sy) + .5); g.lineTo(gc.width, Math.round(y * sy) + .5); }
+    g.stroke();
+  }
+
+  TT.dropzone($("#drop"), async ([f]) => {
+    try { img = await TT.toCanvas(f, 2400); } catch { say("이 이미지는 열 수 없어요.", "err"); return; }
+    name = TT.baseName(f.name); $("#work").hidden = false; say(""); run();
+  }, { accept: "image/*", multiple: false });
+  $("#presets").onclick = e => { const b = e.target.closest("button"); if (b) setPreset(b.dataset.p); };
+  let t = 0;
+  document.querySelector("aside").addEventListener("input", e => { if (e.target.id === "scale") return; syncNums(); clearTimeout(t); t = setTimeout(run, 40); });
+  $("#grid").onchange = drawGrid;
+  new ResizeObserver(drawGrid).observe($("#stage"));
+  // 원본 잠깐 보기
+  const orig = $("#orig");
+  const show = on => { if (!img || !out) return; const cv = $("#cv"); if (on) { cv.width = img.width; cv.height = img.height; cv.getContext("2d").drawImage(img, 0, 0); cv.style.imageRendering = "auto"; } else { cv.style.imageRendering = ""; cv.width = out.width; cv.height = out.height; cv.getContext("2d").drawImage(out, 0, 0); } drawGrid(); };
+  orig.addEventListener("pointerdown", () => show(true)); ["pointerup", "pointerleave", "pointercancel"].forEach(ev => orig.addEventListener(ev, () => show(false)));
+
+  $("#save").onclick = () => {
+    if (!out) return;
+    const sv = $("#scale").value, k = sv === "fit" ? Math.max(1, Math.round(Math.max(img.width, img.height) / Math.max(out.width, out.height))) : +sv;
+    const c = document.createElement("canvas"); c.width = out.width * k; c.height = out.height * k;
+    const g = c.getContext("2d"); g.imageSmoothingEnabled = false; g.drawImage(out, 0, 0, c.width, c.height);
+    c.toBlob(b => { TT.download(b, `${name}_${preset === "nes" ? "8bit" : preset === "snes" ? "16bit" : preset}.png`); say(`${c.width} × ${c.height}px로 저장했어요.`, "ok"); }, "image/png");
+  };
+  setPreset("nes");
+
+})();
+</script>
+</body>
+</html>

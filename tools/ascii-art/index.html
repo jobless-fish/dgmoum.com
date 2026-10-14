@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>아스키 아트 만들기 (사진 → 글자 그림) · 뚝딱툴</title>
+<meta name="description" content="사진을 글자로 그린 아스키 아트로 바꿔요. 기본·블록·점자·내 글자, 컬러, 텍스트 복사, PNG 저장. 업로드 없이 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<style>
+  body { --cat: var(--img); }
+
+  .outwrap { border: 1px solid var(--line); border-radius: 8px; overflow: auto; padding: 10px; max-height: 70vh; }
+  .outwrap.dark { background: #0d0f12; color: #e8e8e8; }
+  .outwrap.light { background: #ffffff; color: #111; }
+  #out { margin: 0; font-family: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; line-height: 1.2; white-space: pre; letter-spacing: 0; width: max-content; }
+  #out.wide { font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
+  .bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .bar .sp { flex: 1; }
+  .fit-note { font-size: 12px; color: var(--muted); }
+
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>아스키 아트 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="ascii-art"></span>
+    <div>
+      <h1>아스키 아트 만들기</h1>
+      <p>사진을 글자로 그린 그림으로 바꿔요. 글로 복사해 채팅에 붙이거나 PNG 이미지로 저장할 수 있어요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>사진을 올려 주세요</strong>
+        <span>JPG · PNG · WEBP · 붙여넣기도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <section class="panel" id="work" hidden>
+        <div class="panel-body">
+          <div class="bar">
+            <span class="fit-note" id="size"></span><span class="sp"></span>
+            <button class="btn btn-sm" id="zoomOut" aria-label="작게">−</button>
+            <button class="btn btn-sm" id="zoomFit">화면에 맞춤</button>
+            <button class="btn btn-sm" id="zoomIn" aria-label="크게">＋</button>
+          </div>
+          <div class="outwrap dark" id="wrap"><pre id="out"></pre></div>
+          <div class="bar">
+            <button class="btn btn-primary" id="copy">글로 복사</button>
+            <button class="btn" id="txt">TXT 받기</button>
+            <button class="btn" id="png">PNG 이미지 받기</button>
+          </div>
+        </div>
+      </section>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>글자 모양</h2>
+        <div class="field"><label for="set">글자 묶음</label>
+          <select id="set">
+            <option value="simple">기본 ( .:-=+*#%@ )</option>
+            <option value="detail">자세히 (글자 70개)</option>
+            <option value="block">블록 ( ░▒▓█ )</option>
+            <option value="braille">점자 ⣿ (가장 촘촘하게)</option>
+            <option value="binary">0과 1</option>
+            <option value="custom">내 글자로</option>
+          </select></div>
+        <div class="field" id="customRow" hidden><label for="custom">쓸 글자</label><input type="text" id="custom" placeholder="쓸 글자를 입력하세요" maxlength="40">
+          <p class="hint">진하기 순서는 알아서 맞춰요. 한글만 쓰면 한글 칸에 맞춰 그려요.</p></div>
+        <div class="field"><label for="cols">가로 글자 수 <span class="num" id="colsV">100</span></label><input type="range" id="cols" min="30" max="240" value="100"></div>
+        <h2>색</h2>
+        <div class="field"><span class="label">배경</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="bg" id="bg-d" value="dark" checked><label for="bg-d">어둡게</label>
+            <input type="radio" name="bg" id="bg-l" value="light"><label for="bg-l">밝게</label>
+          </div></div>
+        <label class="check"><input type="checkbox" id="color"> 사진 색 그대로 칠하기</label>
+        <label class="check"><input type="checkbox" id="inv"> 밝고 어두움 뒤집기</label>
+        <label class="check" id="ditherRow" hidden><input type="checkbox" id="dither" checked> 점 퍼뜨리기 (디더링)</label>
+        <h2>보정</h2>
+        <div class="field"><label for="bri">밝기 <span class="num" id="briV">0</span></label><input type="range" id="bri" min="-100" max="100" value="0"></div>
+        <div class="field"><label for="con">대비 <span class="num" id="conV">20</span></label><input type="range" id="con" min="-50" max="100" value="20"></div>
+        <p class="status" id="status"></p>
+        <p class="hint">글로 복사한 아스키 아트는 고정폭 글꼴(메모장, 코드 블록 등)에 붙여야 모양이 맞아요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="foot"><div class="wrap"><span>파일은 이 브라우저 안에서만 처리돼요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const say = TT.sayTo($("#status"));
+  const SETS = {
+    simple: " .:-=+*#%@",
+    detail: " .'`^\",:;Il!i><~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$",
+    block: " ░▒▓█",
+    binary: " 01"
+  };
+  let img = null, name = "ascii", res = null, fontPx = 10;
+  const MONO = '"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace', KR = '"IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
+  const isWide = s => /[ᄀ-ᇿ　-〿㄰-㆏가-힣＀-￯]/.test(s);
+
+  // 글자마다 잉크 양을 재서 연한 것부터 진한 것 순서로
+  const inkCache = {};
+  function ordered(chars, wide) {
+    const key = chars + wide; if (inkCache[key]) return inkCache[key];
+    const c = document.createElement("canvas"), S = 32; c.width = S; c.height = S;
+    const g = c.getContext("2d", { willReadFrequently: true });
+    const list = [...new Set([...chars])].map(ch => {
+      g.clearRect(0, 0, S, S); g.font = `24px ${wide ? KR : MONO}`; g.textBaseline = "middle"; g.textAlign = "center"; g.fillStyle = "#000"; g.fillText(ch, S / 2, S / 2);
+      const d = g.getImageData(0, 0, S, S).data; let ink = 0; for (let i = 3; i < d.length; i += 4) ink += d[i];
+      return [ch, ink];
+    }).sort((a, b) => a[1] - b[1]).map(x => x[0]);
+    const space = wide ? "　" : " ";
+    if (!list.includes(" ") && !list.includes("　")) list.unshift(space);
+    return inkCache[key] = list.map(ch => ch === " " && wide ? "　" : ch);
+  }
+
+  const opt = () => ({
+    set: $("#set").value, cols: +$("#cols").value, bg: document.querySelector("input[name=bg]:checked").value,
+    color: $("#color").checked, inv: $("#inv").checked, dither: $("#dither").checked,
+    bri: +$("#bri").value / 100, con: +$("#con").value / 100, custom: $("#custom").value
+  });
+
+  function sample(w, h) {
+    const c = document.createElement("canvas"); c.width = w; c.height = h;
+    const g = c.getContext("2d", { willReadFrequently: true }); g.imageSmoothingQuality = "high";
+    g.fillStyle = "#fff"; g.fillRect(0, 0, w, h); g.drawImage(img, 0, 0, w, h);
+    return g.getImageData(0, 0, w, h).data;
+  }
+  const adj = (L, o) => { L = (L - 0.5) * (1 + o.con) + 0.5 + o.bri * 0.5; return Math.min(1, Math.max(0, L)); };
+
+  function build() {
+    if (!img) return;
+    const o = opt(), ar = img.height / img.width;
+    $("#customRow").hidden = o.set !== "custom"; $("#ditherRow").hidden = o.set !== "braille";
+    // 어두운 배경이면 밝은 곳에 진한 글자 (뒤집기를 켜면 반대로)
+    const brightIsInk = (o.bg === "dark") !== o.inv;
+    let rows = [], cols, wide = false;
+    if (o.set === "braille") {
+      cols = o.cols; const W = cols * 2, H = Math.max(4, Math.round(W * ar / 4) * 4) , n = H / 4;
+      const d = sample(W, H), lum = new Float32Array(W * H);
+      for (let i = 0; i < W * H; i++) lum[i] = adj((d[i * 4] * 0.2126 + d[i * 4 + 1] * 0.7152 + d[i * 4 + 2] * 0.0722) / 255, o);
+      const on = new Uint8Array(W * H);
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = y * W + x, v = brightIsInk ? lum[i] : 1 - lum[i], b = v >= 0.5 ? 1 : 0; on[i] = b;
+        if (o.dither) { const e = v - b; if (x + 1 < W) lum[i + 1] += (brightIsInk ? e : -e) * 7 / 16; if (y + 1 < H) { if (x > 0) lum[i + W - 1] += (brightIsInk ? e : -e) * 3 / 16; lum[i + W] += (brightIsInk ? e : -e) * 5 / 16; if (x + 1 < W) lum[i + W + 1] += (brightIsInk ? e : -e) / 16; } }
+      }
+      const BIT = [[0x01, 0x08], [0x02, 0x10], [0x04, 0x20], [0x40, 0x80]];
+      for (let r = 0; r < n; r++) {
+        const line = [];
+        for (let c = 0; c < cols; c++) {
+          let code = 0, R = 0, G = 0, Bc = 0;
+          for (let dy = 0; dy < 4; dy++) for (let dx = 0; dx < 2; dx++) { const i = (r * 4 + dy) * W + c * 2 + dx; if (on[i]) code |= BIT[dy][dx]; R += d[i * 4]; G += d[i * 4 + 1]; Bc += d[i * 4 + 2]; }
+          line.push([String.fromCharCode(0x2800 + code), [R / 8, G / 8, Bc / 8]]);
+        }
+        rows.push(line);
+      }
+    } else {
+      const chars = o.set === "custom" ? (o.custom.trim() || "#") : SETS[o.set];
+      wide = o.set === "custom" && [...o.custom.replace(/\s/g, "")].every(isWide) && !!o.custom.trim();
+      const list = ordered(chars, wide), N = list.length;
+      cols = o.cols; const n = Math.max(1, Math.round(cols * ar / (wide ? 1.2 : 2)));
+      const d = sample(cols, n);
+      for (let r = 0; r < n; r++) {
+        const line = [];
+        for (let c = 0; c < cols; c++) {
+          const i = (r * cols + c) * 4, L = adj((d[i] * 0.2126 + d[i + 1] * 0.7152 + d[i + 2] * 0.0722) / 255, o);
+          const v = brightIsInk ? L : 1 - L;
+          line.push([list[Math.min(N - 1, Math.round(v * (N - 1)))], [d[i], d[i + 1], d[i + 2]]]);
+        }
+        rows.push(line);
+      }
+    }
+    res = { rows, cols, wide, o };
+    render();
+  }
+
+  function render() {
+    const { rows, wide, o } = res, out = $("#out");
+    $("#wrap").className = "outwrap " + o.bg;
+    out.classList.toggle("wide", wide);
+    const esc = ch => ch === "<" ? "&lt;" : ch === ">" ? "&gt;" : ch === "&" ? "&amp;" : ch;
+    if (o.color) {
+      out.innerHTML = rows.map(line => { let h = "", cur = null, run = ""; for (const [ch, [r, g, b]] of line) { const col = `rgb(${r & 0xF0},${g & 0xF0},${b & 0xF0})`; if (col !== cur) { if (run) h += `<span style="color:${cur}">${run}</span>`; cur = col; run = ""; } run += esc(ch); } return h + (run ? `<span style="color:${cur}">${run}</span>` : ""); }).join("\n");
+    } else out.textContent = rows.map(l => l.map(x => x[0]).join("")).join("\n");
+    out.style.fontSize = fontPx + "px";
+    $("#size").textContent = `${res.cols} × ${rows.length} 글자`;
+  }
+  function fit() {
+    if (!res) return;
+    const w = $("#wrap").clientWidth - 22, per = res.wide ? 1 : 0.6;
+    fontPx = Math.max(2, Math.min(18, w / (res.cols * per)));
+    render();
+  }
+
+  TT.dropzone($("#drop"), async ([f]) => {
+    try { img = await TT.toCanvas(f, 1600); } catch { say("이 이미지는 열 수 없어요.", "err"); return; }
+    name = TT.baseName(f.name); $("#work").hidden = false; say("");
+    build(); fit();
+  }, { accept: "image/*", multiple: false });
+
+  let t = 0;
+  document.querySelector("aside").addEventListener("input", e => {
+    ["cols", "bri", "con"].forEach(id => $("#" + id + "V").textContent = $("#" + id).value);
+    clearTimeout(t); t = setTimeout(() => { const pc = res?.cols; build(); if (res && res.cols !== pc) fit(); }, 60);
+  });
+  document.querySelector("aside").addEventListener("change", () => { build(); fit(); });
+  $("#zoomIn").onclick = () => { fontPx = Math.min(40, fontPx * 1.25); render(); };
+  $("#zoomOut").onclick = () => { fontPx = Math.max(2, fontPx / 1.25); render(); };
+  $("#zoomFit").onclick = fit;
+  new ResizeObserver(() => res && fit()).observe($("#wrap"));
+
+  const plain = () => res.rows.map(l => l.map(x => x[0]).join("").replace(/\s+$/, "")).join("\n");
+  $("#copy").onclick = async () => { if (!res) return; try { await navigator.clipboard.writeText(plain()); say("복사했어요.", "ok"); } catch { say("복사하지 못했어요. TXT로 받아 보세요.", "err"); } };
+  $("#txt").onclick = () => res && TT.download(new Blob(["﻿" + plain()], { type: "text/plain;charset=utf-8" }), name + "_ascii.txt");
+  // PNG: 글자를 한 칸씩 그려서 저장해요
+  $("#png").onclick = () => {
+    if (!res) return;
+    const { rows, wide, o } = res, fs = 16, c = document.createElement("canvas"), g = c.getContext("2d");
+    g.font = `${fs}px ${wide ? KR : MONO}`;
+    const cw = wide ? fs : g.measureText("M").width, ch = fs * 1.2;
+    c.width = Math.ceil(cw * res.cols + 24); c.height = Math.ceil(ch * rows.length + 24);
+    g.fillStyle = o.bg === "dark" ? "#0d0f12" : "#ffffff"; g.fillRect(0, 0, c.width, c.height);
+    g.font = `${fs}px ${wide ? KR : MONO}`; g.textBaseline = "top"; g.textAlign = "left";
+    const base = o.bg === "dark" ? "#e8e8e8" : "#111111";
+    rows.forEach((line, r) => line.forEach(([chr, [R, G, B]], i) => { if (chr === " " || chr === "　" || chr === "⠀") return; g.fillStyle = o.color ? `rgb(${R},${G},${B})` : base; g.fillText(chr, 12 + i * cw, 12 + r * ch + fs * 0.1); }));
+    c.toBlob(b => TT.download(b, name + "_ascii.png"), "image/png");
+  };
+
+})();
+</script>
+</body>
+</html>
