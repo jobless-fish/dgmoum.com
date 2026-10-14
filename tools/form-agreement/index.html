@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>합의서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="사고·분쟁 합의서를 칸만 채워 PDF로 저장하세요. 합의금 한글 표기, 지급일, 이의 제기 금지 조항, 서명. 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>합의서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-agreement"></span>
+    <div>
+      <h1>합의서 만들기</h1>
+      <p>작은 사고나 다툼을 서로 합의로 끝낼 때 쓰는 합의서예요. 합의금은 한글과 숫자로 같이 적혀요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p><b>법률 자문이 아니에요.</b> 교통사고, 폭행처럼 경찰·보험이 얽힌 일은 합의 전에 보험사나 전문가와 꼭 상담하세요.</p>
+      <p>"더 문제 삼지 않는다" 조항을 넣으면 나중에 추가로 요구하기 어려워져요. 피해가 다 드러난 뒤에 합의하세요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  const who = (H, v, p, label) => `<table class="d-tbl d-kv d-small"><colgroup><col style="width:7mm"><col style="width:16mm"><col><col style="width:18mm"><col></colgroup>
+    <tr><th class="vlabel" rowspan="3">${label}</th><th>성명</th><td>${H.t(p + "_name")}</td><th>생년월일</th><td>${H.kdate(v[p + "_birth"])}</td></tr>
+    <tr><th>주소</th><td colspan="3">${H.t(p + "_addr")}</td></tr>
+    <tr><th>연락처</th><td colspan="3">${H.t(p + "_tel")}</td></tr></table>`;
+  const blankBox = (H, k, mm) => `<div class="d-box" style="min-height:${mm}mm">${H.nl(k)}</div>`;
+  TF.make({
+    fileName: v => ["합의서", v.a_name, v.b_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "갑 (합의금을 주는 쪽)" },
+      { k: "a_name", label: "이름", ph: "이름을 입력하세요", half: true },
+      { k: "a_birth", label: "생년월일", type: "date", half: true },
+      { k: "a_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true },
+      { k: "a_addr", label: "주소", ph: "주소를 입력하세요" },
+      { sec: "을 (합의금을 받는 쪽)" },
+      { k: "b_name", label: "이름", ph: "이름을 입력하세요", half: true },
+      { k: "b_birth", label: "생년월일", type: "date", half: true },
+      { k: "b_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true },
+      { k: "b_addr", label: "주소", ph: "주소를 입력하세요" },
+      { sec: "일어난 일" },
+      { k: "when", label: "날짜", type: "date", half: true },
+      { k: "place", label: "장소", ph: "장소를 입력하세요", half: true },
+      { k: "what", label: "내용", type: "textarea", ph: "무슨 일이 있었는지 간단히 입력하세요" },
+      { sec: "합의 내용" },
+      { k: "amount", label: "합의금 (원)", ph: "금액을 입력하세요 · 없으면 0", type: "money", half: true },
+      { k: "payday", label: "지급일", type: "date", half: true },
+      { k: "bank", label: "받을 계좌", ph: "은행 · 계좌번호 · 예금주 (을)" },
+      { k: "extra", label: "그 밖에 정한 것 (선택)", type: "textarea", ph: "사과, 수리, 재발 방지 등 따로 정한 내용을 입력하세요" },
+      { k: "nofile", label: "민사·형사상 더 문제 삼지 않는다는 조항 넣기", type: "check", def: true },
+      { sec: "작성" },
+      { k: "date", label: "작성일", type: "date", def: "today" },
+      { stamp: "a_sign" }, { stamp: "b_sign" }
+    ],
+    stamps: [{ k: "a_sign", label: "갑 서명", kind: "sign" }, { k: "b_sign", label: "을 서명", kind: "sign" }],
+    render(v, H) {
+      const amt = TF.num(v.amount), hasAmt = String(v.amount || "").trim() !== "";
+      const arts = [
+        hasAmt && amt === 0 ? ["합의금", "갑과 을은 합의금 없이 합의한다."] : ["합의금", `갑은 을에게 합의금으로 ${H.amount(amt)}을 ${H.date("payday")}까지 지급한다.`],
+        ["지급 방법", `합의금은 을의 다음 계좌로 보낸다. ${H.has("bank") ? H.t("bank") : '<span class="fill" style="min-width:80mm">&nbsp;</span>'}`],
+        H.has("extra") && ["그 밖의 합의", H.nl("extra")],
+        v.nofile && ["이의 제기 금지", "을은 합의금을 모두 받은 뒤에는 이 일에 관하여 갑에게 민사상·형사상 어떠한 이의도 제기하지 않는다."],
+        ["합의서 보관", "이 합의를 증명하기 위해 합의서 2부를 만들어 갑과 을이 서명한 뒤 1부씩 보관한다."]
+      ].filter(Boolean);
+      return `<h1 class="d-title" style="margin-bottom:8mm">합의서</h1>
+        ${who(H, v, "a", "갑")}${who(H, v, "b", "을")}
+        <p class="d-sec">일어난 일</p>
+        <table class="d-tbl d-kv d-small"><tr><th>일시</th><td>${H.kdate(v.when)}</td><th>장소</th><td>${H.t("place")}</td></tr>
+          <tr><th>내용</th><td colspan="3" style="height:20mm;vertical-align:top">${H.nl("what")}</td></tr></table>
+        <p class="d-p">갑과 을은 위 일에 관하여 다음과 같이 합의한다.</p>
+        ${arts.map(([h, p], i) => `<div class="d-art"><h3>제${i + 1}조 (${h})</h3><p>${p}</p></div>`).join("")}
+        <div class="d-sign" style="margin-top:6mm">
+          <p class="date">${H.date("date")}</p>
+          <p class="who">갑 <span class="fill" style="min-width:30mm">${H.t("a_name") || "&nbsp;"}</span> ${H.stamp("a_sign", "(서명 또는 인)")}</p>
+          <p class="who">을 <span class="fill" style="min-width:30mm">${H.t("b_name") || "&nbsp;"}</span> ${H.stamp("b_sign", "(서명 또는 인)")}</p>
+        </div>`;
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -156,6 +156,15 @@
 .d-end { break-inside: avoid; }
 .d-parties { break-inside: avoid; }
 
+.d-approve-wrap { display: flex; justify-content: flex-end; margin: -4mm 0 4mm; }
+.d-approve { border-collapse: collapse; font-size: 8.4pt; }
+.d-approve th, .d-approve td { border: 1px solid var(--rule); text-align: center; font-weight: 500; }
+.d-approve th { width: 18mm; padding: .8mm 1mm; background: var(--head); }
+.d-approve td { height: 15mm; }
+.d-approve .vlabel { width: 6mm; writing-mode: vertical-rl; text-orientation: upright; letter-spacing: .3em; padding: 1mm 0; }
+.t-modern .d-approve .vlabel { background: var(--accent); color: #fff; }
+.d-olist { margin: 0; padding-left: 6mm; display: grid; gap: 1.5mm; }
+
 /* 사진 */
 .d-photo { width: 30mm; height: 40mm; border: 1px solid var(--rule); display: grid; place-items: center; color: var(--muted-doc); font-size: 8pt; text-align: center; overflow: hidden; background: #fff; }
 .d-photo img { width: 100%; height: 100%; object-fit: cover; }

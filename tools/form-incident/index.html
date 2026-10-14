@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>경위서 · 시말서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="회사에 내는 경위서와 시말서를 칸만 채워 PDF로 저장하세요. 일시·장소·경위·원인·대책, 결재란, 서명. 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>경위서 · 시말서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-incident"></span>
+    <div>
+      <h1>경위서 · 시말서 만들기</h1>
+      <p>일어난 일을 설명하는 경위서, 잘못을 인정하고 다짐하는 시말서를 같은 틀로 만들어요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p>경위서는 사실을 설명하는 문서, 시말서는 잘못을 인정하는 문서예요. 잘못을 인정할 일이 아니라면 경위서로 쓰세요.</p>
+      <p>회사에 정해진 양식이 있으면 그걸 먼저 쓰세요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  TF.make({
+    fileName: v => [v.kind || "경위서", v.me_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "문서" },
+      { k: "kind", label: "종류", type: "select", opts: [["경위서", "경위서 (일어난 일을 사실대로 설명)"], ["시말서", "시말서 (잘못을 인정하고 다짐)"]] },
+      { k: "approve", label: "결재란 (선택)", ph: "예: 담당, 팀장, 대표", help: "쉼표로 나눠 적으면 오른쪽 위에 결재 칸이 생겨요. 비우면 안 넣어요." },
+      { sec: "작성자" },
+      { k: "dept", label: "소속", ph: "부서를 입력하세요", half: true },
+      { k: "pos", label: "직위", ph: "직위를 입력하세요", half: true },
+      { k: "me_name", label: "이름", ph: "이름을 입력하세요", half: true, mem: "me" },
+      { k: "me_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true, mem: "me" },
+      { sec: "일어난 일" },
+      { k: "when", label: "날짜", type: "date", half: true },
+      { k: "time", label: "시각", type: "time", half: true },
+      { k: "place", label: "장소", ph: "장소를 입력하세요" },
+      { k: "title", label: "제목", ph: "예: 거래처 납품 지연 건" },
+      { k: "what", label: "경위 (있었던 일)", type: "textarea", ph: "언제, 무엇이, 어떻게 일어났는지 순서대로 입력하세요" },
+      { k: "cause", label: "원인", type: "textarea", ph: "왜 일어났는지 입력하세요" },
+      { k: "act", label: "조치 · 앞으로의 대책", type: "textarea", ph: "어떻게 처리했고 다시 일어나지 않게 무엇을 할지 입력하세요" },
+      { sec: "작성" },
+      { k: "to", label: "받는 분", ph: "예: OO주식회사 대표이사" },
+      { k: "date", label: "작성일", type: "date", def: "today" },
+      { stamp: "me_sign" }
+    ],
+    stamps: [{ k: "me_sign", label: "서명", mem: "me", kind: "sign" }],
+    render(v, H) {
+      const k = v.kind || "경위서", ap = H.approve(v.approve);
+      const when = [H.kdate(v.when), v.time ? H.hm("time") : ""].filter(Boolean).join(" ");
+      return `${ap}<h1 class="d-title"${ap ? "" : ' style="margin-bottom:10mm"'}>${k}</h1>
+        <table class="d-tbl d-kv">
+          <tr><th>소속</th><td>${H.t("dept")}</td><th>직위</th><td>${H.t("pos")}</td></tr>
+          <tr><th>성명</th><td>${H.t("me_name")}</td><th>연락처</th><td>${H.t("me_tel")}</td></tr>
+          <tr><th>일시</th><td>${when}</td><th>장소</th><td>${H.t("place")}</td></tr>
+          <tr><th>제목</th><td colspan="3">${H.t("title")}</td></tr>
+        </table>
+        <p class="d-box-label">경위</p>${`<div class="d-box" style="min-height:48mm">${H.nl("what")}</div>`}
+        <p class="d-box-label">원인</p><div class="d-box" style="min-height:22mm">${H.nl("cause")}</div>
+        <p class="d-box-label">조치 및 대책</p><div class="d-box" style="min-height:26mm">${H.nl("act")}</div>
+        <p class="d-p d-center" style="margin:8mm 0 0;line-height:1.9">${k === "시말서" ? "위 사실에 대하여 책임을 통감하며, 앞으로 같은 일이 다시 일어나지 않도록 하겠습니다." : "위와 같이 경위를 보고합니다."}</p>
+        <div class="d-sign" style="margin-top:6mm">
+          <p class="date">${H.date("date")}</p>
+          <p class="who">작성자 <span class="fill" style="min-width:30mm">${H.t("me_name") || "&nbsp;"}</span> ${H.stamp("me_sign", "(서명)")}</p>
+        </div>
+        ${H.has("to") ? `<p class="d-to">${H.t("to")} 귀하</p>` : ""}`;
+    }
+  });
+})();
+</script>
+</body>
+</html>

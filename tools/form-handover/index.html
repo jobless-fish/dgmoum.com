@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>인수인계서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="퇴사·부서 이동 때 쓰는 인수인계서를 PDF로 저장하세요. 업무 현황, 자료 위치, 거래처 연락처, 미결 사항. 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>인수인계서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-handover"></span>
+    <div>
+      <h1>인수인계서 만들기</h1>
+      <p>퇴사나 부서 이동 때 맡던 일을 다음 사람에게 넘기는 문서예요. 업무·자료 위치·연락처를 표로 정리해요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p>비밀번호는 문서에 그대로 적지 말고, 따로 안전하게 전달하세요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  TF.make({
+    fileName: v => ["인수인계서", v.from_name, v.to_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "문서" },
+      { k: "approve", label: "결재란 (선택)", ph: "예: 담당, 팀장, 대표", help: "쉼표로 나눠 적으면 오른쪽 위에 결재 칸이 생겨요. 비우면 안 넣어요." },
+      { k: "date", label: "인계일", type: "date", def: "today", half: true },
+      { k: "why", label: "인계 사유", type: "select", opts: [["", "고르세요"], ["퇴사", "퇴사"], ["부서 이동", "부서 이동"], ["휴직", "휴직"], ["업무 변경", "업무 변경"]], half: true },
+      { sec: "인계자 (넘기는 사람)" },
+      { k: "from_dept", label: "소속", ph: "부서를 입력하세요", half: true },
+      { k: "from_pos", label: "직위", ph: "직위를 입력하세요", half: true },
+      { k: "from_name", label: "이름", ph: "이름을 입력하세요", half: true },
+      { k: "from_tel", label: "인계 후 연락처", ph: "전화번호를 입력하세요", half: true },
+      { stamp: "from_sign" },
+      { sec: "인수자 (받는 사람)" },
+      { k: "to_dept", label: "소속", ph: "부서를 입력하세요", half: true },
+      { k: "to_pos", label: "직위", ph: "직위를 입력하세요", half: true },
+      { k: "to_name", label: "이름", ph: "이름을 입력하세요", half: true },
+      { k: "witness", label: "확인자 (선택)", ph: "예: 팀장 이름", half: true },
+      { stamp: "to_sign" },
+      { sec: "맡던 업무" }, { table: "work" },
+      { sec: "자료 · 파일 위치" }, { table: "files" },
+      { sec: "거래처 · 연락처" }, { table: "people" },
+      { sec: "덧붙임" },
+      { k: "pending", label: "아직 끝나지 않은 일", type: "textarea", ph: "마감이 남은 일, 기다리는 답 등을 입력하세요" },
+      { k: "items", label: "반납 · 넘길 것", type: "textarea", ph: "계정, 비밀번호 전달 방법, 열쇠, 비품 등을 입력하세요" }
+    ],
+    tables: [
+      { k: "work", min: 5, start: 3, addLabel: "업무 추가", cols: [
+        { k: "name", label: "업무", ph: "업무 이름", size: "wide" }, { k: "state", label: "현재 상황", ph: "현재 상황 · 진행 정도", size: "wide" }, { k: "memo", label: "주의할 점", ph: "주의할 점 · 주기", size: "wide" }] },
+      { k: "files", min: 3, start: 2, addLabel: "자료 추가", cols: [
+        { k: "name", label: "자료", ph: "자료 이름", size: "half" }, { k: "where", label: "위치", ph: "폴더 · 드라이브 위치", size: "half" }] },
+      { k: "people", min: 3, start: 2, addLabel: "연락처 추가", cols: [
+        { k: "name", label: "이름 · 회사", ph: "이름 · 회사", size: "third" }, { k: "role", label: "관계", ph: "관계 · 담당", size: "third" }, { k: "tel", label: "연락처", ph: "연락처", size: "third" }] }
+    ],
+    stamps: [{ k: "from_sign", label: "인계자 서명", kind: "sign" }, { k: "to_sign", label: "인수자 서명", kind: "sign" }],
+    render(v, H) {
+      const tbl = (k, min, heads, widths, cells) => `<table class="d-tbl d-small"><colgroup>${widths.map(w => w ? `<col style="width:${w}mm">` : "<col>").join("")}</colgroup>
+        <thead><tr>${heads.map(h => `<th>${h}</th>`).join("")}</tr></thead>
+        <tbody>${H.rows(k, min).map(r => r ? `<tr>${cells(r).map(c => `<td>${H.esc(c)}</td>`).join("")}</tr>` : `<tr class="blank">${heads.map(() => "<td></td>").join("")}</tr>`).join("")}</tbody></table>`;
+      return `${H.approve(v.approve)}<h1 class="d-title" style="margin-bottom:7mm">인수인계서</h1>
+        <table class="d-tbl d-kv d-small">
+          <tr><th>인계일</th><td>${H.date("date")}</td><th>사유</th><td>${H.t("why")}</td></tr>
+          <tr><th>인계자</th><td>${[v.from_dept, v.from_pos, v.from_name].filter(Boolean).map(H.esc).join(" · ")}</td><th>인수자</th><td>${[v.to_dept, v.to_pos, v.to_name].filter(Boolean).map(H.esc).join(" · ")}</td></tr>
+        </table>
+        <p class="d-sec">맡던 업무</p>${tbl("work", 5, ["업무", "현재 상황", "주의할 점"], [45, 0, 50], r => [r.name, r.state, r.memo])}
+        <p class="d-sec">자료 · 파일 위치</p>${tbl("files", 3, ["자료", "위치"], [60, 0], r => [r.name, r.where])}
+        <p class="d-sec">거래처 · 연락처</p>${tbl("people", 3, ["이름 · 회사", "관계 · 담당", "연락처"], [55, 0, 45], r => [r.name, r.role, r.tel])}
+        <div class="d-split" style="margin-top:2mm">
+          <div><p class="d-box-label">아직 끝나지 않은 일</p><div class="d-box" style="min-height:20mm">${H.nl("pending")}</div></div>
+          <div><p class="d-box-label">반납 · 넘길 것</p><div class="d-box" style="min-height:20mm">${H.nl("items")}</div></div>
+        </div>
+        <p class="d-p d-center" style="margin:5mm 0 0">위와 같이 업무를 인계하고 인수합니다.</p>
+        <div class="d-sign" style="margin-top:4mm">
+          <p class="who">인계자 <span class="fill" style="min-width:28mm">${H.t("from_name") || "&nbsp;"}</span> ${H.stamp("from_sign", "(서명)")}
+            인수자 <span class="fill" style="min-width:28mm">${H.t("to_name") || "&nbsp;"}</span> ${H.stamp("to_sign", "(서명)")}</p>
+          ${H.has("witness") ? `<p class="who">확인자 <span class="fill" style="min-width:28mm">${H.t("witness")}</span> <span class="stampbox">(서명)</span></p>` : ""}
+        </div>`;
+    }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>회의록 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="회의록을 칸만 채워 PDF로 저장하세요. 일시·참석자·안건·논의·결정 사항·할 일 표. 무료, 가입 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>회의록 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-minutes"></span>
+    <div>
+      <h1>회의록 만들기</h1>
+      <p>회의 내용을 안건·논의·결정·할 일로 나눠 정리하는 회의록이에요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p>안건과 결정 사항은 한 줄에 하나씩 적으면 번호가 붙어요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  TF.make({
+    fileName: v => ["회의록", v.title, v.date].filter(Boolean).join("_"),
+    fields: [
+      { sec: "회의" },
+      { k: "title", label: "회의 이름", ph: "예: 10월 주간 회의" },
+      { k: "date", label: "날짜", type: "date", def: "today", half: true },
+      { k: "place", label: "장소", ph: "장소 · 온라인", half: true },
+      { k: "t1", label: "시작", type: "time", half: true },
+      { k: "t2", label: "끝", type: "time", half: true },
+      { k: "writer", label: "작성자", ph: "이름을 입력하세요", half: true, mem: "me" },
+      { k: "people", label: "참석자", ph: "이름을 쉼표로 나눠 입력하세요", half: true },
+      { k: "agenda", label: "안건", type: "textarea", ph: "한 줄에 하나씩 입력하세요" },
+      { k: "talk", label: "논의 내용", type: "textarea", ph: "나온 이야기를 정리해 입력하세요" },
+      { k: "decide", label: "결정 사항", type: "textarea", ph: "한 줄에 하나씩 입력하세요" },
+      { sec: "할 일" }, { table: "todo" },
+      { k: "next", label: "다음 회의 (선택)", ph: "예: 10월 21일 오후 2시" }
+    ],
+    tables: [{ k: "todo", min: 4, start: 2, addLabel: "할 일 추가", cols: [
+      { k: "what", label: "할 일", ph: "할 일", size: "wide" }, { k: "who", label: "담당", ph: "담당", size: "half" }, { k: "due", label: "기한", ph: "기한", size: "half" }] }],
+    render(v, H) {
+      const time = v.t1 ? `${H.hm("t1")}${v.t2 ? " ~ " + H.hm("t2") : ""}` : "";
+      return `<h1 class="d-title" style="margin-bottom:7mm">회의록</h1>
+        <table class="d-tbl d-kv">
+          <tr><th>회의명</th><td colspan="3">${H.t("title")}</td></tr>
+          <tr><th>일시</th><td>${H.date("date")} ${time}</td><th>장소</th><td>${H.t("place")}</td></tr>
+          <tr><th>작성자</th><td>${H.t("writer")}</td><th>참석자</th><td>${H.t("people")}</td></tr>
+        </table>
+        <p class="d-sec">안건</p><div class="d-box" style="min-height:18mm">${H.list("agenda")}</div>
+        <p class="d-sec">논의 내용</p><div class="d-box" style="min-height:60mm">${H.nl("talk")}</div>
+        <p class="d-sec">결정 사항</p><div class="d-box" style="min-height:22mm">${H.list("decide")}</div>
+        <p class="d-sec">할 일</p>
+        <table class="d-tbl d-small"><colgroup><col style="width:8mm"><col><col style="width:32mm"><col style="width:32mm"></colgroup>
+          <thead><tr><th>No</th><th>할 일</th><th>담당</th><th>기한</th></tr></thead>
+          <tbody>${H.rows("todo", 4).map((r, i) => r ? `<tr><td class="c">${i + 1}</td><td>${H.esc(r.what)}</td><td class="c">${H.esc(r.who)}</td><td class="c">${H.esc(r.due)}</td></tr>` : `<tr class="blank"><td></td><td></td><td></td><td></td></tr>`).join("")}</tbody></table>
+        ${H.has("next") ? `<p class="d-p"><b>다음 회의</b> · ${H.t("next")}</p>` : ""}`;
+    }
+  });
+})();
+</script>
+</body>
+</html>

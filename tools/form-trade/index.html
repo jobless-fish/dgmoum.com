@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>중고거래 매매계약서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="중고거래·개인 간 물품 매매계약서를 칸만 채워 PDF로 저장하세요. 상태·대금·하자 책임·소유권 확인, 서명. 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>중고거래 매매계약서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-trade"></span>
+    <div>
+      <h1>중고거래 매매계약서 만들기</h1>
+      <p>카메라·노트북처럼 비싼 물건을 개인끼리 사고팔 때 쓰는 계약서예요. 상태와 하자 책임을 미리 정해 둬요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p>자동차·오토바이처럼 명의 이전이 필요한 물건은 정해진 서류(양도증명서 등)가 따로 있어요.</p>
+      <p>법률 자문이 아니에요. 큰 금액이면 계좌 이체로 기록을 남기세요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  const who = (H, v, p, label) => `<table class="d-tbl d-kv d-small"><colgroup><col style="width:7mm"><col style="width:16mm"><col><col style="width:18mm"><col></colgroup>
+    <tr><th class="vlabel" rowspan="3">${label}</th><th>성명</th><td>${H.t(p + "_name")}</td><th>생년월일</th><td>${H.kdate(v[p + "_birth"])}</td></tr>
+    <tr><th>주소</th><td colspan="3">${H.t(p + "_addr")}</td></tr>
+    <tr><th>연락처</th><td colspan="3">${H.t(p + "_tel")}</td></tr></table>`;
+  const blankBox = (H, k, mm) => `<div class="d-box" style="min-height:${mm}mm">${H.nl(k)}</div>`;
+  TF.make({
+    fileName: v => ["매매계약서", v.item, v.s_name, v.b_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "물품" },
+      { k: "item", label: "물품", ph: "예: 노트북, 카메라 렌즈" },
+      { k: "model", label: "모델 · 일련번호", ph: "모델명이나 일련번호를 입력하세요" },
+      { k: "cond", label: "상태", type: "textarea", ph: "흠집, 고장, 구성품, 보증 기간 등을 입력하세요" },
+      { sec: "대금 · 넘겨주기" },
+      { k: "price", label: "가격 (원)", ph: "금액을 입력하세요", type: "money", half: true },
+      { k: "deposit", label: "계약금 (선택)", ph: "먼저 주는 돈", type: "money", half: true },
+      { k: "payday", label: "잔금 지급일", type: "date", half: true },
+      { k: "handday", label: "물품 넘겨주는 날", type: "date", half: true },
+      { k: "handplace", label: "넘겨주는 곳 · 방법", ph: "예: 직거래(OO역), 택배" },
+      { k: "bank", label: "대금 받을 계좌", ph: "은행 · 계좌번호 · 예금주 (판매자)" },
+      { k: "warranty", label: "하자 책임", type: "select", opts: [["asis", "지금 상태 그대로 (설명한 것 외 책임 없음)"], ["7", "받은 뒤 7일 안에 숨은 고장이면 환불"], ["3", "받은 뒤 3일 안에 숨은 고장이면 환불"]] },
+      { k: "extra", label: "특약 (선택)", type: "textarea", ph: "따로 정한 내용을 입력하세요" },
+      { sec: "판매자" },
+      { k: "s_name", label: "이름", ph: "이름을 입력하세요", half: true },
+      { k: "s_birth", label: "생년월일", type: "date", half: true },
+      { k: "s_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true },
+      { k: "s_addr", label: "주소", ph: "주소를 입력하세요" },
+      { sec: "구매자" },
+      { k: "b_name", label: "이름", ph: "이름을 입력하세요", half: true },
+      { k: "b_birth", label: "생년월일", type: "date", half: true },
+      { k: "b_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true },
+      { k: "b_addr", label: "주소", ph: "주소를 입력하세요" },
+      { sec: "작성" },
+      { k: "date", label: "계약일", type: "date", def: "today" },
+      { stamp: "s_sign" }, { stamp: "b_sign" }
+    ],
+    stamps: [{ k: "s_sign", label: "판매자 서명", kind: "sign" }, { k: "b_sign", label: "구매자 서명", kind: "sign" }],
+    render(v, H) {
+      const price = TF.num(v.price), dep = TF.num(v.deposit);
+      const W = v.warranty === "asis" || !v.warranty
+        ? "구매자는 물품의 상태를 확인하였으며, 판매자는 위에 적은 상태 외의 하자에 대하여 책임지지 않는다. 다만 판매자가 알면서 숨긴 하자는 예외로 한다."
+        : `구매자가 물품을 받은 날부터 ${v.warranty}일 안에 위에 적지 않은 고장이 발견되면, 구매자는 물품을 돌려주고 판매자는 받은 대금 전액을 돌려준다.`;
+      const arts = [
+        ["대금", `매매 대금은 ${H.amount(price)}으로 한다.${dep ? ` 구매자는 계약할 때 계약금 ${TF.won(dep)}원을, 나머지 ${TF.won(Math.max(0, price - dep))}원은 ${H.date("payday")}까지 지급한다.` : ` 구매자는 ${H.date("payday")}까지 대금을 지급한다.`}${H.has("bank") ? `<br>지급 계좌 : ${H.t("bank")}` : ""}`],
+        ["물품 인도", `판매자는 ${H.date("handday")}에 ${H.has("handplace") ? H.t("handplace") : "정한 곳"}에서 물품을 구매자에게 넘겨준다.`],
+        ["하자", W],
+        ["소유권", "판매자는 이 물품이 자신의 소유이며 도난품이나 담보로 잡힌 물건이 아님을 확인한다."],
+        dep && ["계약 해제", "구매자가 계약을 해제하면 계약금을 돌려받지 못하고, 판매자가 해제하면 받은 계약금의 두 배를 돌려준다."],
+        H.has("extra") && ["특약", H.nl("extra")]
+      ].filter(Boolean);
+      return `<h1 class="d-title" style="margin-bottom:8mm">물품 매매계약서</h1>
+        <table class="d-tbl d-kv"><tr><th>물품</th><td>${H.t("item")}</td><th>모델 · 번호</th><td>${H.t("model")}</td></tr>
+          <tr><th>상태</th><td colspan="3" style="height:16mm;vertical-align:top">${H.nl("cond")}</td></tr></table>
+        <div class="d-total"><span>매매 대금</span><b>${H.amount(price)}</b></div>
+        ${arts.map(([h, p], i) => `<div class="d-art"><h3>제${i + 1}조 (${h})</h3><p>${p}</p></div>`).join("")}
+        <p class="d-p" style="margin-top:3mm">이 계약을 증명하기 위해 계약서 2부를 만들어 서명한 뒤 1부씩 보관한다.</p>
+        <p class="d-center d-big" style="margin:3mm 0 4mm;letter-spacing:.08em">${H.date("date")}</p>
+        <div class="d-parties" style="margin-top:0">
+          <div>${who(H, v, "s", "판매자")}<p class="d-right" style="margin:0">판매자 ${H.stamp("s_sign", "(서명)")}</p></div>
+          <div>${who(H, v, "b", "구매자")}<p class="d-right" style="margin:0">구매자 ${H.stamp("b_sign", "(서명)")}</p></div>
+        </div>`;
+    }
+  });
+})();
+</script>
+</body>
+</html>

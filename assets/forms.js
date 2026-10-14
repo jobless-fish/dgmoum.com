@@ -160,6 +160,14 @@ window.TF = (() => {
           <tr><th>업태</th><td>${t("type")}</td><th>종목</th><td>${t("item")}</td></tr>
           <tr><th>전화</th><td colspan="3">${t("tel")}</td></tr></table>`;
       },
+      // 결재란: "담당, 팀장, 대표" → 칸 3개 (비우면 안 넣어요)
+      approve: txt => {
+        const ls = String(txt || "").split(/[,·/]+/).map(x => x.trim()).filter(Boolean).slice(0, 5);
+        if (!ls.length) return "";
+        return `<div class="d-approve-wrap"><table class="d-approve"><tr><th class="vlabel" rowspan="2">결재</th>${ls.map(l => `<th>${esc(l)}</th>`).join("")}</tr><tr>${ls.map(() => "<td></td>").join("")}</tr></table></div>`;
+      },
+      // 여러 줄 → 번호 목록
+      list: k => { const ls = String(v[k] || "").split(/\n/).map(x => x.trim()).filter(Boolean); return ls.length ? `<ol class="d-olist">${ls.map(x => `<li>${esc(x)}</li>`).join("")}</ol>` : ""; },
       // 일금 OOO원정 (₩ 0,000)
       amount: n => n > 0 ? `일금 ${hangul(n)}원정 <span class="d-num">(₩ ${won(n)})</span>` : `일금　　　　　　　　　원정 <span class="d-num">(₩　　　　　　　)</span>`,
       photo: k => `<div class="d-photo">${v[k] ? `<img src="${v[k]}" alt="">` : "사진<br>(3 × 4 cm)"}</div>`

@@ -59,6 +59,15 @@ tools/
   form-poa/       위임장
   form-employ/    재직증명서
   form-career/    경력증명서
+  form-retire/    퇴직증명서
+  form-incident/  경위서 · 시말서 (결재란)
+  form-leave/     휴가신청서 (주말 뺀 일수 자동, 결재란)
+  form-handover/  인수인계서 (업무·자료 위치·연락처 표)
+  form-minutes/   회의록 (안건·결정 번호 목록, 할 일 표)
+  form-pledge/    각서
+  form-agreement/ 합의서 (합의금 한글 표기, 이의 제기 금지 조항 선택)
+  form-notice/    내용증명
+  form-trade/     중고거래 물품 매매계약서 (하자 책임 선택, 계약금 해제 조항)
   stamp-clean/    도장 · 서명 배경 지우기 (투명 PNG)
 ```
 

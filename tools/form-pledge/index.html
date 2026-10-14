@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>각서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="각서를 칸만 채워 PDF로 저장하세요. 약속 내용 번호 정리, 어길 경우, 서명. 무료, 가입 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>각서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-pledge"></span>
+    <div>
+      <h1>각서 만들기</h1>
+      <p>지키기로 한 약속을 글로 남기는 각서예요. 약속은 한 줄에 하나씩 적으면 번호가 붙어요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p><b>법률 자문이 아니에요.</b> 각서를 썼다고 모든 내용이 법적으로 인정되는 건 아니에요. 법에 어긋나거나 지나치게 불리한 약속은 효력이 없을 수 있어요.</p>
+      <p>돈을 빌려주고 받는 약속이면 차용증 양식을 쓰세요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  const who = (H, v, p, label) => `<table class="d-tbl d-kv d-small"><colgroup><col style="width:7mm"><col style="width:16mm"><col><col style="width:18mm"><col></colgroup>
+    <tr><th class="vlabel" rowspan="3">${label}</th><th>성명</th><td>${H.t(p + "_name")}</td><th>생년월일</th><td>${H.kdate(v[p + "_birth"])}</td></tr>
+    <tr><th>주소</th><td colspan="3">${H.t(p + "_addr")}</td></tr>
+    <tr><th>연락처</th><td colspan="3">${H.t(p + "_tel")}</td></tr></table>`;
+  const blankBox = (H, k, mm) => `<div class="d-box" style="min-height:${mm}mm">${H.nl(k)}</div>`;
+  TF.make({
+    fileName: v => ["각서", v.me_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "작성자 (약속하는 사람)" },
+      { k: "me_name", label: "이름", ph: "이름을 입력하세요", half: true, mem: "me" },
+      { k: "me_birth", label: "생년월일", type: "date", half: true, mem: "me" },
+      { k: "me_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true, mem: "me" },
+      { k: "me_addr", label: "주소", ph: "주소를 입력하세요", mem: "me" },
+      { sec: "약속" },
+      { k: "to", label: "받는 사람", ph: "이름을 입력하세요" },
+      { k: "what", label: "약속 내용", type: "textarea", ph: "한 줄에 하나씩 입력하세요. 번호가 붙어요" },
+      { k: "breach", label: "어기면 (선택)", type: "textarea", ph: "약속을 어길 때 어떻게 할지 입력하세요" },
+      { sec: "작성" },
+      { k: "date", label: "작성일", type: "date", def: "today" },
+      { stamp: "me_sign" }
+    ],
+    stamps: [{ k: "me_sign", label: "서명 · 도장", mem: "me", kind: "sign" }],
+    render(v, H) {
+      return `<h1 class="d-title" style="margin-bottom:10mm">각서</h1>
+        ${who(H, v, "me", "작성자")}
+        <p class="d-sec">약속 내용</p><div class="d-box" style="min-height:70mm">${H.list("what")}</div>
+        ${H.has("breach") ? `<p class="d-sec">어길 경우</p><div class="d-box" style="min-height:20mm">${H.nl("breach")}</div>` : ""}
+        <p class="d-p d-center" style="margin:10mm 0 0;line-height:1.9">본인은 위 사항을 성실히 지킬 것을 약속하며, 이를 어길 경우 ${H.has("breach") ? "위에 적은 대로 책임지겠습니다" : "그에 따른 책임을 지겠습니다"}.</p>
+        <div class="d-sign" style="margin-top:8mm">
+          <p class="date">${H.date("date")}</p>
+          <p class="who">작성자 <span class="fill" style="min-width:30mm">${H.t("me_name") || "&nbsp;"}</span> ${H.stamp("me_sign", "(서명 또는 인)")}</p>
+        </div>
+        ${H.has("to") ? `<p class="d-to">${H.t("to")} 귀하</p>` : ""}`;
+    }
+  });
+})();
+</script>
+</body>
+</html>

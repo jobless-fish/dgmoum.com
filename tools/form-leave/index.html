@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>휴가신청서 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="연차·반차·병가 휴가신청서를 칸만 채워 PDF로 저장하세요. 주말 뺀 일수 자동 계산, 결재란, 서명. 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>휴가신청서 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-leave"></span>
+    <div>
+      <h1>휴가신청서 만들기</h1>
+      <p>연차·반차·병가 같은 휴가를 신청하는 문서예요. 일수는 주말을 빼고 자동으로 세요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p>공휴일은 자동으로 빠지지 않아요. 공휴일이 끼면 일수를 직접 고쳐 주세요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  // 주말을 뺀 날 수 (공휴일은 직접 빼세요)
+  const workdays = (a, b) => { const s = new Date(a), e = new Date(b); if (isNaN(s) || isNaN(e) || e < s) return 0; let n = 0; for (const d = new Date(s); d <= e; d.setDate(d.getDate() + 1)) { const w = d.getDay(); if (w && w < 6) n++; } return n; };
+  TF.make({
+    fileName: v => ["휴가신청서", v.me_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "문서" },
+      { k: "approve", label: "결재란 (선택)", ph: "예: 담당, 팀장, 대표", help: "쉼표로 나눠 적으면 오른쪽 위에 결재 칸이 생겨요. 비우면 안 넣어요." },
+      { sec: "신청자" },
+      { k: "dept", label: "소속", ph: "부서를 입력하세요", half: true },
+      { k: "pos", label: "직위", ph: "직위를 입력하세요", half: true },
+      { k: "me_name", label: "이름", ph: "이름을 입력하세요", half: true, mem: "me" },
+      { k: "me_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true, mem: "me" },
+      { sec: "휴가" },
+      { k: "kind", label: "종류", type: "select", opts: [["연차", "연차"], ["오전 반차", "오전 반차"], ["오후 반차", "오후 반차"], ["병가", "병가"], ["경조사 휴가", "경조사 휴가"], ["특별 휴가", "특별 휴가"], ["기타", "기타"]], half: true },
+      { k: "days", label: "일수 (비우면 자동)", ph: "주말 빼고 계산해요", type: "num", half: true },
+      { k: "from", label: "시작일", type: "date", half: true },
+      { k: "to", label: "끝나는 날", type: "date", half: true },
+      { k: "reason", label: "사유", ph: "예: 개인 사정" },
+      { k: "sub", label: "업무 대신할 사람", ph: "이름을 입력하세요", half: true },
+      { k: "emerg", label: "비상 연락처", ph: "휴가 중 연락받을 번호", half: true },
+      { sec: "작성" },
+      { k: "co", label: "받는 분", ph: "예: OO주식회사 대표이사" },
+      { k: "date", label: "신청일", type: "date", def: "today" },
+      { stamp: "me_sign" }
+    ],
+    stamps: [{ k: "me_sign", label: "서명", mem: "me", kind: "sign" }],
+    render(v, H) {
+      const half = /반차/.test(v.kind), auto = half ? 0.5 : workdays(v.from, v.to || v.from);
+      const days = String(v.days || "").trim() ? H.t("days") : (v.from ? auto : "");
+      const period = half ? `${H.date("from")} (${H.t("kind")})` : `${H.date("from")} ~ ${H.date("to")}`;
+      return `${H.approve(v.approve)}<h1 class="d-title" style="margin-bottom:9mm">휴가신청서</h1>
+        <table class="d-tbl d-kv">
+          <tr><th>소속</th><td>${H.t("dept")}</td><th>직위</th><td>${H.t("pos")}</td></tr>
+          <tr><th>성명</th><td>${H.t("me_name")}</td><th>연락처</th><td>${H.t("me_tel")}</td></tr>
+          <tr><th>휴가 종류</th><td colspan="3">${["연차", "오전 반차", "오후 반차", "병가", "경조사 휴가", "특별 휴가", "기타"].map(x => `${H.check(v.kind === x)} ${x}`).join("　")}</td></tr>
+          <tr><th>기간</th><td colspan="3">${period}${days !== "" ? `　(총 ${days}일)` : ""}</td></tr>
+          <tr><th>사유</th><td colspan="3" style="height:22mm;vertical-align:top">${H.t("reason")}</td></tr>
+          <tr><th>업무 대리</th><td>${H.t("sub")}</td><th>비상 연락</th><td>${H.t("emerg")}</td></tr>
+        </table>
+        <p class="d-center d-big" style="margin:16mm 0 4mm;letter-spacing:.06em">위와 같이 휴가를 신청합니다.</p>
+        <div class="d-sign" style="margin-top:6mm">
+          <p class="date">${H.date("date")}</p>
+          <p class="who">신청인 <span class="fill" style="min-width:30mm">${H.t("me_name") || "&nbsp;"}</span> ${H.stamp("me_sign", "(서명)")}</p>
+        </div>
+        ${H.has("co") ? `<p class="d-to">${H.t("co")} 귀하</p>` : ""}`;
+    }
+  });
+})();
+</script>
+</body>
+</html>

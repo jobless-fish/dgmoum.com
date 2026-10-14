@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>내용증명 양식 만들기 · 뚝딱툴</title>
+<meta name="description" content="우체국 내용증명 문서를 칸만 채워 PDF로 저장하세요. 수신인·발신인·제목·본문, 도장. 무료, 가입 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="../../assets/forms.css">
+<style> body { --cat: var(--form); } </style>
+</head>
+<body>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="../../"><span class="brand-mark">뚝딱툴</span></a>
+    <nav class="crumb"><span>/</span><strong>내용증명 만들기</strong></nav>
+    <span class="spacer"></span>
+    <span class="privacy-pill">업로드 없음</span>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="form-notice"></span>
+    <div>
+      <h1>내용증명 만들기</h1>
+      <p>보증금 반환, 대금 지급 요청처럼 "이런 내용을 보냈다"는 걸 우체국이 증명해 주는 편지예요.</p>
+    </div>
+  </div>
+
+  <div class="fwrap">
+    <section class="panel feditor"><div class="panel-body" id="editor"></div></section>
+    <section class="fpreview">
+      <div class="ftool">
+        <button class="btn btn-primary" id="print">PDF로 저장 · 인쇄</button>
+        <span class="hint">인쇄 창에서 대상을 <b>PDF로 저장</b>으로 고르세요. 머리글·바닥글은 끄는 게 깔끔해요.</span>
+      </div>
+      <div class="fstage" id="stage"><div class="fscale" id="scale"><div class="sheet" id="sheet"></div></div></div>
+      <div class="fnotes">
+      <p><b>보내는 방법</b>: 같은 문서를 3부 뽑아 우체국에 가져가면 돼요(받는 사람·나·우체국 보관용). 인터넷우체국에서 온라인으로도 보낼 수 있어요.</p>
+      <p>내용증명은 보냈다는 사실과 내용을 증명할 뿐, 그 자체로 강제력이 생기지는 않아요. 법률 자문이 아니에요.</p>
+      </div>
+    </section>
+  </div>
+  <div class="ad-slot" id="ad-main"></div>
+  <a class="fjump btn btn-primary" href="#stage">미리보기 · 인쇄 ↓</a>
+</main>
+
+<footer class="foot"><div class="wrap"><span>적은 내용은 이 브라우저 안에서만 쓰여요.</span><a href="../../">다른 도구 보기</a></div></footer>
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/forms.js"></script>
+<script>
+(() => {
+
+  TF.make({
+    fileName: v => ["내용증명", v.title, v.to_name].filter(Boolean).join("_"),
+    fields: [
+      { sec: "받는 사람 (수신인)" },
+      { k: "to_name", label: "이름 · 회사", ph: "이름이나 회사명을 입력하세요" },
+      { k: "to_addr", label: "주소", ph: "우편을 받을 주소를 입력하세요" },
+      { sec: "보내는 사람 (발신인)" },
+      { k: "me_name", label: "이름", ph: "이름을 입력하세요", half: true, mem: "me" },
+      { k: "me_tel", label: "연락처", ph: "전화번호를 입력하세요", half: true, mem: "me" },
+      { k: "me_addr", label: "주소", ph: "주소를 입력하세요", mem: "me" },
+      { sec: "내용" },
+      { k: "title", label: "제목", ph: "예: 보증금 반환 요청" },
+      { k: "body", label: "본문", type: "textarea", ph: "사실관계, 요구하는 것, 기한, 지키지 않으면 할 조치를 순서대로 입력하세요" },
+      { sec: "작성" },
+      { k: "date", label: "작성일", type: "date", def: "today" },
+      { stamp: "me_sign" }
+    ],
+    stamps: [{ k: "me_sign", label: "도장 · 서명", mem: "me", kind: "sign" }],
+    render(v, H) {
+      return `<h1 class="d-title" style="margin-bottom:8mm">내용증명</h1>
+        <table class="d-tbl d-kv">
+          <tr><th rowspan="2">수신인</th><td><b>${H.t("to_name")}</b></td></tr><tr><td>${H.t("to_addr")}</td></tr>
+          <tr><th rowspan="2">발신인</th><td><b>${H.t("me_name")}</b>${H.has("me_tel") ? ` <span class="d-muted">(${H.t("me_tel")})</span>` : ""}</td></tr><tr><td>${H.t("me_addr")}</td></tr>
+        </table>
+        <p class="d-big" style="margin:7mm 0 4mm"><b>제목 : ${H.t("title")}</b></p>
+        <div style="min-height:140mm;line-height:1.9;white-space:pre-wrap">${H.esc(v.body)}</div>
+        <div class="d-sign" style="margin-top:8mm">
+          <p class="date">${H.date("date")}</p>
+          <p class="who">발신인 <span class="fill" style="min-width:30mm">${H.t("me_name") || "&nbsp;"}</span> ${H.stamp("me_sign", "(인)")}</p>
+        </div>`;
+    }
+  });
+})();
+</script>
+</body>
+</html>
