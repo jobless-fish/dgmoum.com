@@ -172,8 +172,8 @@ button { font: inherit; color: inherit; }
 
 /* 광고 자리 — 비어 있을 땐 흐린 점선 칸 + 광고 문의 버튼 */
 .ad-slot.is-empty { margin: 24px 0; }
-.ad-ph { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; min-height: 72px; padding: 14px; border: 1px dashed color-mix(in srgb, var(--line) 70%, transparent); border-radius: var(--r-sm); color: color-mix(in srgb, var(--muted) 55%, transparent); font-size: 12px; letter-spacing: .06em; }
-.ad-ask { display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border: 1px solid color-mix(in srgb, var(--line) 90%, transparent); border-radius: 999px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0; text-decoration: none; background: transparent; transition: color .15s, border-color .15s; }
+.ad-ph { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; min-height: 96px; padding: 16px; border: 1.5px dashed color-mix(in srgb, var(--muted) 38%, var(--line)); border-radius: var(--r-sm); background: color-mix(in srgb, var(--surface) 55%, transparent); color: color-mix(in srgb, var(--muted) 75%, transparent); font-size: 12px; letter-spacing: .06em; }
+.ad-ask { display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border: 1px solid color-mix(in srgb, var(--muted) 40%, var(--line)); border-radius: 999px; color: var(--muted); background: var(--surface); font-size: 12px; font-weight: 600; letter-spacing: 0; text-decoration: none; background: transparent; transition: color .15s, border-color .15s; }
 .ad-ask:hover, .ad-ask:focus-visible { color: var(--brand); border-color: var(--brand); }
 .ad { display: grid; place-items: center; min-height: 100px; border: 1px dashed var(--line); border-radius: var(--r-sm); color: var(--muted); font-size: 12px; letter-spacing: .1em; margin: 24px 0; }
 
