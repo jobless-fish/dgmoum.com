@@ -21,10 +21,10 @@ tools/
   image-split/    긴 이미지 나누기 (높이·개수 기준)
   image-crop/     자르기 · 회전 · 뒤집기 (비율 프리셋)
   image-watermark/ 워터마크 넣기 (글자·로고, 사선 반복)
-  photo-edit/     사진 보정 (라이트룸식 화면: 기본·톤 곡선·HSL·색 보정·효과, 필름·카메라 프리셋 31종, LUT, 여러 장 동기화)
+  photo-edit/     사진보정Pro (라이트룸식 화면: 기본·톤 곡선·HSL·색 보정·효과, 필름·카메라 프리셋 31종, LUT, 여러 장 동기화)
                   engine.js(WebGL2 셰이더) · presets.js(프리셋 값) · app.js(화면)
-  pixel-art/      도트 아트 (8비트 패미컴·16비트 슈퍼패미컴·게임보이·PICO-8·CGA·1비트, 색 수 직접, 디더링)
-  ascii-art/      아스키 아트 (기본·자세히·블록·점자·0과1·내 글자, 컬러, TXT·PNG 저장)
+  pixel-art/      [FUN] 도트 아트 (8비트 패미컴·16비트 슈퍼패미컴·게임보이·PICO-8·CGA·1비트, 색 수 직접, 디더링)
+  ascii-art/      [FUN] 아스키 아트 (기본·자세히·블록·점자·0과1·내 글자, 컬러, TXT·PNG 저장)
   image-exif/     사진 정보 지우기 (GPS·기기 정보, JPG·PNG는 화질 그대로)
   color-palette/  색 뽑기 (대표 색 · 스포이드 · CSS 변수)
   favicon/        파비콘 만들기 (ico · 홈 화면 아이콘 · webmanifest)
@@ -121,9 +121,9 @@ tools/
 - **MP3 저장**과 **zip 받기**는 불러오지 못하면 WAV 저장 / 파일 하나씩 받기로 자동 전환돼요.
 - HEIC(아이폰 사진)는 사파리 외 브라우저에서 열리지 않아요.
 
-## v2 디자인 (프로토타입)
+## v2 디자인
 
-`proto/index.html`(첫 화면)과 `proto/tool.html?id=도구이름`(도구 페이지 틀)에서 미리 볼 수 있어요.
+첫 화면(index.html)과 모든 도구 페이지에 적용돼 있어요.
 - `assets/v2.css` 새 디자인 (밝게 · 어둡게)
 - `assets/shell.js` 상단 메뉴 · 큰 메뉴 · 검색(/ 키) · 휴대폰 메뉴 · 바닥글 · 한/영 · 밝기 전환
 - `assets/i18n.js` 화면 문구와 도구 이름·설명의 영어 번역

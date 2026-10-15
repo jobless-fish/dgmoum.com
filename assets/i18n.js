@@ -10,7 +10,7 @@ window.I18N = {
       heroA: "", heroB: " 간단하게 만드는 무료 도구",
       heroWords: ["일을", "공부를", "디자인을", "서류 작업을", "일상을"],
       heroSub: "PDF, 이미지, 영상, 오디오, 서류 양식까지. 설치도 가입도 없이 브라우저에서 바로 처리해요.",
-      st1: "도구", st2: "가입 절차", st3: "서버 업로드", st4: "무료",
+      st1: "도구", st2: "가입 절차", st3: "서버 업로드", st4: "무료", st4big: "100% 무료",
       st1d: "계속 늘어나요", st2d: "회원가입 없이", st3d: "파일은 기기 밖으로 안 나가요", st4d: "횟수 제한도 없어요",
       cats: "분류별 도구", catsSub: "필요한 작업의 분류를 고르세요.", tools: "개", featured: "대표 도구",
       popular: "모든 도구", popularSub: "분류를 눌러 좁혀 보세요.", all: "전체", allOf: "도구 모두 보기",
@@ -38,7 +38,7 @@ window.I18N = {
       heroA: "Free tools to make ", heroB: " simple",
       heroWords: ["work", "study", "design", "paperwork", "life"],
       heroSub: "PDF, image, video, audio and document tools. No install, no sign-up — everything runs right in your browser.",
-      st1: "Tools", st2: "Sign-ups", st3: "Uploads", st4: "Free",
+      st1: "Tools", st2: "Sign-ups", st3: "Uploads", st4: "Free", st4big: "100% Free",
       st1d: "and growing", st2d: "no account needed", st3d: "files never leave your device", st4d: "no usage limits",
       cats: "Tool categories", catsSub: "Pick what you want to work on.", tools: " tools", featured: "Featured",
       popular: "All tools", popularSub: "Filter by category.", all: "All", allOf: "See all tools",
@@ -62,13 +62,14 @@ window.I18N = {
     }
   },
   CAT: {
-    img: { ko: ["이미지", "변환, 압축, 보정부터 도트 아트까지"], en: ["Image", "Convert, compress, edit and more"] },
+    img: { ko: ["이미지", "변환, 압축, 자르기부터 사진 보정까지"], en: ["Image", "Convert, compress, edit and more"] },
     doc: { ko: ["PDF", "합치기, 나누기, 변환, 쪽 번호"], en: ["PDF", "Merge, split, convert, number pages"] },
     vid: { ko: ["영상", "자르기, GIF, 세로 변환, 화면 녹화"], en: ["Video", "Trim, GIF, vertical, screen record"] },
     aud: { ko: ["오디오", "자르기, 변환, 볼륨, 녹음"], en: ["Audio", "Cut, convert, volume, record"] },
     des: { ko: ["디자인", "색, 파비콘, 인쇄 크기, 더미 글"], en: ["Design", "Colors, favicons, print size"] },
     txt: { ko: ["텍스트 · 생활", "QR코드, 글자 수, 글 비교"], en: ["Text & Life", "QR codes, word count, diff"] },
-    form: { ko: ["양식", "견적서, 계약서, 이력서를 PDF로"], en: ["Documents", "Quotes, contracts, resumes as PDF"] }
+    form: { ko: ["양식", "견적서, 계약서, 이력서를 PDF로"], en: ["Documents", "Quotes, contracts, resumes as PDF"] },
+    fun: { ko: ["FUN", "사진으로 노는 재미있는 도구"], en: ["FUN", "Playful tools for your photos"] }
   },
   TOOL: {
     "image-convert": ["Image Converter", "Convert between PNG, JPG and WEBP in bulk, with quality control."],
@@ -82,7 +83,7 @@ window.I18N = {
     "image-crop": ["Crop, Rotate & Flip", "Crop to 1:1, 4:5, 16:9 and more, rotate and flip."],
     "image-watermark": ["Add Watermark", "Stamp text or a logo on many images at once."],
     "image-exif": ["Remove Photo Metadata", "See and remove hidden GPS, device and date info. No quality loss."],
-    "photo-edit": ["Photo Editor (Lightroom-style)", "Exposure, curves, HSL, grain and film presets like Portra and Tri-X."],
+    "photo-edit": ["Photo Editor Pro", "Exposure, curves, HSL, grain and film presets like Portra and Tri-X."],
     "pixel-art": ["Pixel Art (8-bit / 16-bit)", "Turn photos into retro game pixel art with classic palettes."],
     "ascii-art": ["ASCII Art", "Draw your photo with characters, blocks or braille. Copy or save PNG."],
     "color-palette": ["Color Picker", "Extract main colors from an image as HEX and RGB."],

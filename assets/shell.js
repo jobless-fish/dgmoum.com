@@ -26,9 +26,10 @@
     aud: `<svg ${S}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
     des: `<svg ${S}><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2a10 10 0 0 0 0 20c1 0 1.7-.8 1.7-1.7 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.8-1.7 1.7-1.7H17a5 5 0 0 0 5-5C22 6 17.5 2 12 2z"/></svg>`,
     txt: `<svg ${S}><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>`,
+    fun: `<svg ${S}><rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4"/><path d="M8 10v4"/><circle cx="15.5" cy="11" r=".6" fill="currentColor"/><circle cx="17.5" cy="13" r=".6" fill="currentColor"/></svg>`,
     form: `<svg ${S}><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3"/><path d="M9 11h6M9 15h4"/></svg>`
   };
-  const ORDER = ["img", "doc", "vid", "aud", "form", "des", "txt"];
+  const ORDER = ["img", "doc", "vid", "aud", "form", "des", "txt", "fun"];
 
   /* ---------- 언어 ---------- */
   const qp = new URLSearchParams(location.search).get("lang");
@@ -108,13 +109,13 @@
     // 바닥
     const f = document.getElementById("foot");
     if (f) {
-      f.className = "foot";
+      f.className = "vfoot";
       const pick = c => DG.tools().filter(t => t.cat === c).slice(0, 5);
-      f.innerHTML = `<div class="wrap"><div class="fgrid">
-        <div class="fbrand"><img src="${ROOT}assets/logo.png" alt="DGMU" width="110" height="38"><p>${esc(DG.t("footDesc"))}</p></div>
+      f.innerHTML = `<div class="wrap"><div class="vfgrid">
+        <div class="vfbrand"><img src="${ROOT}assets/logo.png" alt="DGMU" width="110" height="38"><p>${esc(DG.t("footDesc"))}</p></div>
         ${["img", "doc", "form"].map(c => `<div><h4>${esc(DG.cat(c))}</h4><ul>${pick(c).map(t => `<li><a href="${DG.href(t.id)}">${esc(DG.name(t))}</a></li>`).join("")}</ul></div>`).join("")}
         <div><h4>${DG.t("footNav")}</h4><ul><li><a href="#">${DG.t("about")}</a></li><li><a href="#">${DG.t("privacy")}</a></li><li><a href="#">${DG.t("terms")}</a></li><li><a href="#">${DG.t("contact")}</a></li><li><a href="#">${DG.t("suggest")}</a></li></ul></div>
-      </div><div class="fbot"><span>© ${new Date().getFullYear()} 도구모음 DGMU · dgmoum.com · ${esc(DG.t("copy"))}</span><span class="stripe"><i style="background:#ffe600"></i><i style="background:#ff5a0a"></i><i style="background:#3a302c;box-shadow:inset 0 0 0 1px #555"></i></span></div></div>`;
+      </div><div class="vfbot"><span>© ${new Date().getFullYear()} 도구모음 DGMU · dgmoum.com · ${esc(DG.t("copy"))}</span><span class="stripe"><i style="background:#ffe600"></i><i style="background:#ff5a0a"></i><i style="background:#3a302c;box-shadow:inset 0 0 0 1px #555"></i></span></div></div>`;
     }
   }
 
@@ -150,6 +151,38 @@
   });
   document.addEventListener("click", e => { if (!e.target.closest(".ni")) document.querySelectorAll(".ni.open").forEach(n => { n.classList.remove("open"); n.querySelector("button").setAttribute("aria-expanded", "false"); }); });
 
-  const start = () => { renderShell(); applyText(); };
+  /* ---------- 도구 페이지 ---------- */
+  const TOOL_ID = document.body?.dataset.tool;
+  let koTitle = null;
+  function renderToolPage() {
+    if (!TOOL_ID || !window.TT_TOOLS) return;
+    const t = TT_TOOLS.find(x => x.id === TOOL_ID); if (!t) return;
+    const head = document.querySelector(".tool-head");
+    if (head) {
+      const h1 = head.querySelector("h1"), p = head.querySelector("p");
+      if (!head.dataset.ko) head.dataset.ko = JSON.stringify([h1?.textContent || "", p?.innerHTML || ""]);
+      const [kh, kp] = JSON.parse(head.dataset.ko);
+      if (h1) h1.textContent = lang === "ko" ? kh : DG.name(t);
+      if (p) p.innerHTML = lang === "ko" ? kp : esc(DG.desc(t));
+      let cr = document.querySelector(".vcrumb");
+      if (!cr) { cr = document.createElement("nav"); cr.className = "vcrumb"; cr.setAttribute("aria-label", "breadcrumb"); head.before(cr); }
+      cr.innerHTML = `<a href="${ROOT}">${esc(DG.t("home"))}</a><span>›</span><a href="${ROOT}#cat-${t.cat}">${esc(DG.cat(t.cat))}</a><span>›</span><span style="color:var(--ink)">${esc(DG.name(t))}</span>`;
+    }
+    koTitle ??= document.title;
+    document.title = lang === "ko" ? koTitle : `${DG.name(t)} · DGMU`;
+    // 아래쪽 안내 (사용 방법 · 자주 묻는 질문 · 함께 쓰는 도구)
+    if (document.body.dataset.noMore !== undefined) return;
+    let more = document.getElementById("toolMore");
+    if (!more) { more = document.createElement("section"); more.id = "toolMore"; more.className = "tool-more wrap"; (document.getElementById("foot") || document.body.lastElementChild).before(more); }
+    const rel = DG.tools().filter(x => x.cat === t.cat && x.id !== t.id).slice(0, 8);
+    more.innerHTML = `<div class="vsec"><div class="sh"><h2>${esc(lang === "ko" ? DG.name(t) + " " + DG.t("howTo") : DG.t("howTo"))}</h2></div>
+        <div class="steps">${[1, 2, 3].map(i => `<div class="stp"><h3>${esc(DG.t("s" + i + "t"))}</h3><p>${esc(DG.t("s" + i + "d"))}</p></div>`).join("")}</div></div>
+      <div class="vsec"><div class="sh"><h2>${esc(DG.t("faq"))}</h2></div>
+        <div class="faq" style="margin:0">${[1, 2, 3].map(i => `<details><summary>${esc(DG.t("q" + i))}</summary><p>${esc(DG.t("a" + i))}</p></details>`).join("")}</div></div>
+      ${rel.length ? `<div class="vsec"><div class="sh"><h2>${esc(DG.t("related"))}</h2></div><div class="vgrid">${rel.map(x => `<a class="vtool" href="${DG.href(x.id)}" style="--c:${DG.color(x.cat)}"><span class="ic">${DG.icon(x.id)}</span><div><b>${esc(DG.name(x))}</b><span>${esc(DG.desc(x))}</span></div></a>`).join("")}</div></div>` : ""}`;
+  }
+  listeners.push(renderToolPage);
+
+  const start = () => { renderShell(); applyText(); renderToolPage(); };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();
