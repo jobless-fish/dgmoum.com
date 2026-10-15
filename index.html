@@ -48,7 +48,7 @@
   <section class="vsec" style="padding-top:12px">
     <div class="wrap">
       <div id="favSec" hidden style="margin-bottom:36px"><div class="sh"><div><h2 data-i18n="myFavs"></h2><p data-i18n="myFavsSub"></p></div></div><div class="vgrid" id="favGrid"></div></div>
-      <div class="sh"><div><h2 data-i18n="popular"></h2><p data-i18n="popularSub"></p></div></div>
+      <div class="sh" id="allTools"><div><h2 data-i18n="popular"></h2><p data-i18n="popularSub"></p></div></div>
       <div class="vtabs" id="tabs" role="tablist"></div>
       <div id="list"></div>
     </div>
@@ -98,7 +98,7 @@
     const tools = DG.tools(), n = tools.length;
     $("#cats").innerHTML = DG.ORDER.map(c => {
       const f = tools.find(t => t.id === FEAT_OF[c]);
-      return `<a class="cat" id="cat-${c}" href="#list" data-c="${c}" style="--c:${DG.color(c)}">
+      return `<a class="cat" id="catcard-${c}" href="#allTools" data-c="${c}" style="--c:${DG.color(c)}">
         <span class="ic lg">${DG.CAT_ICON[c]}</span>
         <h3>${esc(DG.cat(c))} <small>${DG.count(c)}${esc(DG.t("tools"))}</small></h3>
         <p>${esc(DG.catTag(c))}</p>
@@ -127,10 +127,22 @@
     DG.paintStars($("#list")); favList();
   }
   $("#tabs").addEventListener("click", e => { const b = e.target.closest(".vtab"); if (!b) return; cat = b.dataset.c; $("#tabs").querySelectorAll(".vtab").forEach(x => x.setAttribute("aria-pressed", x === b)); list(); });
-  $("#cats").addEventListener("click", e => { const a = e.target.closest(".cat"); if (!a) return; cat = a.dataset.c; render(); });
+  // '모든 도구' 제목이 헤더 바로 아래에 오도록 스크롤 (헤더 높이만큼 띄워요)
+  const toAll = (smooth = true) => {
+    const hdr = document.querySelector(".hdr"), off = (hdr ? hdr.offsetHeight : 64) + 16;
+    const y = $("#allTools").getBoundingClientRect().top + scrollY - off;
+    scrollTo({ top: y, behavior: smooth ? "smooth" : "auto" });
+  };
+  $("#cats").addEventListener("click", e => {
+    const a = e.target.closest(".cat"); if (!a) return;
+    e.preventDefault(); cat = a.dataset.c; render();
+    history.replaceState(null, "", "#cat-" + cat);
+    toAll();
+  });
   DG.onLang(render);
   // 메뉴의 "모두 보기"(#cat-…)로 들어오면 그 분류만 보여줘요
-  const h = location.hash.match(/^#cat-(\w+)/); if (h && DG.ORDER.includes(h[1])) { cat = h[1]; render(); }
+  const h = location.hash.match(/^#cat-(\w+)/); if (h && DG.ORDER.includes(h[1])) { cat = h[1]; render(); requestAnimationFrame(() => toAll(false)); }
+  addEventListener("hashchange", () => { const m = location.hash.match(/^#cat-(\w+)/); if (m && DG.ORDER.includes(m[1])) { cat = m[1]; render(); toAll(); } });
 })();
 </script>
 </body>
