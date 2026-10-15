@@ -105,7 +105,9 @@ button { font: inherit; color: inherit; }
 @media (max-width: 480px) { .hero h1 .rot b { font-size: 1.2em; } html[lang="en"] .hero h1 .rot b { font-size: 1.1em; } }
 @keyframes up { from { transform: translateY(40%); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .hero h1 .rot.go { animation: none; } }
-.hero p { color: var(--muted); font-size: clamp(16px, 2vw, 18.5px); max-width: 56ch; margin: 0 auto 30px; }
+.hero p.sub { color: var(--muted); font-size: clamp(14px, 1.9vw, 18.5px); margin: 0 auto 8px; white-space: nowrap; }
+.hero p.note { color: color-mix(in srgb, var(--muted) 70%, transparent); font-size: clamp(12px, 1.3vw, 13.5px); margin: 0 auto 28px; }
+@media (max-width: 720px) { .hero p.sub { white-space: normal; font-size: 14.5px; text-wrap: balance; } }
 .hero .sbox { max-width: 680px; margin: 0 auto; }
 .vstats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; max-width: 860px; margin: 40px auto 0; }
 .vstat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 12px; box-shadow: var(--shadow-sm); }

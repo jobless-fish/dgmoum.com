@@ -27,7 +27,8 @@
   <section class="hero">
     <div class="wrap">
       <h1 id="heroH"></h1>
-      <p data-i18n="heroSub"></p>
+      <p class="sub" data-i18n="heroSub"></p>
+      <p class="note" data-i18n="heroNote"></p>
       <div class="sbox" role="search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <input type="search" id="heroIn" data-i18n-ph="searchPh" autocomplete="off">
@@ -60,14 +61,6 @@
     </div>
   </section>
 
-  <section class="vsec">
-    <div class="wrap">
-      <div class="priv">
-        <div><h2 data-i18n="privTitle"></h2><p data-i18n="privText"></p></div>
-        <ul id="privList"></ul>
-      </div>
-    </div>
-  </section>
 </main>
 
 <footer id="foot"></footer>
@@ -117,8 +110,7 @@
     $("#feat").innerHTML = FREE.map(id => tools.find(t => t.id === id)).filter(Boolean).map(t =>
       `<a class="fc" href="${DG.href(t.id)}" style="--c:${DG.color(t.cat)}"><div class="art">${DG.icon(t.id)}</div>
         <div class="body"><h3>${esc(DG.name(t))}</h3><p>${esc(DG.desc(t))}</p><span class="go">${esc(DG.t("more"))} →</span></div></a>`).join("");
-    $("#privList").innerHTML = ["priv1", "priv2", "priv3"].map(k => `<li>${DG.ICON.check}${esc(DG.t(k))}</li>`).join("");
-  }
+    }
   // 즐겨찾는 도구 (있을 때만)
   function favList() {
     const f = DG.favs().map(id => DG.tools().find(t => t.id === id)).filter(Boolean), box = $("#favSec");

@@ -5,7 +5,7 @@
    - 도장·서명은 사진의 흰 배경을 지워서 넣거나, 화면에 직접 그려요. */
 window.TF = (() => {
   // 업종 추가 요청 받을 주소 (구글 설문 등으로 바꿔도 돼요)
-  const REQUEST_URL = "https://github.com/jobless-fish/ttukttak/issues/new?title=" + encodeURIComponent("[견적서 업종 추가 요청] ");
+  const REQUEST_URL = "https://github.com/jobless-fish/dgmoum.com/issues/new?title=" + encodeURIComponent("[견적서 업종 추가 요청] ");
 
   const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   const num = s => { const n = parseFloat(String(s ?? "").replace(/[^\d.\-]/g, "")); return isFinite(n) ? n : 0; };
