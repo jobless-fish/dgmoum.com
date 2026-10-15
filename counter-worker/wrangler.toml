@@ -1,0 +1,8 @@
+name = "dgmu-counter"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "dgmu-counter"
+database_id = "여기에-d1-create로-받은-id"

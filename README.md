@@ -127,3 +127,7 @@ tools/
 - `assets/v2.css` 새 디자인 (밝게 · 어둡게)
 - `assets/shell.js` 상단 메뉴 · 큰 메뉴 · 검색(/ 키) · 휴대폰 메뉴 · 바닥글 · 한/영 · 밝기 전환
 - `assets/i18n.js` 화면 문구와 도구 이름·설명의 영어 번역
+
+## 사용 횟수 · 즐겨찾기 집계
+
+첫 화면 숫자 칸의 "사용된 횟수"와 "즐겨찾기"는 `counter-worker/`의 작은 Cloudflare 서버로 모아요. 배포 방법은 `counter-worker/README.md`에 있어요. 배포 전에는 "—"로 보여요.

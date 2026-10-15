@@ -33,7 +33,6 @@
         <input type="search" id="heroIn" data-i18n-ph="searchPh" autocomplete="off">
         <div class="sres" id="heroRes" hidden></div>
       </div>
-      <div class="vstats" id="stats"></div>
     </div>
   </section>
 
@@ -47,6 +46,7 @@
 
   <section class="vsec" style="padding-top:12px">
     <div class="wrap">
+      <div id="favSec" hidden style="margin-bottom:36px"><div class="sh"><div><h2 data-i18n="myFavs"></h2><p data-i18n="myFavsSub"></p></div></div><div class="vgrid" id="favGrid"></div></div>
       <div class="sh"><div><h2 data-i18n="popular"></h2><p data-i18n="popularSub"></p></div></div>
       <div class="vtabs" id="tabs" role="tablist"></div>
       <div id="list"></div>
@@ -86,18 +86,17 @@
 
   DG.searchBox($("#heroIn"), $("#heroRes"));
 
+  // 첫 문장: "을/를 간단하게"와 둘째 줄은 제자리, 바뀌는 낱말만 왼쪽으로 늘어나요
   function hero() {
-    const w = DG.t("heroWords");
-    $("#heroH").innerHTML = `${esc(DG.t("heroA"))}<span class="rot"><span>${esc(w[rot % w.length])}</span></span>${esc(DG.t("heroB"))}`;
+    const w = DG.t("heroWords"), [a, p] = w[rot % w.length];
+    $("#heroH").innerHTML = `<span class="ln"><span class="rot"><b>${esc(a)}</b>${esc(p)}</span>${esc(DG.t("heroL1")).replace(/^ /, "&nbsp;")}</span><span class="ln">${esc(DG.t("heroL2"))}</span>`;
   }
   clearInterval(rotT);
-  rotT = setInterval(() => { rot++; hero(); }, 2600);
+  rotT = setInterval(() => { rot++; hero(); const r = document.querySelector("#heroH .rot"); r && r.classList.add("go"); }, 2600);
 
   function render() {
     hero();
     const tools = DG.tools(), n = tools.length;
-    $("#stats").innerHTML = [[`${n}<em>+</em>`, "st1", "st1d"], ["0", "st2", "st2d"], ["0", "st3", "st3d"], [esc(DG.t("st4big")), null, "st4d"]]
-      .map(([v, a, b]) => `<div class="vstat"><b>${v}</b><span>${a ? `<strong>${esc(DG.t(a))}</strong><br>` : ""}${esc(DG.t(b))}</span></div>`).join("");
     $("#cats").innerHTML = DG.ORDER.map(c => {
       const f = tools.find(t => t.id === FEAT_OF[c]);
       return `<a class="cat" id="cat-${c}" href="#list" data-c="${c}" style="--c:${DG.color(c)}">
@@ -114,11 +113,20 @@
         <div class="body"><h3>${esc(DG.name(t))}</h3><p>${esc(DG.desc(t))}</p><span class="go">${esc(DG.t("more"))} →</span></div></a>`).join("");
     $("#privList").innerHTML = ["priv1", "priv2", "priv3"].map(k => `<li>${DG.ICON.check}${esc(DG.t(k))}</li>`).join("");
   }
+  // 즐겨찾는 도구 (있을 때만)
+  function favList() {
+    const f = DG.favs().map(id => DG.tools().find(t => t.id === id)).filter(Boolean), box = $("#favSec");
+    box.hidden = !f.length; if (!f.length) return;
+    $("#favGrid").innerHTML = f.map(card).join(""); DG.paintStars($("#favGrid"));
+  }
+  document.addEventListener("dg-fav", () => favList());
+  const card = t => `<div class="vtw"><a class="vtool" href="${DG.href(t.id)}" style="--c:${DG.color(t.cat)}"><span class="ic">${DG.icon(t.id)}</span><div><b>${esc(DG.name(t))}</b><span>${esc(DG.desc(t))}</span></div></a>${DG.star(t.id)}</div>`;
   function list() {
-    const tools = DG.tools(), card = t => `<a class="vtool" href="${DG.href(t.id)}" style="--c:${DG.color(t.cat)}"><span class="ic">${DG.icon(t.id)}</span><div><b>${esc(DG.name(t))}</b><span>${esc(DG.desc(t))}</span></div></a>`;
+    const tools = DG.tools();
     const cats = cat === "all" ? DG.ORDER : [cat];
     $("#list").innerHTML = cats.map(c => `<div class="ghead" style="--c:${DG.color(c)}"><span class="ic sm">${DG.CAT_ICON[c]}</span>${esc(DG.cat(c))}<small style="color:var(--muted);font-weight:600">${DG.count(c)}</small></div>
       <div class="vgrid">${tools.filter(t => t.cat === c).map(card).join("")}</div>`).join("");
+    DG.paintStars($("#list")); favList();
   }
   $("#tabs").addEventListener("click", e => { const b = e.target.closest(".vtab"); if (!b) return; cat = b.dataset.c; $("#tabs").querySelectorAll(".vtab").forEach(x => x.setAttribute("aria-pressed", x === b)); list(); });
   $("#cats").addEventListener("click", e => { const a = e.target.closest(".cat"); if (!a) return; cat = a.dataset.c; render(); });

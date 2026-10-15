@@ -3,6 +3,8 @@
             <script src="(경로)/assets/shell.js" data-root="(사이트 맨 위까지 경로)"></script>
    페이지 내용은 DG.onLang(fn)에 등록하면 언어를 바꿀 때 다시 그려져요. */
 (() => {
+  // 사용 횟수 · 즐겨찾기 집계 서버 주소 (counter-worker를 배포한 뒤 넣으세요. 비어 있으면 집계하지 않아요)
+  const COUNTER_URL = "";
   const ROOT = document.currentScript?.dataset.root ?? "./";
   const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
   const S = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
@@ -48,8 +50,29 @@
     icon: id => (window.TT_ICONS && TT_ICONS[id]) || "",
     onLang(fn) { listeners.push(fn); fn(lang); },
     setLang(l) { lang = l; store.set("dg-lang", l); document.documentElement.lang = l; renderShell(); applyText(); listeners.forEach(f => f(l)); },
-    count: c => DG.tools().filter(t => t.cat === c).length
+    count: c => DG.tools().filter(t => t.cat === c).length,
+    /* 집계: 숫자만 보내요 (파일 · 개인 정보는 안 보내요) */
+    counterOn: !!COUNTER_URL,
+    hit(kind, tool = "") { if (!COUNTER_URL) return; try { navigator.sendBeacon(COUNTER_URL.replace(/\/$/, "") + "/hit", kind + ":" + tool); } catch {} },
+    async stats() { if (!COUNTER_URL) return null; try { const r = await fetch(COUNTER_URL.replace(/\/$/, "") + "/stats"); return r.ok ? await r.json() : null; } catch { return null; } },
+    num(n) { if (n == null) return "—"; if (lang === "ko") return n >= 1e8 ? (n / 1e8).toFixed(1).replace(/\.0$/, "") + "억" : n >= 1e4 ? (n / 1e4).toFixed(1).replace(/\.0$/, "") + "만" : n.toLocaleString("ko-KR"); return n >= 1e6 ? (n / 1e6).toFixed(1).replace(/\.0$/, "") + "M" : n >= 1e3 ? (n / 1e3).toFixed(1).replace(/\.0$/, "") + "K" : String(n); },
+    /* 즐겨찾기 (이 기기에 기억) */
+    favs() { try { return JSON.parse(store.get("dg-favs") || "[]"); } catch { return []; } },
+    isFav(id) { return DG.favs().includes(id); },
+    toggleFav(id) {
+      const f = DG.favs(), on = !f.includes(id);
+      store.set("dg-favs", JSON.stringify(on ? [...f, id] : f.filter(x => x !== id)));
+      DG.hit(on ? "fav" : "unfav", id);
+      document.querySelectorAll(`[data-fav="${id}"]`).forEach(paintStar);
+      document.dispatchEvent(new CustomEvent("dg-fav", { detail: { id, on } }));
+      return on;
+    },
+    star: id => `<button type="button" class="star" data-fav="${id}" aria-pressed="false"></button>`
   };
+  // 별 버튼 모양
+  function paintStar(b) { const on = DG.isFav(b.dataset.fav); b.setAttribute("aria-pressed", on); b.title = b.ariaLabel = DG.t(on ? "faved" : "fav"); b.innerHTML = `<svg viewBox="0 0 24 24" fill="${on ? "currentColor" : "none"}" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3 6.4 20.2l1.1-6.2L3 9.6l6.2-.9z"/></svg>${b.classList.contains("wide") ? `<span>${DG.t(on ? "faved" : "fav")}</span>` : ""}`; }
+  DG.paintStars = (root = document) => root.querySelectorAll("[data-fav]").forEach(paintStar);
+  document.addEventListener("click", e => { const b = e.target.closest("button[data-fav]"); if (!b) return; e.preventDefault(); e.stopPropagation(); DG.toggleFav(b.dataset.fav); });
   window.DG = DG;
   document.documentElement.lang = lang;
 
@@ -164,6 +187,9 @@
       const [kh, kp] = JSON.parse(head.dataset.ko);
       if (h1) h1.textContent = lang === "ko" ? kh : DG.name(t);
       if (p) p.innerHTML = lang === "ko" ? kp : esc(DG.desc(t));
+      let fb = head.querySelector(".star.wide");
+      if (!fb) { fb = document.createElement("button"); fb.type = "button"; fb.className = "star wide"; fb.dataset.fav = t.id; (p || h1).after(fb); }
+      paintStar(fb);
       let cr = document.querySelector(".vcrumb");
       if (!cr) { cr = document.createElement("nav"); cr.className = "vcrumb"; cr.setAttribute("aria-label", "breadcrumb"); head.before(cr); }
       cr.innerHTML = `<a href="${ROOT}">${esc(DG.t("home"))}</a><span>›</span><a href="${ROOT}#cat-${t.cat}">${esc(DG.cat(t.cat))}</a><span>›</span><span style="color:var(--ink)">${esc(DG.name(t))}</span>`;
@@ -175,14 +201,24 @@
     let more = document.getElementById("toolMore");
     if (!more) { more = document.createElement("section"); more.id = "toolMore"; more.className = "tool-more wrap"; (document.getElementById("foot") || document.body.lastElementChild).before(more); }
     const rel = DG.tools().filter(x => x.cat === t.cat && x.id !== t.id).slice(0, 8);
+    const card = x => `<div class="vtw"><a class="vtool" href="${DG.href(x.id)}" style="--c:${DG.color(x.cat)}"><span class="ic">${DG.icon(x.id)}</span><div><b>${esc(DG.name(x))}</b><span>${esc(DG.desc(x))}</span></div></a>${DG.star(x.id)}</div>`;
     more.innerHTML = `<div class="vsec"><div class="sh"><h2>${esc(lang === "ko" ? DG.name(t) + " " + DG.t("howTo") : DG.t("howTo"))}</h2></div>
         <div class="steps">${[1, 2, 3].map(i => `<div class="stp"><h3>${esc(DG.t("s" + i + "t"))}</h3><p>${esc(DG.t("s" + i + "d"))}</p></div>`).join("")}</div></div>
       <div class="vsec"><div class="sh"><h2>${esc(DG.t("faq"))}</h2></div>
         <div class="faq" style="margin:0">${[1, 2, 3].map(i => `<details><summary>${esc(DG.t("q" + i))}</summary><p>${esc(DG.t("a" + i))}</p></details>`).join("")}</div></div>
-      ${rel.length ? `<div class="vsec"><div class="sh"><h2>${esc(DG.t("related"))}</h2></div><div class="vgrid">${rel.map(x => `<a class="vtool" href="${DG.href(x.id)}" style="--c:${DG.color(x.cat)}"><span class="ic">${DG.icon(x.id)}</span><div><b>${esc(DG.name(x))}</b><span>${esc(DG.desc(x))}</span></div></a>`).join("")}</div></div>` : ""}`;
+      ${rel.length ? `<div class="vsec"><div class="sh"><h2>${esc(DG.t("related"))}</h2></div><div class="vgrid">${rel.map(card).join("")}</div></div>` : ""}`;
+    DG.paintStars(more);
   }
   listeners.push(renderToolPage);
+  // 결과를 저장(다운로드)하거나 인쇄하면 "사용 1회" (1.5초 안에 여러 번이면 한 번만)
+  let lastUse = 0;
+  const used = () => { if (Date.now() - lastUse < 1500) return; lastUse = Date.now(); DG.hit("use", TOOL_ID || ""); };
+  if (TOOL_ID) {
+    const hook = () => { if (window.TT && !TT._dgHooked) { const d = TT.download; TT.download = function (...a) { used(); return d.apply(this, a); }; TT._dgHooked = true; } };
+    hook(); document.addEventListener("DOMContentLoaded", hook);
+    addEventListener("beforeprint", used);
+  }
 
-  const start = () => { renderShell(); applyText(); renderToolPage(); };
+  const start = () => { renderShell(); applyText(); renderToolPage(); DG.paintStars(); };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();
