@@ -1,7 +1,7 @@
 /* 사진 보정 기본값과 프리셋
    프리셋 값은 각 필름의 제조사 자료(입자 굵기, 대비, 색 경향)와
    카메라 필름 시뮬레이션의 널리 알려진 특징을 참고해 잡은 "비슷한 느낌"이에요.
-   필름·카메라 이름은 각 회사의 상표이고, 뚝딱툴은 해당 회사와 관계가 없어요. */
+   필름·카메라 이름은 각 회사의 상표이고, 도구모음은 해당 회사와 관계가 없어요. */
 window.PE_DEFAULTS = {
   bw: false, lutOn: false, lutId: null, lutAmt: 100,
   temp: 0, tint: 0, exposure: 0, contrast: 0, highlights: 0, shadows: 0, whites: 0, blacks: 0,

@@ -1,4 +1,4 @@
-/* 뚝딱툴 공용 오디오 함수 — 읽기, MP3·WAV 저장, 소리 크기 측정, 파형 그리기
+/* 도구모음 공용 오디오 함수 — 읽기, MP3·WAV 저장, 소리 크기 측정, 파형 그리기
    MP3 저장에는 페이지에 lamejs가 먼저 로드돼 있어야 해요. */
 window.TA = (() => {
   const yieldUI = () => new Promise(r => setTimeout(r, 0));

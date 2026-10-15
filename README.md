@@ -1,4 +1,4 @@
-# 뚝딱툴
+# 도구모음
 
 브라우저에서 바로 쓰는 무료 파일 도구 모음. 모든 처리는 사용자 기기 안에서 이뤄지고 서버가 필요 없어요.
 
@@ -85,6 +85,18 @@ tools/
 3. 아이콘은 같은 파일의 `TT_ICONS`에 `"<새-이름>": '<svg…>'`로 추가
 
 준비 중인 도구는 `status: "soon"`으로 두면 흐린 카드로 보여요.
+
+## 도메인 (dgmoum.com)
+
+도메인을 산 뒤에 하면 돼요. 먼저 하면 github.io 주소가 깨질 수 있어요.
+
+1. 도메인 업체 DNS 설정에 아래를 넣기
+   - A 레코드 `@` → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
+   - CNAME 레코드 `www` → `jobless-fish.github.io`
+2. 저장소 Settings → Pages → Custom domain에 `dgmoum.com` 입력 → 저장 (저장소에 CNAME 파일이 자동으로 생겨요)
+3. DNS가 연결되면(몇 분~하루) 같은 화면에서 **Enforce HTTPS** 체크
+
+`robots.txt`, `sitemap.xml`, 공유 미리보기 이미지(og:image)는 이미 `https://dgmoum.com` 기준으로 만들어 뒀어요.
 
 ## 배포 (GitHub Pages)
 

@@ -1,4 +1,4 @@
-/* 뚝딱툴 공용 스타일
+/* 도구모음 공용 스타일
    Layout: 공구함 서랍처럼 — 카테고리 색 탭이 붙은 카드, 작업 화면은 왼쪽 작업대 + 오른쪽 설정 패널 */
 :root {
   --bg: #edf0f3;
@@ -71,11 +71,8 @@ button, input, select { font: inherit; color: inherit; }
 .topbar { border-bottom: 1px solid var(--line); background: var(--surface); }
 .topbar .wrap { display: flex; align-items: center; gap: 16px; min-height: 58px; flex-wrap: wrap; }
 .brand { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; }
-.brand-mark {
-  font-family: var(--f-display); font-size: 22px; line-height: 1; letter-spacing: .01em;
-  background: var(--accent); color: var(--accent-ink); padding: 6px 9px 4px; border-radius: 4px;
-  transform: rotate(-2deg);
-}
+.brand-logo { height: 36px; width: auto; display: block; }
+@media (max-width: 560px) { .brand-logo { height: 30px; } }
 .brand-sub { font-size: 13px; color: var(--muted); }
 .crumb { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); min-width: 0; }
 .crumb strong { color: var(--ink); font-weight: 600; }

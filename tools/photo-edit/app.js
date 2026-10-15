@@ -357,7 +357,7 @@
     });
   });
   const legal = document.createElement("p"); legal.className = "legal";
-  legal.textContent = "필름·카메라 이름은 각 회사의 상표예요. 뚝딱툴은 해당 회사와 관계가 없고, 제조사 자료에 나온 특징(입자, 대비, 색 경향)을 참고해 비슷한 느낌을 낸 보정값이에요. 마우스를 올리면 미리 보여요.";
+  legal.textContent = "필름·카메라 이름은 각 회사의 상표예요. 도구모음은 해당 회사와 관계가 없고, 제조사 자료에 나온 특징(입자, 대비, 색 경향)을 참고해 비슷한 느낌을 낸 보정값이에요. 마우스를 올리면 미리 보여요.";
   lp.appendChild(legal);
   // 프리셋을 누른 직후 상태를 기억해서, 손대면 표시를 꺼요
   const _commit = commit;
