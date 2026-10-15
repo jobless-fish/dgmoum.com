@@ -120,3 +120,10 @@ tools/
 - 외부 라이브러리는 모두 cdnjs에서 불러와요: MP3 저장(lamejs), zip 받기(JSZip), PDF 편집(pdf-lib), PDF 그리기(pdf.js), GIF 만들기(gif.js), QR코드(qrcode-generator, jsDelivr), 사진 정보 읽기(exifr, jsDelivr).
 - **MP3 저장**과 **zip 받기**는 불러오지 못하면 WAV 저장 / 파일 하나씩 받기로 자동 전환돼요.
 - HEIC(아이폰 사진)는 사파리 외 브라우저에서 열리지 않아요.
+
+## v2 디자인 (프로토타입)
+
+`proto/index.html`(첫 화면)과 `proto/tool.html?id=도구이름`(도구 페이지 틀)에서 미리 볼 수 있어요.
+- `assets/v2.css` 새 디자인 (밝게 · 어둡게)
+- `assets/shell.js` 상단 메뉴 · 큰 메뉴 · 검색(/ 키) · 휴대폰 메뉴 · 바닥글 · 한/영 · 밝기 전환
+- `assets/i18n.js` 화면 문구와 도구 이름·설명의 영어 번역

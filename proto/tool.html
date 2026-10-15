@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>도구 · 도구모음 DGMU</title>
+<script>(function(){var t;try{t=localStorage.getItem("dg-theme")}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
+<link rel="icon" href="../favicon.ico" sizes="any">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="../assets/v2.css">
+</head>
+<body>
+<header id="hdr"></header>
+
+<main class="wrap">
+  <nav class="crumb" id="crumb" aria-label="breadcrumb"></nav>
+  <div class="thead" id="thead"></div>
+
+  <!-- 도구 작업 영역: 파일을 고르기 전에는 큰 업로드 칸, 고른 뒤에는 이 자리에 도구 화면이 들어와요 -->
+  <section class="upl" id="upl">
+    <div class="zone" id="zone" tabindex="0" role="button">
+      <button class="big" id="pick" type="button"></button>
+      <span data-i18n="orDrop"></span>
+      <span style="font-size:13px" data-i18n="pasteOk"></span>
+      <input type="file" id="file" multiple hidden>
+    </div>
+    <div class="lock" id="lock"></div>
+  </section>
+  <p id="picked" style="text-align:center;color:var(--muted);font-size:14px;margin:14px 0 0" hidden></p>
+
+  <div class="ad" data-i18n="ad"></div>
+
+  <section class="sec" style="padding-top:12px">
+    <div class="sh"><h2 id="howH"></h2></div>
+    <div class="steps" id="steps"></div>
+  </section>
+
+  <section class="sec" style="padding-top:0">
+    <div class="sh" style="justify-content:center;text-align:center"><h2 data-i18n="faq"></h2></div>
+    <div class="faq" id="faq"></div>
+  </section>
+
+  <section class="sec" style="padding-top:0">
+    <div class="sh"><h2 data-i18n="related"></h2></div>
+    <div class="grid" id="rel"></div>
+  </section>
+</main>
+
+<footer id="foot"></footer>
+
+<script src="../assets/common.js"></script>
+<script src="../assets/i18n.js"></script>
+<script>window.DG_HREF = id => "tool.html?id=" + id; // 프로토타입: 도구 카드를 새 틀로 열어요</script>
+<script src="../assets/shell.js" data-root="../"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  // 프로토타입: ?id=도구이름 으로 어떤 도구든 이 틀에 넣어 볼 수 있어요
+  const id = new URLSearchParams(location.search).get("id") || "image-compress";
+  const tool = DG.tools().find(t => t.id === id) || DG.tools()[0];
+  const c = tool.cat;
+  document.body.style.setProperty("--c", DG.color(c));
+  $("#upl").style.setProperty("--c", DG.color(c));
+  let files = [];
+
+  function render() {
+    document.title = `${DG.name(tool)} · ${DG.lang === "ko" ? "도구모음" : "DGMU"}`;
+    $("#crumb").innerHTML = `<a href="./">${esc(DG.t("home"))}</a><span>›</span><a href="./#cat-${c}">${esc(DG.cat(c))}</a><span>›</span><span style="color:var(--ink)">${esc(DG.name(tool))}</span>`;
+    $("#thead").innerHTML = `<span class="ic lg" style="--c:${DG.color(c)}">${DG.icon(tool.id)}</span><h1>${esc(DG.name(tool))}</h1><p>${esc(DG.desc(tool))}</p>`;
+    $("#pick").innerHTML = `${DG.ICON.upload}${esc(DG.t("upload"))}`;
+    $("#lock").innerHTML = `${DG.ICON.lock}${esc(DG.t("privNote"))}`;
+    $("#howH").textContent = DG.lang === "ko" ? `${DG.name(tool)} ${DG.t("howTo")}` : `${DG.t("howTo")}: ${DG.name(tool)}`;
+    $("#steps").innerHTML = [1, 2, 3].map(i => `<div class="stp"><h3>${esc(DG.t("s" + i + "t"))}</h3><p>${esc(DG.t("s" + i + "d"))}</p></div>`).join("");
+    $("#faq").innerHTML = [1, 2, 3].map(i => `<details${i === 1 ? " open" : ""}><summary>${esc(DG.t("q" + i))}</summary><p>${esc(DG.t("a" + i))}</p></details>`).join("");
+    $("#rel").innerHTML = DG.tools().filter(t => t.cat === c && t.id !== tool.id).slice(0, 8).map(t =>
+      `<a class="tool" href="tool.html?id=${t.id}" style="--c:${DG.color(t.cat)}"><span class="ic">${DG.icon(t.id)}</span><div><b>${esc(DG.name(t))}</b><span>${esc(DG.desc(t))}</span></div></a>`).join("");
+    showPicked();
+  }
+  function showPicked() {
+    const p = $("#picked"); if (!files.length) { p.hidden = true; return; }
+    p.hidden = false;
+    p.innerHTML = `${esc(DG.t("picked"))}: ${files.map(f => esc(f.name)).join(", ")}<br>${esc(DG.t("protoNote"))}<br><a href="${DG.ROOT}tools/${tool.id}/" style="color:var(--c);font-weight:700">${esc(DG.t("openReal"))} →</a>`;
+  }
+  const take = fl => { files = [...fl]; showPicked(); };
+  $("#pick").onclick = e => { e.stopPropagation(); $("#file").click(); };
+  $("#zone").onclick = () => $("#file").click();
+  $("#zone").onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("#file").click(); } };
+  $("#file").onchange = e => take(e.target.files);
+  ["dragenter", "dragover"].forEach(t => $("#zone").addEventListener(t, e => { e.preventDefault(); $("#zone").classList.add("over"); }));
+  ["dragleave", "drop"].forEach(t => $("#zone").addEventListener(t, e => { e.preventDefault(); $("#zone").classList.remove("over"); }));
+  $("#zone").addEventListener("drop", e => take(e.dataTransfer.files));
+  document.addEventListener("paste", e => { if (e.clipboardData.files.length) take(e.clipboardData.files); });
+  DG.onLang(render);
+})();
+</script>
+</body>
+</html>
