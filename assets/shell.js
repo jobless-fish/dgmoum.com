@@ -10,6 +10,9 @@
      텔레그램: "https://t.me/아이디"
      카카오톡 오픈채팅: "https://open.kakao.com/o/코드" */
   const AD_CONTACT = "";
+  /* 도구 제안 받는 서버 주소 (suggest-worker를 배포하고 받은 주소, 예: "https://dgmu-suggest.아이디.workers.dev")
+     제안 글은 운영자의 비공개 GitHub 저장소 md 파일에 쌓여요. 비워 두면 폼에 '준비 중'이라고 떠요. */
+  const SUGGEST_API = "";
   const ROOT = document.currentScript?.dataset.root ?? "./";
   const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
   const S = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
@@ -97,7 +100,10 @@
     if (hdr) {
       hdr.className = "hdr";
       hdr.innerHTML = `<div class="wrap">
-        <a class="logo" href="${ROOT}"><img src="${ROOT}assets/logo.png" alt="DGMU" width="98" height="34"><span>${lang === "ko" ? "도구모음" : ""}</span></a>
+        <div class="brandw">
+          <a class="logo" href="${ROOT}"><img src="${ROOT}assets/logo.png" alt="${lang === "ko" ? "도구모음 홈" : "DGMU home"}" width="98" height="34"></a>
+          <a class="peek" href="${ROOT}about/" aria-label="${lang === "ko" ? "도구모음 소개 (ABOUT)" : "About DGMU"}"><span class="slide"><span class="card"><span class="fa">${lang === "ko" ? "도구모음" : "DGMU"}</span><span class="fb">ABOUT</span></span></span></a>
+        </div>
         <nav class="nav" aria-label="${DG.t("menu")}">${ORDER.map(c => {
           const list = DG.tools().filter(t => t.cat === c);
           return `<div class="ni" style="--c:${DG.color(c)}"><button aria-expanded="false" aria-haspopup="true">${esc(DG.cat(c))}</button>
@@ -128,7 +134,7 @@
     // 휴대폰 메뉴
     let d = document.getElementById("drawer");
     if (!d) { d = document.createElement("div"); d.id = "drawer"; d.className = "drawer"; document.body.appendChild(d); }
-    d.innerHTML = ORDER.map(c => { const list = DG.tools().filter(t => t.cat === c); return `<details><summary><span class="ic sm" style="--c:${DG.color(c)}">${CAT_ICON[c]}</span>${esc(DG.cat(c))}<small>${list.length}</small></summary><ul>${list.map(t => `<li>${toolLink(t)}</li>`).join("")}</ul></details>`; }).join("");
+    d.innerHTML = `<a class="dabout" href="${ROOT}about/"><b>ABOUT</b><span>${lang === "ko" ? "도구모음 소개 · 광고 문의" : "About DGMU · Advertise"}</span></a>` + ORDER.map(c => { const list = DG.tools().filter(t => t.cat === c); return `<details><summary><span class="ic sm" style="--c:${DG.color(c)}">${CAT_ICON[c]}</span>${esc(DG.cat(c))}<small>${list.length}</small></summary><ul>${list.map(t => `<li>${toolLink(t)}</li>`).join("")}</ul></details>`; }).join("");
     // 검색 창
     let s = document.getElementById("sdlg");
     if (!s) { s = document.createElement("div"); s.id = "sdlg"; s.className = "sdlg"; s.addEventListener("click", e => { if (e.target === s) closeSearch(); }); document.body.appendChild(s); }
@@ -142,7 +148,7 @@
       f.innerHTML = `<div class="wrap"><div class="vfgrid">
         <div class="vfbrand"><img src="${ROOT}assets/logo.png" alt="DGMU" width="110" height="38"><p>${esc(DG.t("footDesc"))}</p></div>
         ${["img", "doc", "form"].map(c => `<div><h4>${esc(DG.cat(c))}</h4><ul>${pick(c).map(t => `<li><a href="${DG.href(t.id)}">${esc(DG.name(t))}</a></li>`).join("")}</ul></div>`).join("")}
-        <div><h4>${DG.t("footNav")}</h4><ul><li><a href="#">${DG.t("about")}</a></li><li><a href="#">${DG.t("privacy")}</a></li><li><a href="#">${DG.t("terms")}</a></li><li><a href="#">${DG.t("contact")}</a></li><li><a href="#">${DG.t("suggest")}</a></li><li><a ${adAttr()}>${DG.t("adInq")}</a></li></ul></div>
+        <div><h4>${DG.t("footNav")}</h4><ul><li><a href="${ROOT}about/">${DG.t("about")}</a></li><li><a href="#">${DG.t("privacy")}</a></li><li><a href="#">${DG.t("terms")}</a></li><li><a href="#">${DG.t("contact")}</a></li><li><a href="${ROOT}about/#suggest">${DG.t("suggest")}</a></li><li><a ${adAttr()}>${DG.t("adInq")}</a></li></ul></div>
       </div><div class="vfbot"><span>© ${new Date().getFullYear()} 도구모음 DGMU · dgmoum.com · ${esc(DG.t("copy"))}</span><span class="stripe"><i style="background:#ffe600"></i><i style="background:#ff5a0a"></i><i style="background:#3a302c;box-shadow:inset 0 0 0 1px #555"></i></span></div></div>`;
     }
   }
@@ -247,7 +253,7 @@
     const t = a.textContent; a.textContent = DG.t("adSoon");
     setTimeout(() => { a.textContent = t; delete a.dataset.busy; }, 1800);
   });
-  DG.adContact = AD_CONTACT;
+  DG.adContact = AD_CONTACT; DG.suggestApi = SUGGEST_API; DG.adAttr = () => adAttr();
 
   const start = () => { renderShell(); applyText(); renderToolPage(); DG.paintStars(); paintAds(); DG.onLang(() => paintAds()); };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();

@@ -1,0 +1,10 @@
+name = "dgmu-suggest"
+main = "worker.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+# 제안이 쌓일 "비공개" 저장소 (소유자/이름)
+REPO = "jobless-fish/dgmoum-inbox"
+FILE_PATH = "requests.md"
+BRANCH = "main"
+# GITHUB_TOKEN은 여기 적지 말고 `npx wrangler secret put GITHUB_TOKEN`으로 넣으세요

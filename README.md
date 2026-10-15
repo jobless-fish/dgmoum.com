@@ -136,3 +136,7 @@ AdSense 같은 외부 광고 네트워크는 쓰지 않아요. 문의를 받아 
 ## 사용 횟수 · 즐겨찾기 집계
 
 첫 화면 숫자 칸의 "사용된 횟수"와 "즐겨찾기"는 `counter-worker/`의 작은 Cloudflare 서버로 모아요. 배포 방법은 `counter-worker/README.md`에 있어요. 배포 전에는 "—"로 보여요.
+
+## 도구 제안 받기
+
+About 페이지 제안 폼 → `suggest-worker`(Cloudflare) → 비공개 저장소 `dgmoum-inbox/requests.md`에 `#요청N` 형식으로 쌓여요. 설치 방법은 `suggest-worker/README.md`.

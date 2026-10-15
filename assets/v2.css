@@ -34,9 +34,24 @@ button { font: inherit; color: inherit; }
 .hdr { position: sticky; top: 0; z-index: 40; background: color-mix(in srgb, var(--surface) 92%, transparent); backdrop-filter: saturate(1.4) blur(10px); border-bottom: 1px solid var(--line); }
 .hdr .wrap { display: flex; align-items: center; gap: 8px; height: 64px; }
 .logo img, .ic svg, .vfbrand img { display: block; }
-.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-right: 10px; flex: none; }
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex: none; position: relative; z-index: 2; }
+/* 로고에 마우스를 올리면 뒤에서 '도구모음'이 나오고, 잠시 뒤 ABOUT으로 뒤집혀요 */
+.brandw { display: flex; align-items: center; margin-right: 10px; flex: none; }
+.peek { display: block; overflow: hidden; max-width: 0; padding: 6px 0; text-decoration: none; color: var(--ink); transition: max-width .38s cubic-bezier(.2, .8, .2, 1); }
+.peek .slide { display: block; padding-left: 10px; perspective: 240px; transform: translateX(-105%); transition: transform .38s cubic-bezier(.2, .8, .2, 1); }
+.peek .card { display: grid; transform-style: preserve-3d; transition: transform .5s cubic-bezier(.3, 1.4, .5, 1) 0s; }
+.peek .fa, .peek .fb { grid-area: 1 / 1; backface-visibility: hidden; -webkit-backface-visibility: hidden; white-space: nowrap; font-weight: 800; font-size: 15px; line-height: 1.3; }
+.peek .fb { transform: rotateX(180deg); color: var(--brand); font-weight: 900; letter-spacing: .12em; }
+@media (hover: hover) {
+  .brandw:hover .peek, .brandw:focus-within .peek { max-width: 130px; }
+  .brandw:hover .peek .slide, .brandw:focus-within .peek .slide { transform: none; }
+  .brandw:hover .peek .card, .brandw:focus-within .peek .card { transform: rotateX(180deg); transition-delay: 1.3s; }
+}
+@media (hover: none) { .peek { display: none; } }
+@media (prefers-reduced-motion: reduce) { .peek, .peek .slide, .peek .card { transition-duration: .01s; } }
+.dabout { display: flex; align-items: baseline; gap: 10px; padding: 14px 4px; border-bottom: 1px solid var(--line); text-decoration: none; }
+.dabout b { color: var(--brand); letter-spacing: .12em; font-weight: 900; } .dabout span { color: var(--muted); font-size: 14px; }
 .logo img { height: 34px; width: auto; }
-.logo span { font-weight: 800; font-size: 15px; letter-spacing: 0; }
 .nav { display: flex; gap: 2px; align-items: center; }
 .nav > .ni { position: relative; }
 .nav > .ni > button { display: flex; align-items: center; gap: 4px; background: none; border: 0; padding: 8px 11px; border-radius: 8px; font-size: 14.5px; font-weight: 600; cursor: pointer; white-space: nowrap; }
@@ -73,7 +88,7 @@ button { font: inherit; color: inherit; }
 .drawer ul { list-style: none; margin: 0 0 12px; padding: 0; }
 .drawer li a { display: flex; gap: 10px; align-items: center; padding: 8px 4px; text-decoration: none; font-size: 15px; }
 @media (max-width: 1080px) { .nav { display: none; } .burger { display: grid; } }
-@media (max-width: 480px) { .logo span { display: none; } .logo img { height: 30px; } .hdr .wrap { gap: 6px; } .ib { width: 38px; height: 38px; } .ib.lang { width: auto; padding: 0 10px; } .ib.lang svg { display: none; } }
+@media (max-width: 480px) { .logo img { height: 30px; } .hdr .wrap { gap: 6px; } .ib { width: 38px; height: 38px; } .ib.lang { width: auto; padding: 0 10px; } .ib.lang svg { display: none; } }
 
 /* ---------- 검색 창 ---------- */
 .sbox { position: relative; }
