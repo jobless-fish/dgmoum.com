@@ -5,6 +5,11 @@
 (() => {
   // 사용 횟수 · 즐겨찾기 집계 서버 주소 (counter-worker를 배포한 뒤 넣으세요. 비어 있으면 집계하지 않아요)
   const COUNTER_URL = "";
+  /* 광고 문의 연락처 — 정해지면 아래 한 줄만 채우면 돼요. 비워 두면 버튼은 보이지만 연결되지 않아요.
+     이메일: "mailto:ad@dgmoum.com?subject=광고 문의"
+     텔레그램: "https://t.me/아이디"
+     카카오톡 오픈채팅: "https://open.kakao.com/o/코드" */
+  const AD_CONTACT = "";
   const ROOT = document.currentScript?.dataset.root ?? "./";
   const store = { get(k) { try { return localStorage.getItem(k); } catch { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch {} } };
   const S = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"';
@@ -137,7 +142,7 @@
       f.innerHTML = `<div class="wrap"><div class="vfgrid">
         <div class="vfbrand"><img src="${ROOT}assets/logo.png" alt="DGMU" width="110" height="38"><p>${esc(DG.t("footDesc"))}</p></div>
         ${["img", "doc", "form"].map(c => `<div><h4>${esc(DG.cat(c))}</h4><ul>${pick(c).map(t => `<li><a href="${DG.href(t.id)}">${esc(DG.name(t))}</a></li>`).join("")}</ul></div>`).join("")}
-        <div><h4>${DG.t("footNav")}</h4><ul><li><a href="#">${DG.t("about")}</a></li><li><a href="#">${DG.t("privacy")}</a></li><li><a href="#">${DG.t("terms")}</a></li><li><a href="#">${DG.t("contact")}</a></li><li><a href="#">${DG.t("suggest")}</a></li></ul></div>
+        <div><h4>${DG.t("footNav")}</h4><ul><li><a href="#">${DG.t("about")}</a></li><li><a href="#">${DG.t("privacy")}</a></li><li><a href="#">${DG.t("terms")}</a></li><li><a href="#">${DG.t("contact")}</a></li><li><a href="#">${DG.t("suggest")}</a></li><li><a ${adAttr()}>${DG.t("adInq")}</a></li></ul></div>
       </div><div class="vfbot"><span>© ${new Date().getFullYear()} 도구모음 DGMU · dgmoum.com · ${esc(DG.t("copy"))}</span><span class="stripe"><i style="background:#ffe600"></i><i style="background:#ff5a0a"></i><i style="background:#3a302c;box-shadow:inset 0 0 0 1px #555"></i></span></div></div>`;
     }
   }
@@ -219,6 +224,31 @@
     addEventListener("beforeprint", used);
   }
 
-  const start = () => { renderShell(); applyText(); renderToolPage(); DG.paintStars(); };
+  /* ---------- 광고 자리 ---------- */
+  // 광고가 아직 없는 .ad-slot에는 흐린 점선 칸과 '광고 문의' 버튼을 그려요.
+  // 실제 광고를 넣을 땐 .ad-slot 안에 광고 이미지·링크를 직접 넣으면 이 칸은 그려지지 않아요.
+  function adAttr() {
+    return AD_CONTACT
+      ? `href="${esc(AD_CONTACT)}" target="_blank" rel="noopener" data-ad-inq`
+      : `href="#" data-ad-inq data-ad-off`;
+  }
+  function paintAds() {
+    document.querySelectorAll(".ad-slot").forEach(el => {
+      if (el.children.length && !el.querySelector(".ad-ph")) return; // 진짜 광고가 들어 있어요
+      el.classList.add("is-empty");
+      el.innerHTML = `<div class="ad-ph"><span>${esc(DG.t("adSpace"))}</span><a class="ad-ask" ${adAttr()}>${esc(DG.t("adInq"))}</a></div>`;
+    });
+  }
+  // 연락처가 정해지기 전에는 눌러도 이동하지 않고 안내만 잠깐 보여요
+  document.addEventListener("click", e => {
+    const a = e.target.closest("[data-ad-off]"); if (!a) return;
+    e.preventDefault();
+    if (a.dataset.busy) return; a.dataset.busy = "1";
+    const t = a.textContent; a.textContent = DG.t("adSoon");
+    setTimeout(() => { a.textContent = t; delete a.dataset.busy; }, 1800);
+  });
+  DG.adContact = AD_CONTACT;
+
+  const start = () => { renderShell(); applyText(); renderToolPage(); DG.paintStars(); paintAds(); DG.onLang(() => paintAds()); };
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();

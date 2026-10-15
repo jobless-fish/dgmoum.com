@@ -187,7 +187,7 @@ input[type="checkbox"] { accent-color: var(--cat, var(--ink)); width: 16px; heig
 .pg.drag { opacity: .4; }
 .pg.over { outline: 3px dashed var(--cat, var(--accent)); outline-offset: 2px; }
 
-/* 광고 자리 (AdSense 승인 후 ins 태그를 넣으면 됨) */
+/* 광고 자리 (검증한 직접 광고를 넣는 곳) */
 .ad-slot:empty { display: none; }
 .ad-slot { margin-block: 16px; text-align: center; }
 

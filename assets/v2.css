@@ -170,7 +170,11 @@ button { font: inherit; color: inherit; }
 .priv li svg { width: 22px; height: 22px; color: var(--yellow); flex: none; }
 @media (max-width: 760px) { .priv { grid-template-columns: 1fr; } }
 
-/* 광고 자리 */
+/* 광고 자리 — 비어 있을 땐 흐린 점선 칸 + 광고 문의 버튼 */
+.ad-slot.is-empty { margin: 24px 0; }
+.ad-ph { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; min-height: 72px; padding: 14px; border: 1px dashed color-mix(in srgb, var(--line) 70%, transparent); border-radius: var(--r-sm); color: color-mix(in srgb, var(--muted) 55%, transparent); font-size: 12px; letter-spacing: .06em; }
+.ad-ask { display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border: 1px solid color-mix(in srgb, var(--line) 90%, transparent); border-radius: 999px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: 0; text-decoration: none; background: transparent; transition: color .15s, border-color .15s; }
+.ad-ask:hover, .ad-ask:focus-visible { color: var(--brand); border-color: var(--brand); }
 .ad { display: grid; place-items: center; min-height: 100px; border: 1px dashed var(--line); border-radius: var(--r-sm); color: var(--muted); font-size: 12px; letter-spacing: .1em; margin: 24px 0; }
 
 /* ---------- 바닥 ---------- */
@@ -236,7 +240,7 @@ body[data-tool] .btn-primary { background: var(--brand); color: #fff; font-weigh
 body[data-tool] .btn-primary:hover:not(:disabled) { filter: brightness(1.06); border-color: transparent; }
 .tool-more { padding-bottom: 20px; }
 .tool-more .vsec { padding: 36px 0 8px; }
-@media print { .hdr, .vcrumb, .vfoot, .drawer, .sdlg, .tool-more { display: none !important; } }
+@media print { .hdr, .vcrumb, .vfoot, .drawer, .sdlg, .tool-more, .ad-slot { display: none !important; } }
 
 /* 별(즐겨찾기) */
 .vtw { position: relative; min-width: 0; }
