@@ -89,10 +89,16 @@
   // 첫 문장: "을/를 간단하게"와 둘째 줄은 제자리, 바뀌는 낱말만 왼쪽으로 늘어나요
   function hero() {
     const w = DG.t("heroWords"), [a, p] = w[rot % w.length];
-    $("#heroH").innerHTML = `<span class="ln"><span class="rot"><b>${esc(a)}</b>${esc(p)}</span>${esc(DG.t("heroL1")).replace(/^ /, "&nbsp;")}</span><span class="ln">${esc(DG.t("heroL2"))}</span>`;
+    $("#heroH").innerHTML = `<span class="ln"><span class="rot"><b>${esc(a)}</b></span><span class="pt">${esc(p)}</span>${esc(DG.t("heroL1")).replace(/^ /, "&nbsp;")}</span><span class="ln">${esc(DG.t("heroL2"))}</span>`;
   }
   clearInterval(rotT);
-  rotT = setInterval(() => { rot++; hero(); const r = document.querySelector("#heroH .rot"); r && r.classList.add("go"); }, 2600);
+  // 낱말만 움직이고, 을/를은 제자리에서 조용히 바뀌어요
+  rotT = setInterval(() => {
+    rot++; const w = DG.t("heroWords"), [a, p] = w[rot % w.length];
+    const r = document.querySelector("#heroH .rot"), pt = document.querySelector("#heroH .pt"); if (!r) return;
+    const n = document.createElement("span"); n.className = "rot go"; n.innerHTML = `<b>${esc(a)}</b>`;
+    r.replaceWith(n); pt.textContent = p;
+  }, 2600);
 
   function render() {
     hero();

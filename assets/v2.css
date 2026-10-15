@@ -94,13 +94,15 @@ button { font: inherit; color: inherit; }
 .hero { text-align: center; padding: clamp(48px, 9vw, 96px) 0 clamp(36px, 6vw, 56px); position: relative; overflow: hidden; }
 .hero::before { content: ""; position: absolute; inset: -40% -10% auto; height: 120%; background: radial-gradient(closest-side, color-mix(in srgb, var(--yellow) 26%, transparent), transparent 70%); opacity: .7; z-index: -1; pointer-events: none; }
 :root[data-theme="dark"] .hero::before { opacity: .18; }
-.hero h1 { font-size: min(60px, 7.4vw); line-height: 1.22; letter-spacing: -.03em; margin: 0 auto 20px; font-weight: 800; width: fit-content; max-width: 100%; }
+.hero h1 { font-size: min(60px, 7vw); line-height: 1.22; letter-spacing: -.03em; margin: 0 auto 20px; font-weight: 900; width: fit-content; max-width: 100%; }
 /* 둘째 줄("만드는 무료도구")이 폭을 정하고, 첫 줄은 오른쪽 끝을 맞춰요. 낱말이 길어지면 왼쪽 빈자리로 늘어나요 */
 .hero h1 .ln { display: flex; justify-content: flex-end; white-space: nowrap; }
 .hero h1 .ln:first-child { width: 0; min-width: 100%; } /* 첫 줄은 폭 계산에서 빼요 */
 .hero h1 .rot { display: inline-block; }
 .hero h1 .rot.go { animation: up .45s cubic-bezier(.2, .8, .2, 1); }
-.hero h1 .rot b { color: var(--brand); font-weight: 800; }
+.hero h1 .ln:first-child { align-items: baseline; }
+.hero h1 .rot b { color: var(--brand); font-weight: 900; font-size: 1.4em; line-height: 1; letter-spacing: -.04em; }
+@media (max-width: 480px) { .hero h1 .rot b { font-size: 1.2em; } }
 @keyframes up { from { transform: translateY(40%); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .hero h1 .rot.go { animation: none; } }
 .hero p { color: var(--muted); font-size: clamp(16px, 2vw, 18.5px); max-width: 56ch; margin: 0 auto 30px; }
