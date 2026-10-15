@@ -65,12 +65,12 @@ window.I18N = {
   },
   CAT: {
     img: { ko: ["이미지", "변환, 압축, 자르기부터 사진 보정까지"], en: ["Image", "Convert, compress, edit and more"] },
-    doc: { ko: ["PDF", "합치기, 나누기, 변환, 쪽 번호"], en: ["PDF", "Merge, split, convert, number pages"] },
+    doc: { ko: ["PDF", "합치기, 나누기, 변환, 쪽 번호, 암호 해제"], en: ["PDF", "Merge, split, convert, number, unlock"] },
     vid: { ko: ["영상", "자르기, GIF, 세로 변환, 화면 녹화"], en: ["Video", "Trim, GIF, vertical, screen record"] },
     aud: { ko: ["오디오", "자르기, 변환, 볼륨, 녹음"], en: ["Audio", "Cut, convert, volume, record"] },
-    des: { ko: ["디자인", "색, 파비콘, 인쇄 크기, 더미 글"], en: ["Design", "Colors, favicons, print size"] },
+    des: { ko: ["디자인", "색, CSS, 파비콘, 인쇄 크기"], en: ["Design", "Colors, CSS, favicons, print size"] },
     txt: { ko: ["텍스트 · 생활", "QR코드, 글자 수, 글 비교"], en: ["Text & Life", "QR codes, word count, diff"] },
-    form: { ko: ["양식", "견적서, 계약서, 이력서를 PDF로"], en: ["Documents", "Quotes, contracts, resumes as PDF"] },
+    form: { ko: ["양식", "견적서, 계약서, 이력서, 도장 만들기"], en: ["Documents", "Quotes, contracts, resumes, stamps"] },
     fun: { ko: ["FUN", "사진으로 노는 재미있는 도구"], en: ["FUN", "Playful tools for your photos"] }
   },
   TOOL: {
@@ -90,6 +90,7 @@ window.I18N = {
     "ascii-art": ["ASCII Art", "Draw your photo with characters, blocks or braille. Copy or save PNG."],
     "color-palette": ["Color Picker", "Extract main colors from an image as HEX and RGB."],
     "favicon": ["Favicon Generator", "Make favicon.ico and app icons in every size from one image."],
+    "css-gen": ["CSS Generator", "Gradients, shadows, border radius, glassmorphism and patterns with 80+ presets."],
     "color-convert": ["Color Converter", "Convert HEX, RGB, HSL, HSB and CMYK."],
     "print-size": ["Print Size Calculator", "How big will it print? Pixels needed for A4 at 300 DPI, with bleed."],
     "placeholder": ["Placeholder Image", "Create sized placeholder images. SNS presets, PNG, JPG, SVG."],
@@ -109,6 +110,7 @@ window.I18N = {
     "pdf-split": ["Split & Organize PDF", "Delete, rotate, reorder, extract or split pages."],
     "image-to-pdf": ["Images to PDF", "Turn photos and scans into one PDF. A4 fit."],
     "pdf-to-image": ["PDF to Images", "Export PDF pages as PNG or JPG."],
+    "pdf-unlock": ["Unlock PDF", "Remove the password from a PDF you can open, and lift print or copy limits."],
     "pdf-page-number": ["Add Page Numbers", "Number PDF pages. Position, style, skip cover, duplex."],
     "qr-code": ["QR Code Generator", "Links, Wi-Fi, contacts and text as QR. Colors and logo, PNG or SVG."],
     "char-count": ["Character Counter", "Count characters with or without spaces, bytes and lines."],
@@ -133,6 +135,7 @@ window.I18N = {
     "form-agreement": ["Settlement Agreement", "Settle a minor accident or dispute in writing."],
     "form-notice": ["Certified Letter (KR)", "Korean certified-content mail (내용증명) document."],
     "form-trade": ["Sales Agreement", "Person-to-person sales contract for used goods."],
+    "stamp-maker": ["Stamp Maker", "Make a Korean name seal or company stamp as a transparent PNG."],
     "stamp-clean": ["Stamp & Signature Cleaner", "Remove the paper background from a stamp or signature photo."]
   }
 };

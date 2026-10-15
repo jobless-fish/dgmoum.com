@@ -22,6 +22,7 @@ window.TT_TOOLS = [
   { id: "color-convert", cat: "des", name: "색 코드 변환", desc: "HEX · RGB · HSL · HSB(포토샵) · CMYK를 서로 바꿔요. 아무 형식이나 붙여넣으면 알아봐요.", tags: ["색", "컬러", "hex", "rgb", "hsl", "hsb", "cmyk", "색상 코드", "변환"], status: "live" },
   { id: "print-size", cat: "des", name: "인쇄 크기 계산기", desc: "이 이미지가 몇 cm로 인쇄되는지, A4 300 DPI엔 몇 px가 필요한지 계산해요. 재단 여유 포함.", tags: ["인쇄", "dpi", "해상도", "cm", "mm", "a4", "명함", "도련", "출력"], status: "live" },
   { id: "placeholder", cat: "des", name: "임시 이미지 만들기", desc: "크기가 적힌 자리용 이미지를 만들어요. SNS 규격 프리셋, PNG · JPG · SVG.", tags: ["플레이스홀더", "placeholder", "더미 이미지", "임시", "시안", "목업"], status: "live" },
+  { id: "css-gen", cat: "des", name: "CSS 생성기", desc: "그라데이션, 그림자, 둥근 모서리, 글래스모피즘, 패턴 CSS를 만들고 복사해요. 프리셋 80여 개.", tags: ["css", "그라데이션", "gradient", "box-shadow", "그림자", "text-shadow", "border-radius", "글래스모피즘", "뉴모피즘", "패턴", "코드"], status: "live" },
   { id: "korean-lorem", cat: "des", name: "한글 더미 텍스트", desc: "시안·목업용 한글 자리 글을 문단 · 문장 · 정확한 글자 수로 만들어요.", tags: ["더미 텍스트", "로렘 입숨", "lorem", "한글 입숨", "샘플 텍스트", "시안"], status: "live" },
   { id: "video-trim", cat: "vid", name: "영상 자르기", desc: "원하는 구간만 골라 잘라 저장해요. 소리도 같이 들어가요.", tags: ["동영상", "video", "trim", "컷", "편집", "mp4"], status: "live" },
   { id: "video-gif", cat: "vid", name: "영상 → GIF", desc: "영상에서 짧은 구간을 골라 움짤(GIF)로 만들어요. 크기와 프레임 수 조절.", tags: ["gif", "움짤", "짤", "동영상", "변환"], status: "live" },
@@ -38,6 +39,7 @@ window.TT_TOOLS = [
   { id: "pdf-split", cat: "doc", name: "PDF 나누기 · 정리", desc: "페이지를 보면서 빼고, 돌리고, 순서를 바꾸고, 필요한 페이지만 뽑거나 한 장씩 나눠요.", tags: ["pdf", "나누기", "분할", "추출", "삭제", "회전", "split"], status: "live" },
   { id: "image-to-pdf", cat: "doc", name: "이미지 → PDF", desc: "사진·스캔 이미지 여러 장을 PDF 한 파일로 만들어요. A4 맞춤 지원.", tags: ["pdf", "jpg", "png", "사진", "스캔", "서류"], status: "live" },
   { id: "pdf-to-image", cat: "doc", name: "PDF → 이미지", desc: "PDF 페이지를 PNG나 JPG 이미지로 뽑아요. 해상도 선택.", tags: ["pdf", "png", "jpg", "이미지", "변환"], status: "live" },
+  { id: "pdf-unlock", cat: "doc", name: "PDF 암호 해제", desc: "암호를 아는 PDF의 잠금을 풀어 암호 없는 PDF로. 인쇄·복사 제한도 풀려요.", tags: ["pdf", "암호", "비밀번호", "잠금 해제", "암호 해제", "unlock", "명세서", "급여명세서", "제한 해제"], status: "live" },
   { id: "pdf-page-number", cat: "doc", name: "PDF 쪽 번호 넣기", desc: "PDF에 쪽 번호를 넣어요. 위치·형식·시작 번호, 표지 빼기, 양면 인쇄용.", tags: ["pdf", "쪽 번호", "페이지 번호", "page number", "번호 매기기"], status: "live" },
   { id: "qr-code", cat: "txt", name: "QR코드 만들기", desc: "링크, 와이파이, 연락처, 문자를 QR코드로. 색과 점 모양, 가운데 로고까지 넣어 PNG·SVG로 저장해요.", tags: ["qr", "큐알", "qr코드", "큐알코드", "와이파이", "명함", "링크"], status: "live" },
   { id: "char-count", cat: "txt", name: "글자 수 세기", desc: "공백 포함·제외, 바이트, 줄 수를 한 번에. 목표 글자 수를 넣으면 남은 글자를 알려줘요.", tags: ["글자수", "글자 수", "자소서", "바이트", "byte", "공백", "문자", "카운터"], status: "live" },
@@ -62,6 +64,7 @@ window.TT_TOOLS = [
   { id: "form-agreement", cat: "form", name: "합의서 만들기", desc: "작은 사고·다툼 합의서. 합의금 한글 표기, 지급일, 이의 제기 금지 조항.", tags: ["합의서", "합의", "사고 합의", "접촉사고", "양식"], status: "live" },
   { id: "form-notice", cat: "form", name: "내용증명 만들기", desc: "보증금 반환·대금 요청 등 우체국 내용증명 문서. 3부 뽑아 보내요.", tags: ["내용증명", "보증금", "우체국", "독촉", "양식"], status: "live" },
   { id: "form-trade", cat: "form", name: "중고거래 매매계약서 만들기", desc: "개인 간 물품 매매계약서. 상태·대금·하자 책임·소유권 확인.", tags: ["매매계약서", "중고거래", "당근", "계약서", "직거래", "양식"], status: "live" },
+  { id: "stamp-maker", cat: "form", name: "도장 만들기", desc: "이름을 넣으면 인감·직인 모양 도장 이미지를 투명 PNG로 만들어요.", tags: ["도장", "인감", "직인", "도장 만들기", "회사 도장", "법인 도장", "전자 도장", "png", "stamp"], status: "live" },
   { id: "stamp-clean", cat: "form", name: "도장 · 서명 배경 지우기", desc: "흰 종이에 찍은 도장이나 서명 사진의 배경을 지워 투명 PNG로.", tags: ["도장", "인감", "서명", "사인", "배경 제거", "투명", "png", "누끼"], status: "live" }
 ];
 
@@ -124,6 +127,9 @@ window.TT_ICONS = {
   "screen-recorder": `<svg ${S}><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/><circle cx="12" cy="10" r="3" fill="currentColor" stroke="none"/></svg>`,
   "voice-recorder": `<svg ${S}><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v5"/><path d="M8 22h8"/></svg>`,
   "audio-eq": `<svg ${S}><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M2 14h4"/><path d="M10 8h4"/><path d="M18 16h4"/></svg>`,
+  "pdf-unlock": `<svg ${S}><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/><circle cx="12" cy="16" r="1.2"/></svg>`,
+  "stamp-maker": `<svg ${S}><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5.5"/><path d="M12 9.5v5"/><path d="M10 12h4"/></svg>`,
+  "css-gen": `<svg ${S}><path d="m8 7-5 5 5 5"/><path d="m16 7 5 5-5 5"/><path d="m13.5 4-3 16"/></svg>`,
   "pdf-page-number": `<svg ${S}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M10 15.5 12 14v5"/></svg>`,
   "photo-edit": `<svg ${S}><circle cx="12" cy="12" r="9"/><path d="m14.31 8 5.74 9.94"/><path d="M9.69 8h11.48"/><path d="m7.38 12 5.74-9.94"/><path d="M9.69 16 3.95 6.06"/><path d="M14.31 16H2.83"/><path d="m16.62 12-5.74 9.94"/></svg>`,
   "form-retire": `<svg ${S}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15h6"/><path d="m13 13 2 2-2 2"/></svg>`,

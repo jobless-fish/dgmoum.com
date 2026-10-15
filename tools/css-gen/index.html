@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(){var t;try{t=localStorage.getItem("dg-theme")}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
+<link rel="icon" href="../../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="manifest" href="../../site.webmanifest">
+<meta name="theme-color" content="#f0f0f0">
+<meta property="og:site_name" content="도구모음">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://dgmoum.com/assets/og-image.png">
+<meta property="og:title" content="CSS 생성기 (그라데이션 · 그림자 · 둥근 모서리 · 글래스모피즘 · 패턴) · 도구모음">
+<meta property="og:description" content="그라데이션, 박스 그림자, 글자 그림자, 둥근 모서리(블롭), 글래스모피즘, 배경 패턴 CSS를 슬라이더로 만들고 복사해요. 프리셋 80여 개. 무료.">
+<title>CSS 생성기 (그라데이션 · 그림자 · 둥근 모서리 · 글래스모피즘 · 패턴) · 도구모음</title>
+<meta name="description" content="그라데이션, 박스 그림자, 글자 그림자, 둥근 모서리(블롭), 글래스모피즘, 배경 패턴 CSS를 슬라이더로 만들고 복사해요. 프리셋 80여 개. 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="../../assets/v2.css">
+<style>
+  body { --cat: var(--des); }
+
+  .ctabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ctabs button { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 8px 14px; font: 600 14px var(--f-body); cursor: pointer; }
+  .ctabs button[aria-selected=true] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .pv { position: relative; display: grid; place-items: center; min-height: 300px; border-radius: var(--r); border: 1px solid var(--line); overflow: hidden; padding: 30px; }
+  .pv-box { width: 220px; height: 150px; display: grid; place-items: center; text-align: center; overflow-wrap: anywhere; }
+  .pv.t-text .pv-box, .tile.t-text .pv-box { width: auto; height: auto; max-width: 100%; line-height: 1.15; }
+  .pv.t-pattern .pv-box { width: 100%; height: 260px; border-radius: 12px; }
+  .pv-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pv-bar .seg { width: auto; }
+  .pv-bar .seg label { padding: 6px 12px; font-size: 13px; }
+  .glass-bg { background: radial-gradient(circle at 20% 25%, #ff6ec4 0 18%, transparent 19%), radial-gradient(circle at 78% 70%, #4facfe 0 22%, transparent 23%), radial-gradient(circle at 70% 18%, #ffe600 0 10%, transparent 11%), linear-gradient(135deg, #7873f5, #ec77ab); }
+  .code { position: relative; margin: 0; background: #16181d; color: #e6e6e6; border-radius: var(--r); padding: 16px 18px; font: 13.5px/1.6 var(--f-mono); white-space: pre-wrap; word-break: break-all; min-height: 80px; }
+  .code .cp { position: absolute; top: 10px; right: 10px; background: #2b2f38; color: #fff; border: 0; border-radius: 8px; padding: 6px 12px; font: 600 12.5px var(--f-body); cursor: pointer; }
+  .code .cp:hover { background: var(--brand); }
+  .code .p { color: #7dd3fc; } .code .v { color: #fde68a; }
+  .presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; }
+  .tile { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 0; cursor: pointer; overflow: hidden; text-align: left; font: inherit; color: inherit; }
+  .tile:hover { border-color: var(--ink); }
+  .tile.on { box-shadow: 0 0 0 2px var(--brand); border-color: var(--brand); }
+  .tile .tv { height: 92px; display: grid; place-items: center; overflow: hidden; position: relative; }
+  .tile .tv .pv-box { position: absolute; left: 50%; top: 50%; width: 200px; height: 136px; transform: translate(-50%, -50%) scale(.42); }
+  .tile.t-text .tv .pv-box { transform: translate(-50%, -50%) scale(.5); white-space: nowrap; }
+  .tile.t-radius .tv .pv-box { width: 160px !important; height: 160px !important; }
+  .tile.t-gradient .tv .pv-box, .tile.t-pattern .tv .pv-box { left: 0; top: 0; width: 100% !important; height: 100% !important; max-width: none !important; transform: none; border-radius: 0 !important; }
+  .tile b { display: block; padding: 7px 10px; font-size: 12.5px; font-weight: 600; border-top: 1px solid var(--line); }
+  .stops { display: grid; gap: 8px; }
+  .stop { display: grid; grid-template-columns: 40px minmax(0, 1fr) 42px 28px; gap: 8px; align-items: center; }
+  .stop input[type=color], .colorrow input[type=color] { width: 40px; height: 32px; padding: 0; border: 1px solid var(--line); border-radius: 8px; background: none; cursor: pointer; }
+  .stop .num { font-size: 12px; text-align: right; }
+  .colorrow { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 10px; align-items: center; }
+  .layers { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .layers button { min-width: 34px; }
+  .layers button.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .gbar { height: 22px; border-radius: 6px; border: 1px solid var(--line); }
+  .twocol { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+  .sec-t { font-size: 15px; font-weight: 700; margin: 0; }
+
+</style>
+</head>
+<body data-tool="css-gen">
+<header id="hdr"></header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="css-gen"></span>
+    <div>
+      <h1>CSS 생성기</h1>
+      <p>그라데이션, 그림자, 둥근 모서리, 글래스모피즘, 배경 패턴을 눈으로 보며 만들고 CSS 코드를 복사해요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+
+      <div class="ctabs" id="tabs" role="tablist"></div>
+      <section class="panel"><div class="panel-body">
+        <div class="pv" id="pv"><div class="pv-box" id="box"></div></div>
+        <div class="pv-bar">
+          <div class="seg" role="radiogroup" aria-label="미리보기 배경">
+            <input type="radio" name="bgm" id="bg-a" value="auto" checked><label for="bg-a">기본</label>
+            <input type="radio" name="bgm" id="bg-l" value="light"><label for="bg-l">밝게</label>
+            <input type="radio" name="bgm" id="bg-d" value="dark"><label for="bg-d">어둡게</label>
+          </div>
+          <button class="btn btn-sm" id="reset" type="button">처음으로</button>
+        </div>
+        <pre class="code" id="code"></pre>
+      </div></section>
+      <section class="panel"><div class="panel-body">
+        <p class="sec-t">프리셋 <span class="hint" id="pcount"></span></p>
+        <div class="presets" id="presets"></div>
+      </div></section>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+
+        <h2 id="ctlTitle">설정</h2>
+        <div id="ctl" style="display:grid; gap:14px"></div>
+        <p class="status" id="status"></p>
+        <p class="hint">프리셋을 고른 뒤 값을 조금씩 바꿔 내 것으로 만들어 보세요. 코드는 [복사]로 바로 붙여넣을 수 있어요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer id="foot"></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/i18n.js"></script>
+<script src="../../assets/shell.js" data-root="../../"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const say = TT.sayTo($("#status"));
+  const clone = o => JSON.parse(JSON.stringify(o));
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const rgba = (hex, a = 1) => {
+    const h = hex.replace("#", ""), n = parseInt(h.length === 3 ? h.split("").map(x => x + x).join("") : h, 16);
+    const r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255;
+    return a >= 1 ? "#" + h.toLowerCase() : `rgba(${r}, ${g}, ${b}, ${+(+a).toFixed(2)})`;
+  };
+  const px = v => (+v === 0 ? "0" : v + "px");
+
+  /* ---------- 공통 입력 ---------- */
+  const R = (k, label, min, max, step = 1, unit = "") => `<div class="field"><label>${label} <span class="num" data-v="${k}" data-u="${unit}"></span></label><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}"></div>`;
+  const C = (k, label, ak) => `<div class="field"><label>${label}${ak ? ` <span class="num" data-v="${ak}" data-u="%" data-pct></span>` : ""}</label><div class="colorrow"><input type="color" data-k="${k}">${ak ? `<input type="range" data-k="${ak}" min="0" max="1" step="0.01" aria-label="${label} 진하기">` : "<span></span>"}</div></div>`;
+  const S = (k, label, opts) => `<div class="field"><label>${label}</label><div class="seg" role="radiogroup">${opts.map(([v, t], i) => `<input type="radio" name="s-${k}" id="s-${k}-${i}" value="${v}" data-k="${k}" data-re><label for="s-${k}-${i}">${t}</label>`).join("")}</div></div>`;
+  const K = (k, label) => `<label class="check"><input type="checkbox" data-k="${k}" data-re> ${label}</label>`;
+  const T = (k, label, ph) => `<div class="field"><label>${label}</label><input type="text" data-k="${k}" placeholder="${ph}" autocomplete="off"></div>`;
+
+  /* ---------- 탭별 정의 ---------- */
+  const shadowList = (s, isText) => s.layers.map(l => isText
+    ? `${px(l.x)} ${px(l.y)} ${px(l.blur)} ${rgba(l.c, l.a)}`
+    : `${l.inset ? "inset " : ""}${px(l.x)} ${px(l.y)} ${px(l.blur)} ${px(l.spread)} ${rgba(l.c, l.a)}`).join(",\n    ");
+  const layerUI = (s, isText) => `
+    <div class="field"><label>층 (여러 겹을 쌓을 수 있어요)</label><div class="layers">${s.layers.map((_, i) => `<button class="btn btn-sm ${i === s.cur ? "on" : ""}" data-layer="${i}" type="button">${i + 1}</button>`).join("")}
+      ${s.layers.length < 12 ? `<button class="btn btn-sm" data-act="addL" type="button">+ 추가</button>` : ""}${s.layers.length > 1 ? `<button class="btn btn-sm" data-act="delL" type="button">이 층 빼기</button>` : ""}</div></div>
+    <div class="twocol">${R("L.x", "가로", -60, 60)}${R("L.y", "세로", -60, 60)}</div>
+    <div class="twocol">${R("L.blur", "번짐", 0, 100)}${isText ? "" : R("L.spread", "크기", -40, 40)}</div>
+    ${C("L.c", "그림자 색", "L.a")}
+    ${isText ? "" : K("L.inset", "안쪽 그림자 (inset)")}`;
+  const L = (x, y, blur, spread, c, a, inset = false) => ({ x, y, blur, spread, c, a, inset });
+  const TL = (x, y, blur, c, a = 1) => ({ x, y, blur, c, a });
+
+  const TABS = {
+    gradient: {
+      name: "그라데이션",
+      init: { type: "linear", angle: 135, shape: "circle", stops: [{ c: "#ffe600", p: 0 }, { c: "#ff5a0a", p: 100 }] },
+      value(s) {
+        const st = [...s.stops].sort((a, b) => a.p - b.p).map(x => `${x.c} ${x.p}%`).join(", ");
+        if (s.type === "radial") return `radial-gradient(${s.shape} at center, ${st})`;
+        if (s.type === "conic") return `conic-gradient(from ${s.angle}deg at center, ${st})`;
+        return `linear-gradient(${s.angle}deg, ${st})`;
+      },
+      decl(s) { return [["background", this.value(s)]]; },
+      box(s) { return { style: `background:${this.value(s)};border-radius:16px;width:100%;max-width:520px;height:240px` }; },
+      ui(s) {
+        return S("type", "종류", [["linear", "선형"], ["radial", "원형"], ["conic", "원뿔"]])
+          + (s.type === "radial" ? S("shape", "모양", [["circle", "원"], ["ellipse", "타원"]]) : R("angle", "각도", 0, 360, 1, "°"))
+          + `<div class="field"><label>색 지점</label><div class="gbar" style="background:linear-gradient(90deg, ${[...s.stops].sort((a, b) => a.p - b.p).map(x => `${x.c} ${x.p}%`).join(", ")})"></div>
+             <div class="stops">${s.stops.map((x, i) => `<div class="stop"><input type="color" data-k="stops.${i}.c" aria-label="${i + 1}번 색"><input type="range" data-k="stops.${i}.p" min="0" max="100" aria-label="${i + 1}번 위치"><span class="num" data-v="stops.${i}.p" data-u="%"></span>${s.stops.length > 2 ? `<button class="icon-btn" data-del="${i}" type="button" aria-label="빼기">✕</button>` : "<span></span>"}</div>`).join("")}</div>
+             <div style="display:flex; gap:6px">${s.stops.length < 10 ? `<button class="btn btn-sm" data-act="addStop" type="button">+ 색 추가</button>` : ""}<button class="btn btn-sm" data-act="flip" type="button">순서 뒤집기</button></div></div>`;
+      },
+      presets: [
+        ["도구모음", ["#ffe600", "#ff5a0a"]], ["노을", ["#ff5f6d", "#ffc371"]], ["바다", ["#2193b0", "#6dd5ed"]], ["복숭아", ["#ffecd2", "#fcb69f"]],
+        ["민트", ["#d4fc79", "#96e6a1"]], ["오로라", ["#00c9ff", "#92fe9d"]], ["라벤더", ["#a18cd1", "#fbc2eb"]], ["새벽", ["#3a1c71", "#d76d77", "#ffaf7b"]],
+        ["레몬에이드", ["#f6d365", "#fda085"]], ["숲", ["#134e5e", "#71b280"]], ["자정", ["#0f2027", "#203a43", "#2c5364"]], ["불꽃", ["#f12711", "#f5af19"]],
+        ["솜사탕", ["#fbc2eb", "#a6c1ee"]], ["홀로그램", ["#a8edea", "#fed6e3"]], ["메탈", ["#bdc3c7", "#2c3e50"]], ["체리", ["#eb3349", "#f45c43"]],
+        ["포도", ["#8e2de2", "#4a00e0"]], ["딸기우유", ["#ffdde1", "#ee9ca7"]], ["무지개", ["#ff0000", "#ff9a00", "#d0de21", "#4fdc4a", "#3fdad8", "#1c7fee", "#5f15f2", "#ba0cf8"], 90],
+        ["밤하늘(원형)", ["#3b5998", "#0b1023"], 0, "radial"], ["햇살(원형)", ["#fff6b7", "#f6416c"], 0, "radial"], ["색상환(원뿔)", ["#ff0000", "#ffff00", "#00ff00", "#00ffff", "#0000ff", "#ff00ff", "#ff0000"], 0, "conic"],
+      ].map(([n, cs, angle = 135, type = "linear"]) => [n, { type, angle, shape: "circle", stops: cs.map((c, i) => ({ c, p: Math.round(i / (cs.length - 1) * 100) })) }]),
+    },
+
+    box: {
+      name: "박스 그림자",
+      init: { layers: [L(0, 10, 30, -6, "#000000", 0.18)], cur: 0, radius: 16, bg: "#ffffff", stage: "" },
+      decl(s) { return [["box-shadow", shadowList(s, false)], ["border-radius", px(s.radius)]]; },
+      box(s) { return { style: `box-shadow:${shadowList(s, false).replace(/\n\s*/g, " ")};border-radius:${px(s.radius)};background:${s.bg}`, stage: s.stage }; },
+      ui(s) { return layerUI(s, false) + `<div class="twocol">${R("radius", "둥근 정도", 0, 80)}${C("bg", "상자 색")}</div>`; },
+      presets: [
+        ["은은하게", { layers: [L(0, 1, 3, 0, "#000000", 0.1), L(0, 1, 2, -1, "#000000", 0.1)] }],
+        ["카드", { layers: [L(0, 4, 14, 0, "#000000", 0.08)] }],
+        ["떠오름", { layers: [L(0, 10, 25, -5, "#000000", 0.15), L(0, 8, 10, -6, "#000000", 0.1)] }],
+        ["깊게", { layers: [L(0, 25, 50, -12, "#000000", 0.28)] }],
+        ["부드러운 겹", { layers: [1, 2, 4, 8, 16].map(v => L(0, v, v, 0, "#000000", 0.07)) }],
+        ["바닥 그림자", { layers: [L(0, 30, 40, -22, "#000000", 0.35)] }],
+        ["테두리선", { layers: [L(0, 0, 0, 1, "#000000", 0.12)] }],
+        ["포커스 링", { layers: [L(0, 0, 0, 4, "#ff5a0a", 0.3), L(0, 0, 0, 1, "#ff5a0a", 1)] }],
+        ["안쪽 오목", { layers: [L(0, 3, 8, 0, "#000000", 0.15, true)], bg: "#f3f4f6" }],
+        ["뉴모피즘", { layers: [L(9, 9, 16, 0, "#a3b1c6", 0.6), L(-9, -9, 16, 0, "#ffffff", 0.6)], bg: "#e0e5ec", stage: "#e0e5ec", radius: 24 }],
+        ["뉴모피즘 눌림", { layers: [L(6, 6, 12, 0, "#a3b1c6", 0.6, true), L(-6, -6, 12, 0, "#ffffff", 0.6, true)], bg: "#e0e5ec", stage: "#e0e5ec", radius: 24 }],
+        ["네온", { layers: [L(0, 0, 8, 1, "#00f0ff", 1), L(0, 0, 30, 2, "#00f0ff", 0.6)], bg: "#0d0f14", stage: "#0d0f14", radius: 14 }],
+        ["레트로", { layers: [L(6, 6, 0, 0, "#111111", 1), L(0, 0, 0, 2, "#111111", 1)], bg: "#ffe600", radius: 6 }],
+        ["색 그림자", { layers: [L(0, 14, 28, -8, "#7c5cff", 0.55)], bg: "#7c5cff" }],
+        ["종이", { layers: [L(0, 1, 1, 0, "#000000", 0.12), L(0, 10, 0, -5, "#eeeeee", 1), L(0, 10, 1, -4, "#000000", 0.12), L(0, 20, 0, -10, "#eeeeee", 1), L(0, 20, 1, -9, "#000000", 0.12)], radius: 4 }],
+        ["떠 있는 버튼", { layers: [L(0, 6, 0, 0, "#c43d00", 1), L(0, 10, 18, 0, "#000000", 0.2)], bg: "#ff5a0a", radius: 14 }],
+      ].map(([n, p]) => [n, Object.assign({ cur: 0, radius: 16, bg: "#ffffff", stage: "" }, p)]),
+    },
+
+    text: {
+      name: "글자 그림자",
+      init: { layers: [TL(2, 2, 0, "#000000", 0.25)], cur: 0, text: "", size: 64, color: "#222222", stage: "" },
+      decl(s) { return [["color", s.color], ["text-shadow", shadowList(s, true)]]; },
+      box(s) { return { style: `text-shadow:${shadowList(s, true).replace(/\n\s*/g, " ")};color:${s.color};font-size:${s.size}px;font-weight:900`, text: s.text || "도구모음 Aa", stage: s.stage }; },
+      ui(s) { return T("text", "미리볼 글자", "글자를 넣어 보세요") + `<div class="twocol">${R("size", "글자 크기", 20, 140)}${C("color", "글자 색")}</div>` + layerUI(s, true); },
+      presets: [
+        ["은은하게", { layers: [TL(0, 1, 2, "#000000", 0.2)] }],
+        ["또렷하게", { layers: [TL(2, 2, 0, "#000000", 0.25)] }],
+        ["네온", { color: "#ffffff", stage: "#0b0b16", layers: [TL(0, 0, 4, "#ffffff"), TL(0, 0, 10, "#ff2bd6"), TL(0, 0, 22, "#ff2bd6"), TL(0, 0, 40, "#ff2bd6", 0.8)] }],
+        ["3D", { color: "#ff5a0a", layers: [...[1, 2, 3, 4, 5].map(v => TL(v, v, 0, "#c43d00")), TL(6, 6, 10, "#000000", 0.3)] }],
+        ["레트로", { color: "#ffe600", stage: "#2a1b3d", layers: [TL(3, 3, 0, "#ff2a6d"), TL(6, 6, 0, "#05d9e8")] }],
+        ["외곽선", { color: "#ffffff", layers: [TL(-2, -2, 0, "#111111"), TL(2, -2, 0, "#111111"), TL(-2, 2, 0, "#111111"), TL(2, 2, 0, "#111111")] }],
+        ["불꽃", { color: "#fffbe6", stage: "#111111", layers: [TL(0, -2, 4, "#ffffff"), TL(0, -4, 10, "#ffff33"), TL(0, -10, 20, "#ff9900"), TL(0, -18, 40, "#cc3333")] }],
+        ["엠보싱", { color: "#c9ccd1", stage: "#c9ccd1", layers: [TL(-1, -1, 1, "#ffffff", 0.9), TL(1, 1, 1, "#000000", 0.35)] }],
+        ["음각", { color: "#4b5563", stage: "#4b5563", layers: [TL(0, 1, 0, "#ffffff", 0.25), TL(0, -1, 0, "#000000", 0.6)] }],
+        ["긴 그림자", { color: "#ffffff", stage: "#3b82f6", layers: Array.from({ length: 12 }, (_, i) => TL(i + 1, i + 1, 0, "#1d4ed8")) }],
+        ["글리치", { color: "#ffffff", stage: "#111111", layers: [TL(-3, 0, 0, "#ff004c"), TL(3, 0, 0, "#00e5ff")] }],
+        ["파스텔 겹침", { color: "#ffffff", stage: "#ffd6e0", layers: [TL(3, 3, 0, "#a0c4ff"), TL(6, 6, 0, "#bdb2ff")] }],
+        ["번지는 빛", { color: "#ffffff", stage: "#7c5cff", layers: [TL(0, 0, 18, "#ffffff", 0.8)] }],
+        ["그림자 멀리", { layers: [TL(0, 12, 14, "#000000", 0.3)] }],
+      ].map(([n, p]) => [n, Object.assign({ cur: 0, text: "", size: 64, color: "#222222", stage: "" }, p)]),
+    },
+
+    radius: {
+      name: "둥근 모서리",
+      init: { mode: "simple", unit: "px", link: true, v: [24, 24, 24, 24], h: [50, 50, 50, 50], w: [50, 50, 50, 50], c: "#ff5a0a" },
+      value(s) {
+        if (s.mode === "blob") return `${s.h.map(x => x + "%").join(" ")} / ${s.w.map(x => x + "%").join(" ")}`;
+        const u = s.unit, v = s.v.map(x => (+x === 0 ? "0" : x + u));
+        return v.every(x => x === v[0]) ? v[0] : v.join(" ");
+      },
+      decl(s) { return [["border-radius", this.value(s)]]; },
+      box(s) { return { style: `border-radius:${this.value(s)};background:${s.c};width:220px;height:${s.mode === "blob" ? 220 : 150}px` }; },
+      ui(s) {
+        let h = S("mode", "방식", [["simple", "모서리 4개"], ["blob", "자유 곡선"]]);
+        if (s.mode === "simple") {
+          const max = s.unit === "%" ? 50 : 120;
+          h += S("unit", "단위", [["px", "px"], ["%", "%"]]) + K("link", "네 모서리 같이 움직이기")
+            + (s.link ? R("v.0", "모서리", 0, max, 1, s.unit) : `<div class="twocol">${R("v.0", "왼쪽 위", 0, max, 1, s.unit)}${R("v.1", "오른쪽 위", 0, max, 1, s.unit)}${R("v.3", "왼쪽 아래", 0, max, 1, s.unit)}${R("v.2", "오른쪽 아래", 0, max, 1, s.unit)}</div>`);
+        } else {
+          h += `<p class="hint">가로·세로 반지름을 따로 정해서 물방울 같은 모양을 만들어요.</p>
+            <div class="twocol">${R("h.0", "위 · 왼쪽 가로", 0, 100, 1, "%")}${R("h.1", "위 · 오른쪽 가로", 0, 100, 1, "%")}${R("h.3", "아래 · 왼쪽 가로", 0, 100, 1, "%")}${R("h.2", "아래 · 오른쪽 가로", 0, 100, 1, "%")}</div>
+            <div class="twocol">${R("w.0", "위 · 왼쪽 세로", 0, 100, 1, "%")}${R("w.1", "위 · 오른쪽 세로", 0, 100, 1, "%")}${R("w.3", "아래 · 왼쪽 세로", 0, 100, 1, "%")}${R("w.2", "아래 · 오른쪽 세로", 0, 100, 1, "%")}</div>`;
+        }
+        return h + C("c", "미리보기 색");
+      },
+      presets: [
+        ["살짝", { v: [6, 6, 6, 6] }], ["기본", { v: [16, 16, 16, 16] }], ["둥글게", { v: [32, 32, 32, 32] }], ["알약", { v: [999, 999, 999, 999] }],
+        ["원 · 타원", { unit: "%", v: [50, 50, 50, 50] }], ["말풍선", { link: false, v: [24, 24, 24, 0] }], ["위만 둥글게", { link: false, v: [28, 28, 0, 0] }],
+        ["잎사귀", { unit: "%", link: false, v: [0, 50, 0, 50] }], ["대각선", { link: false, v: [40, 0, 40, 0] }],
+        ["물방울", { mode: "blob", h: [50, 50, 50, 50], w: [60, 60, 40, 40] }], ["블롭 1", { mode: "blob", h: [30, 70, 70, 30], w: [30, 30, 70, 70] }],
+        ["블롭 2", { mode: "blob", h: [58, 42, 38, 62], w: [42, 55, 45, 58] }], ["블롭 3", { mode: "blob", h: [73, 27, 59, 41], w: [57, 59, 41, 43] }],
+        ["블롭 4", { mode: "blob", h: [40, 60, 60, 40], w: [60, 30, 70, 40] }], ["조약돌", { mode: "blob", h: [63, 37, 54, 46], w: [55, 48, 52, 45] }],
+      ].map(([n, p]) => [n, Object.assign({ mode: "simple", unit: "px", link: true, v: [24, 24, 24, 24], h: [50, 50, 50, 50], w: [50, 50, 50, 50], c: "#ff5a0a" }, p)]),
+    },
+
+    glass: {
+      name: "글래스모피즘",
+      init: { blur: 14, a: 0.22, tint: "#ffffff", sat: 160, border: 0.35, radius: 20, shadow: true },
+      decl(s) {
+        const f = `blur(${s.blur}px)${+s.sat !== 100 ? ` saturate(${s.sat}%)` : ""}`;
+        const d = [["background", rgba(s.tint, s.a)], ["backdrop-filter", f], ["-webkit-backdrop-filter", f], ["border", `1px solid ${rgba("#ffffff", s.border)}`], ["border-radius", px(s.radius)]];
+        if (s.shadow) d.push(["box-shadow", "0 8px 32px rgba(31, 38, 135, 0.2)"]);
+        return d;
+      },
+      box(s) { return { style: this.decl(s).map(([p, v]) => `${p}:${v}`).join(";") + ";width:260px;height:170px", stageClass: "glass-bg" }; },
+      ui(s) { return R("blur", "흐림", 0, 40, 1, "px") + C("tint", "유리 색", "a") + R("sat", "채도", 100, 250, 5, "%") + R("border", "테두리 밝기", 0, 1, 0.01) + R("radius", "둥근 정도", 0, 60, 1, "px") + K("shadow", "그림자 넣기"); },
+      presets: [
+        ["맑은 유리", {}], ["서리 낀 유리", { blur: 26, a: 0.42 }], ["아주 살짝", { blur: 6, a: 0.1, border: 0.2 }], ["어두운 유리", { tint: "#111111", a: 0.35, border: 0.12 }],
+        ["분홍 유리", { tint: "#ff7eb3", a: 0.25 }], ["하늘 유리", { tint: "#4facfe", a: 0.22 }], ["진한 채도", { sat: 240, a: 0.15 }], ["테두리 없이", { border: 0, shadow: false }],
+      ].map(([n, p]) => [n, Object.assign({ blur: 14, a: 0.22, tint: "#ffffff", sat: 160, border: 0.35, radius: 20, shadow: true }, p)]),
+    },
+
+    pattern: {
+      name: "배경 패턴",
+      init: { type: "stripes", c1: "#ffe600", c2: "#1d1d1f", size: 40, t: 50, angle: 45 },
+      decl(s) {
+        const { c1, c2 } = s, z = +s.size, t = Math.max(1, Math.round(z * s.t / 100));
+        switch (s.type) {
+          case "stripes": return [["background", `repeating-linear-gradient(${s.angle}deg, ${c1} 0 ${t}px, ${c2} ${t}px ${z}px)`]];
+          case "dots": { const r = Math.max(1, Math.round(z * s.t / 200)); return [["background-color", c2], ["background-image", `radial-gradient(${c1} ${r}px, transparent ${r + 0.5}px)`], ["background-size", `${z}px ${z}px`]]; }
+          case "grid": { const w = Math.max(1, Math.round(s.t / 25)); return [["background-color", c2], ["background-image", `linear-gradient(${c1} ${w}px, transparent ${w}px), linear-gradient(90deg, ${c1} ${w}px, transparent ${w}px)`], ["background-size", `${z}px ${z}px`]]; }
+          case "check": return [["background", `repeating-conic-gradient(${c1} 0 25%, ${c2} 0 50%) 0 0 / ${z}px ${z}px`]];
+          case "zigzag": { const h = z / 2; return [["background-color", c2], ["background-image", `linear-gradient(135deg, ${c1} 25%, transparent 25%), linear-gradient(225deg, ${c1} 25%, transparent 25%), linear-gradient(315deg, ${c1} 25%, transparent 25%), linear-gradient(45deg, ${c1} 25%, transparent 25%)`], ["background-position", `-${h}px 0, -${h}px 0, 0 0, 0 0`], ["background-size", `${z}px ${z}px`]]; }
+          case "diamond": return [["background-color", c2], ["background-image", `linear-gradient(45deg, ${c1} 25%, transparent 25%, transparent 75%, ${c1} 75%), linear-gradient(45deg, ${c1} 25%, transparent 25%, transparent 75%, ${c1} 75%)`], ["background-position", `0 0, ${z / 2}px ${z / 2}px`], ["background-size", `${z}px ${z}px`]];
+          case "rings": return [["background", `repeating-radial-gradient(circle at center, ${c1} 0 ${t}px, ${c2} ${t}px ${z}px)`]];
+        }
+      },
+      box(s) { return { style: this.decl(s).map(([p, v]) => `${p}:${v}`).join(";") }; },
+      ui(s) {
+        return `<div class="field"><label>무늬</label><select data-k="type" data-re>${[["stripes", "줄무늬"], ["dots", "물방울"], ["grid", "모눈"], ["check", "체크"], ["zigzag", "지그재그"], ["diamond", "다이아몬드"], ["rings", "동심원"]].map(([v, t]) => `<option value="${v}">${t}</option>`).join("")}</select></div>`
+          + `<div class="twocol">${C("c1", "무늬 색")}${C("c2", "바탕 색")}</div>` + R("size", "간격", 6, 120, 1, "px")
+          + (["stripes", "dots", "grid", "rings"].includes(s.type) ? R("t", "두께", 4, 96, 1, "%") : "")
+          + (s.type === "stripes" ? R("angle", "각도", 0, 180, 1, "°") : "");
+      },
+      presets: [
+        ["공사장", { type: "stripes", c1: "#ffe600", c2: "#1d1d1f", size: 40, t: 50, angle: 45 }],
+        ["민트 줄무늬", { type: "stripes", c1: "#c7f9e5", c2: "#ffffff", size: 24, t: 50, angle: 90 }],
+        ["사탕", { type: "stripes", c1: "#ef4444", c2: "#ffffff", size: 30, t: 50, angle: 135 }],
+        ["노트 줄", { type: "stripes", c1: "#ffffff", c2: "#cfe3ff", size: 28, t: 95, angle: 0 }],
+        ["물방울", { type: "dots", c1: "#ff7eb3", c2: "#fff0f6", size: 28, t: 40 }],
+        ["점 격자", { type: "dots", c1: "#c4c9d1", c2: "#ffffff", size: 20, t: 15 }],
+        ["모눈 공책", { type: "grid", c1: "#dbe7ff", c2: "#ffffff", size: 24, t: 25 }],
+        ["설계도", { type: "grid", c1: "rgba(255,255,255,.25)", c2: "#1e4fb8", size: 32, t: 25 }],
+        ["체크", { type: "check", c1: "#111111", c2: "#ffffff", size: 32 }],
+        ["깅엄", { type: "check", c1: "#fecaca", c2: "#ffffff", size: 24 }],
+        ["지그재그", { type: "zigzag", c1: "#7c5cff", c2: "#ede9fe", size: 32 }],
+        ["다이아몬드", { type: "diamond", c1: "#10b981", c2: "#ecfdf5", size: 36 }],
+        ["동심원", { type: "rings", c1: "#ff5a0a", c2: "#fff4ec", size: 36, t: 50 }],
+      ].map(([n, p]) => [n, Object.assign({ angle: 45, t: 50 }, p)]),
+    },
+  };
+  // 설계도 프리셋의 반투명 색은 색 고르기에 넣을 수 없어서 hex로 바꿔 둬요
+  TABS.pattern.presets.forEach(([, p]) => { if (p.c1.startsWith("rgba")) p.c1 = "#5b80cc"; });
+
+  /* ---------- 상태 ---------- */
+  const ORDER = ["gradient", "box", "text", "radius", "glass", "pattern"];
+  const state = {}; ORDER.forEach(k => state[k] = clone(TABS[k].init));
+  let tab = "gradient", picked = {};
+
+  const getP = (o, path) => path.split(".").reduce((a, k) => a?.[k], o);
+  const setP = (o, path, v) => { const ks = path.split("."), last = ks.pop(); ks.reduce((a, k) => a[k], o)[last] = v; };
+  const real = (s, k) => k.startsWith("L.") ? `layers.${s.cur}.${k.slice(2)}` : k;
+
+  function paintBox(el, stage, t, s) {
+    const b = TABS[t].box(s);
+    el.className = "pv-box"; el.style.cssText = b.style; el.textContent = t === "text" ? b.text : "";
+    stage.classList.remove("glass-bg");
+    if (b.stageClass) stage.classList.add(b.stageClass);
+    return b;
+  }
+
+  function stageBg(b) {
+    const m = document.querySelector("input[name=bgm]:checked").value;
+    if (m === "light") return "#ffffff";
+    if (m === "dark") return "#16181d";
+    return b.stage || (tab === "glass" ? "" : "var(--surface-2)");
+  }
+
+  function codeHTML(t, s) {
+    const d = TABS[t].decl(s);
+    return `<button class="cp" id="cp" type="button">복사</button>.box {\n${d.map(([p, v]) => `  <span class="p">${p}</span>: <span class="v">${esc(v)}</span>;`).join("\n")}\n}`;
+  }
+  const codeText = (t, s) => `.box {\n${TABS[t].decl(s).map(([p, v]) => `  ${p}: ${v};`).join("\n")}\n}`;
+
+  function refresh() {
+    const s = state[tab], pv = $("#pv");
+    pv.className = "pv t-" + tab;
+    const b = paintBox($("#box"), pv, tab, s);
+    pv.style.background = b.stageClass ? "" : stageBg(b);
+    if (b.stageClass && document.querySelector("input[name=bgm]:checked").value !== "auto") pv.classList.remove("glass-bg"), pv.style.background = stageBg(b);
+    $("#code").innerHTML = codeHTML(tab, s);
+    // 값 표시
+    document.querySelectorAll("#ctl [data-v]").forEach(el => {
+      let v = getP(s, real(s, el.dataset.v));
+      if (el.hasAttribute("data-pct")) v = Math.round(v * 100);
+      el.textContent = v + (el.dataset.u || "");
+    });
+    if (tab === "gradient") { const g = $("#ctl .gbar"); if (g) g.style.background = `linear-gradient(90deg, ${[...s.stops].sort((a, b) => a.p - b.p).map(x => `${x.c} ${x.p}%`).join(", ")})`; }
+    document.querySelectorAll("#presets .tile").forEach(el => el.classList.toggle("on", picked[tab] === +el.dataset.i));
+  }
+
+  function renderCtl() {
+    const s = state[tab];
+    $("#ctlTitle").textContent = TABS[tab].name + " 설정";
+    $("#ctl").innerHTML = TABS[tab].ui(s);
+    $("#ctl").querySelectorAll("[data-k]").forEach(el => {
+      const v = getP(s, real(s, el.dataset.k));
+      if (el.type === "radio") el.checked = String(v) === el.value;
+      else if (el.type === "checkbox") el.checked = !!v;
+      else if (v !== undefined) el.value = v;
+    });
+    refresh();
+  }
+
+  function renderPresets() {
+    const list = TABS[tab].presets;
+    $("#pcount").textContent = `${list.length}개`;
+    $("#presets").innerHTML = list.map(([n], i) => `<button class="tile t-${tab}" data-i="${i}" type="button"><div class="tv"><div class="pv-box"></div></div><b>${esc(n)}</b></button>`).join("");
+    $("#presets").querySelectorAll(".tile").forEach(el => {
+      const p = list[+el.dataset.i][1], tv = el.querySelector(".tv");
+      const b = paintBox(el.querySelector(".pv-box"), tv, tab, p);
+      if (tab === "text") el.querySelector(".pv-box").textContent = "가Aa";
+      if (!b.stageClass) tv.style.background = b.stage || (tab === "gradient" || tab === "pattern" ? "" : "var(--surface-2)");
+    });
+  }
+
+  function renderTabs() {
+    $("#tabs").innerHTML = ORDER.map(k => `<button role="tab" type="button" data-tab="${k}" aria-selected="${k === tab}">${TABS[k].name}</button>`).join("");
+  }
+  function go(t) { tab = t; try { localStorage.setItem("dg-cssgen-tab", t); } catch {} renderTabs(); renderPresets(); renderCtl(); }
+
+  /* ---------- 이벤트 ---------- */
+  $("#tabs").addEventListener("click", e => { const b = e.target.closest("[data-tab]"); if (b) go(b.dataset.tab); });
+  const onInput = e => {
+    const el = e.target; if (!el.dataset.k) return;
+    const s = state[tab], k = real(s, el.dataset.k);
+    let v = el.type === "checkbox" ? el.checked : el.type === "range" ? +el.value : el.value;
+    if (el.type === "radio" && !el.checked) return;
+    if (tab === "radius" && /^v\.0$/.test(k) && s.link) s.v = [v, v, v, v];
+    else setP(s, k, v);
+    if (tab === "radius" && k === "unit") s.v = s.v.map(x => Math.min(x, v === "%" ? 50 : 120));
+    if (tab === "radius" && k === "link" && v) s.v = [s.v[0], s.v[0], s.v[0], s.v[0]];
+    picked[tab] = null;
+    if (el.hasAttribute("data-re")) renderCtl(); else refresh();
+  };
+  $("#ctl").addEventListener("input", onInput);
+  $("#ctl").addEventListener("click", e => {
+    const s = state[tab], a = e.target.closest("[data-act]"), ly = e.target.closest("[data-layer]"), del = e.target.closest("[data-del]");
+    if (ly) { s.cur = +ly.dataset.layer; renderCtl(); return; }
+    if (del) { s.stops.splice(+del.dataset.del, 1); renderCtl(); return; }
+    if (!a) return;
+    const act = a.dataset.act;
+    if (act === "addL") { s.layers.push(clone(s.layers[s.cur])); s.cur = s.layers.length - 1; }
+    if (act === "delL") { s.layers.splice(s.cur, 1); s.cur = Math.max(0, s.cur - 1); }
+    if (act === "addStop") { const st = [...s.stops].sort((x, y) => x.p - y.p); let gi = 0, gap = -1; for (let i = 0; i < st.length - 1; i++) if (st[i + 1].p - st[i].p > gap) { gap = st[i + 1].p - st[i].p; gi = i; } s.stops.push({ c: st[gi + 1].c, p: Math.round((st[gi].p + st[gi + 1].p) / 2) }); }
+    if (act === "flip") s.stops.forEach(x => x.p = 100 - x.p);
+    picked[tab] = null; renderCtl();
+  });
+  $("#presets").addEventListener("click", e => {
+    const el = e.target.closest(".tile"); if (!el) return;
+    const keepText = tab === "text" ? state.text.text : null;
+    state[tab] = clone(TABS[tab].presets[+el.dataset.i][1]);
+    if (keepText !== null) state.text.text = keepText;
+    picked[tab] = +el.dataset.i; renderCtl();
+    say(`'${TABS[tab].presets[+el.dataset.i][0]}' 프리셋을 불러왔어요.`, "ok");
+  });
+  document.querySelectorAll("input[name=bgm]").forEach(r => r.addEventListener("change", refresh));
+  $("#reset").onclick = () => { state[tab] = clone(TABS[tab].init); picked[tab] = null; renderCtl(); say("처음 값으로 돌렸어요."); };
+  $("#code").addEventListener("click", async e => {
+    if (!e.target.closest("#cp")) return;
+    const txt = codeText(tab, state[tab]);
+    try { await navigator.clipboard.writeText(txt); }
+    catch { const t = document.createElement("textarea"); t.value = txt; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); }
+    e.target.textContent = "복사됨"; setTimeout(() => { const b = $("#cp"); if (b) b.textContent = "복사"; }, 1400);
+    say("CSS 코드를 복사했어요.", "ok");
+  });
+
+  let start = "gradient"; try { start = localStorage.getItem("dg-cssgen-tab") || start; } catch {}
+  go(ORDER.includes(start) ? start : "gradient");
+
+})();
+</script>
+</body>
+</html>

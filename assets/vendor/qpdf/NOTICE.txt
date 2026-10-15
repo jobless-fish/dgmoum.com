@@ -1,0 +1,3 @@
+qpdf (https://github.com/qpdf/qpdf) — Apache License 2.0, Copyright (c) Jay Berkenbilt and contributors
+WebAssembly build: @neslinesli93/qpdf-wasm 0.3.0 (https://github.com/neslinesli93/qpdf-wasm) — ISC License
+These files are distributed unmodified. They power the "PDF 암호 해제" tool, which runs entirely in the browser.

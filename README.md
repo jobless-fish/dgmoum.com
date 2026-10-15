@@ -29,6 +29,7 @@ tools/
   color-palette/  색 뽑기 (대표 색 · 스포이드 · CSS 변수)
   favicon/        파비콘 만들기 (ico · 홈 화면 아이콘 · webmanifest)
   color-convert/  색 코드 변환 (HEX · RGB · HSL · HSB · CMYK 근사)
+  css-gen/        CSS 생성기 (그라데이션·박스/글자 그림자·둥근 모서리·글래스모피즘·패턴, 프리셋 88개)
   print-size/     인쇄 크기 계산기 (px ↔ cm·mm, 용지별 DPI, 재단 여유)
   placeholder/    임시 이미지 만들기 (크기 표시 · SNS 규격 · PNG/JPG/SVG)
   korean-lorem/   한글 더미 텍스트 (문단 · 문장 · 정확한 글자 수)
@@ -47,6 +48,7 @@ tools/
   pdf-split/      PDF 나누기 · 정리 (삭제·회전·순서·추출·분할)
   image-to-pdf/   이미지 → PDF (A4 맞춤)
   pdf-to-image/   PDF → 이미지 (PNG·JPG, dpi 선택)
+  pdf-unlock/     PDF 암호 해제 (qpdf WebAssembly, assets/vendor/qpdf · 여러 파일 한 번에)
   pdf-page-number/ PDF 쪽 번호 넣기 (위치·형식·시작 번호·표지 빼기·양면, 돌아간 쪽 대응)
   qr-code/        QR코드 만들기 (링크·와이파이·연락처·문자·이메일, PNG·SVG)
   char-count/     글자 수 세기 (공백 포함·제외·바이트·목표)
@@ -71,6 +73,7 @@ tools/
   form-agreement/ 합의서 (합의금 한글 표기, 이의 제기 금지 조항 선택)
   form-notice/    내용증명
   form-trade/     중고거래 물품 매매계약서 (하자 책임 선택, 계약금 해제 조항)
+  stamp-maker/    도장 만들기 (개인 원형·사각, 회사 직인·원형, 찍힌 질감, 투명 PNG)
   stamp-clean/    도장 · 서명 배경 지우기 (투명 PNG)
 ```
 

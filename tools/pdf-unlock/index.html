@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(){var t;try{t=localStorage.getItem("dg-theme")}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
+<link rel="icon" href="../../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="manifest" href="../../site.webmanifest">
+<meta name="theme-color" content="#f0f0f0">
+<meta property="og:site_name" content="도구모음">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://dgmoum.com/assets/og-image.png">
+<meta property="og:title" content="PDF 암호 해제 (잠금 풀기) · 도구모음">
+<meta property="og:description" content="암호 걸린 PDF의 잠금을 풀어 암호 없는 PDF로 저장해요. 급여·카드 명세서처럼 암호를 아는 PDF, 인쇄·복사 제한 PDF. 여러 개 한 번에, 업로드 없이 무료.">
+<title>PDF 암호 해제 (잠금 풀기) · 도구모음</title>
+<meta name="description" content="암호 걸린 PDF의 잠금을 풀어 암호 없는 PDF로 저장해요. 급여·카드 명세서처럼 암호를 아는 PDF, 인쇄·복사 제한 PDF. 여러 개 한 번에, 업로드 없이 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="../../assets/v2.css">
+<style>
+  body { --cat: var(--doc); }
+
+  .file .thumb { display: grid; place-items: center; color: var(--doc); background: color-mix(in srgb, var(--doc) 12%, var(--surface)); }
+  .file .thumb svg { width: 26px; height: 26px; }
+  .file .info b.no { color: var(--err); }
+  .file .info b.wait { color: var(--muted); }
+  .pw { display: flex; gap: 6px; }
+  .pw input { flex: 1; min-width: 0; }
+  .note-box { font-size: 13px; color: var(--muted); background: var(--surface-2); border-radius: 10px; padding: 12px 14px; line-height: 1.6; }
+  .note-box b { color: var(--ink); }
+
+</style>
+</head>
+<body data-tool="pdf-unlock">
+<header id="hdr"></header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="pdf-unlock"></span>
+    <div>
+      <h1>PDF 암호 해제</h1>
+      <p>암호를 아는 PDF의 잠금을 풀어 다음부터 암호 없이 열리게 해요. 인쇄·복사 제한도 풀려요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="파일 선택">
+        <span data-icon="upload"></span>
+        <strong>잠긴 PDF를 올려 주세요</strong>
+        <span>여러 개를 한 번에 올려도 돼요 · 같은 암호면 한 번에 풀려요</span>
+        <input type="file" id="file">
+      </div>
+      <div id="listWrap" hidden>
+        <div class="list-head">
+          <p id="summary"></p>
+          <button class="btn btn-sm" id="clear">모두 비우기</button>
+        </div>
+        <div class="files" id="files"></div>
+      </div>
+      <div class="note-box">
+        <b>이런 PDF를 풀 수 있어요</b><br>
+        · 열 때 암호를 묻는 PDF(급여명세서, 카드·보험 명세서 등): 암호를 알고 있어야 해요.<br>
+        · 열리긴 하는데 인쇄·복사·수정이 막힌 PDF: 암호 없이 제한만 풀어요.<br>
+        암호를 모르는 파일의 암호를 알아내는 기능은 없어요. 본인 파일이거나 권한이 있는 파일에만 써 주세요.
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+
+        <h2>암호</h2>
+        <div class="field">
+          <label for="pw">PDF 열기 암호</label>
+          <div class="pw"><input type="password" id="pw" autocomplete="off" placeholder="암호 입력"><button class="btn btn-sm" id="eye" type="button" aria-label="암호 보기">보기</button></div>
+          <p class="hint">제한만 걸린 PDF는 비워 둬도 돼요. 명세서는 생년월일 6자리나 주민번호 앞자리인 경우가 많아요.</p>
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled>잠금 풀기</button>
+        <button class="btn btn-block" id="all" hidden>모두 받기 (ZIP)</button>
+        <p class="status" id="status"></p>
+        <p class="hint">암호와 파일은 이 브라우저 안에서만 쓰이고 어디에도 보내지 않아요. 처음 한 번은 PDF 엔진(약 1.3MB)을 불러와요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer id="foot"></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script src="../../assets/i18n.js"></script>
+<script src="../../assets/shell.js" data-root="../../"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const say = TT.sayTo($("#status"));
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  let items = [], qpdf = null, loading = null, busy = false;
+
+  // qpdf(WebAssembly)는 처음 쓸 때 한 번만 불러와요
+  function engine() {
+    if (qpdf) return Promise.resolve(qpdf);
+    if (loading) return loading;
+    loading = new Promise((ok, bad) => {
+      const s = document.createElement("script");
+      s.src = "../../assets/vendor/qpdf/qpdf.js";
+      s.onload = () => Module({ locateFile: () => "../../assets/vendor/qpdf/qpdf.wasm", print() {}, printErr() {} }).then(m => ok(qpdf = m), bad);
+      s.onerror = bad;
+      document.head.appendChild(s);
+    }).catch(e => { loading = null; throw e; });
+    return loading;
+  }
+  const call = args => { try { return qpdf.callMain([...args]); } catch (e) { return typeof e?.status === "number" ? e.status : 2; } };
+  const rm = p => { try { qpdf.FS.unlink(p); } catch {} };
+
+  // 원본 바이트에 /Encrypt가 있으면 잠긴 PDF예요
+  const looksLocked = u8 => {
+    const s = new TextDecoder("latin1").decode(u8.length > 4e6 ? u8.subarray(u8.length - 2e6) : u8);
+    return /\/Encrypt\b/.test(s) || (u8.length > 4e6 && /\/Encrypt\b/.test(new TextDecoder("latin1").decode(u8.subarray(0, 2e6))));
+  };
+
+  function unlock(it, pw) {
+    rm("/in.pdf"); rm("/out.pdf");
+    qpdf.FS.writeFile("/in.pdf", it.bytes);
+    const args = pw ? ["--password=" + pw, "--decrypt", "/in.pdf", "/out.pdf"] : ["--decrypt", "/in.pdf", "/out.pdf"];
+    let code = call(args), out = null;
+    if (code === 0 || code === 3) { try { out = qpdf.FS.readFile("/out.pdf"); } catch {} }
+    let was = true;
+    if (out && !pw) was = call(["--is-encrypted", "/in.pdf"]) === 0;
+    rm("/in.pdf"); rm("/out.pdf");
+    return { out, was };
+  }
+
+  function draw() {
+    $("#listWrap").hidden = !items.length;
+    $("#run").disabled = !items.length || busy;
+    const done = items.filter(i => i.out);
+    $("#all").hidden = done.length < 2;
+    $("#summary").textContent = items.length ? `${items.length}개 · 풀림 ${done.length}개` : "";
+    $("#files").innerHTML = items.map((it, i) => `
+      <div class="file">
+        <div class="thumb">${TT.icon("pdf-unlock")}</div>
+        <div class="meta"><div class="name">${esc(it.file.name)}</div>
+          <div class="info">${TT.bytes(it.file.size)} · ${it.msg}</div></div>
+        <div class="acts">${it.out ? `<button class="btn btn-sm" data-get="${i}">받기</button>` : ""}<button class="icon-btn" data-del="${i}" aria-label="빼기">✕</button></div>
+      </div>`).join("");
+  }
+
+  async function add(files) {
+    const pdfs = files.filter(f => /\.pdf$/i.test(f.name) || f.type === "application/pdf");
+    if (!pdfs.length) { say("PDF 파일만 올릴 수 있어요.", "err"); return; }
+    for (const f of pdfs) {
+      const bytes = new Uint8Array(await f.arrayBuffer());
+      const head = new TextDecoder("latin1").decode(bytes.subarray(0, 1024));
+      const it = { file: f, bytes, out: null, msg: '<b class="wait">대기 중</b>' };
+      if (!head.includes("%PDF")) it.msg = '<b class="no">PDF가 아니거나 손상된 파일이에요</b>', it.bad = true;
+      else if (!looksLocked(bytes)) it.msg = '<b class="wait">잠겨 있지 않은 PDF 같아요</b>';
+      items.push(it);
+    }
+    draw();
+    run(true);
+  }
+
+  // auto=true: 올리자마자 암호 없이 먼저 시도 (제한만 걸린 PDF는 바로 풀려요)
+  async function run(auto = false) {
+    if (busy) return;
+    const pw = $("#pw").value;
+    const todo = items.filter(i => !i.out && !i.bad);
+    if (!todo.length) return;
+    busy = true; draw();
+    say("PDF 엔진을 준비하고 있어요…");
+    try { await engine(); } catch { busy = false; draw(); say("PDF 엔진을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.", "err"); return; }
+    let need = 0, wrong = 0, ok = 0;
+    for (const it of todo) {
+      it.msg = '<b class="wait">푸는 중…</b>'; draw();
+      await new Promise(r => setTimeout(r, 20));
+      let r = unlock(it, "");
+      if (!r.out && pw) r = unlock(it, pw);
+      if (r.out) {
+        it.out = r.out; ok++;
+        it.msg = r.was ? `<b>풀림</b> · 암호 없는 PDF로 바뀌었어요` : `<b>원래 잠겨 있지 않았어요</b> · 그대로 받을 수 있어요`;
+      } else if (pw) { wrong++; it.msg = '<b class="no">암호가 맞지 않아요</b>'; }
+      else { need++; it.msg = '<b class="up">열기 암호가 필요해요</b>'; }
+    }
+    busy = false; draw();
+    if (need && auto) { say(`${need}개는 열기 암호가 필요해요. 암호를 넣고 [잠금 풀기]를 눌러 주세요.`); $("#pw").focus(); }
+    else if (wrong) say(`${wrong}개는 암호가 맞지 않아요. 대소문자와 숫자를 다시 확인해 주세요.`, "err");
+    else if (need) say(`${need}개는 열기 암호가 필요해요.`, "err");
+    else if (ok) say(ok > 1 ? `${ok}개를 풀었어요. 하나씩 받거나 ZIP으로 한 번에 받으세요.` : "풀었어요. [받기]를 눌러 저장하세요.", "ok");
+  }
+
+  const outName = it => TT.baseName(it.file.name) + "_잠금해제.pdf";
+  const blobOf = it => new Blob([it.out], { type: "application/pdf" });
+
+  TT.dropzone($("#drop"), add, { accept: ".pdf,application/pdf" });
+  $("#run").onclick = () => run(false);
+  $("#pw").addEventListener("keydown", e => { if (e.key === "Enter") run(false); });
+  $("#eye").onclick = () => { const p = $("#pw"); p.type = p.type === "password" ? "text" : "password"; $("#eye").textContent = p.type === "password" ? "보기" : "숨기기"; };
+  $("#clear").onclick = () => { items = []; draw(); say(""); };
+  $("#all").onclick = () => TT.downloadZip(items.filter(i => i.out).map(i => ({ blob: blobOf(i), name: outName(i) })), "잠금해제_PDF.zip");
+  $("#files").addEventListener("click", e => {
+    const g = e.target.closest("[data-get]"), d = e.target.closest("[data-del]");
+    if (g) { const it = items[+g.dataset.get]; TT.download(blobOf(it), outName(it)); }
+    if (d) { items.splice(+d.dataset.del, 1); draw(); }
+  });
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(){var t;try{t=localStorage.getItem("dg-theme")}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
+<link rel="icon" href="../../favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
+<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+<link rel="manifest" href="../../site.webmanifest">
+<meta name="theme-color" content="#f0f0f0">
+<meta property="og:site_name" content="도구모음">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://dgmoum.com/assets/og-image.png">
+<meta property="og:title" content="도장 만들기 (인감 · 직인 이미지) · 도구모음">
+<meta property="og:description" content="이름을 넣으면 인감 같은 원형·사각 도장, 회사 직인 이미지를 투명 PNG로 만들어요. 글꼴·인주 색·찍힌 질감 조절. 서류 양식에 바로 사용. 무료, 업로드 없음.">
+<title>도장 만들기 (인감 · 직인 이미지) · 도구모음</title>
+<meta name="description" content="이름을 넣으면 인감 같은 원형·사각 도장, 회사 직인 이미지를 투명 PNG로 만들어요. 글꼴·인주 색·찍힌 질감 조절. 서류 양식에 바로 사용. 무료, 업로드 없음.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="../../assets/v2.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@800&family=Song+Myung&family=Nanum+Gothic:wght@800&family=Black+Han+Sans&display=swap">
+<style>
+  body { --cat: var(--form); }
+
+  .stage { display: grid; place-items: center; padding: 28px; border-radius: var(--r); border: 1px solid var(--line); min-height: 360px;
+    background: repeating-conic-gradient(var(--surface-2) 0 25%, var(--surface) 0 50%) 0 0 / 18px 18px; }
+  .stage.paper { background: #fbfaf6; }
+  .stage canvas { width: min(320px, 70vw); height: auto; }
+  .stage-bar { display: flex; gap: 8px; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+  .stage-bar .hint { margin: 0; }
+  .kinds { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .kinds input { position: absolute; opacity: 0; pointer-events: none; }
+  .kinds label { display: grid; justify-items: center; gap: 6px; padding: 10px 6px; border: 1px solid var(--line); border-radius: 10px; cursor: pointer; font-size: 13px; background: var(--surface-2); }
+  .kinds label i { width: 30px; height: 30px; border: 2.5px solid var(--form); display: block; }
+  .kinds label i.c { border-radius: 50%; } .kinds label i.s { border-radius: 4px; }
+  .kinds label i.cc { border-radius: 50%; box-shadow: inset 0 0 0 3px var(--surface-2), inset 0 0 0 5px var(--form); }
+  .kinds label i.ss { border-radius: 2px; border-width: 3.5px; }
+  .kinds input:checked + label { border-color: var(--ink); background: var(--surface); font-weight: 600; box-shadow: 0 0 0 1px var(--ink); }
+  .kinds input:focus-visible + label { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .swatches { display: flex; gap: 8px; }
+  .swatches input { position: absolute; opacity: 0; pointer-events: none; }
+  .swatches label { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 2px rgba(0,0,0,.08); }
+  .swatches input:checked + label { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  input[type=text].big { font-size: 18px; letter-spacing: .1em; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+
+</style>
+</head>
+<body data-tool="stamp-maker">
+<header id="hdr"></header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="stamp-maker"></span>
+    <div>
+      <h1>도장 만들기</h1>
+      <p>이름이나 회사명을 넣으면 인감·직인 모양의 도장 이미지를 투명 PNG로 만들어 줘요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+
+      <section class="panel">
+        <div class="panel-body">
+          <div class="stage" id="stage"><canvas id="cv" width="600" height="600" aria-label="도장 미리보기"></canvas></div>
+          <div class="stage-bar">
+            <p class="hint">투명 배경 PNG로 저장돼요.</p>
+            <div style="display:flex; gap:6px">
+              <button class="btn btn-sm" id="paper" type="button">종이 위에서 보기</button>
+              <button class="btn btn-sm" id="reseed" type="button">질감 다시 찍기</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+
+        <h2>도장 종류</h2>
+        <div class="kinds" role="radiogroup">
+          <input type="radio" name="kind" id="k-pc" value="pc" checked><label for="k-pc"><i class="c"></i>개인 · 원형</label>
+          <input type="radio" name="kind" id="k-ps" value="ps"><label for="k-ps"><i class="s"></i>개인 · 사각</label>
+          <input type="radio" name="kind" id="k-cs" value="cs"><label for="k-cs"><i class="ss"></i>회사 직인 · 사각</label>
+          <input type="radio" name="kind" id="k-cc" value="cc"><label for="k-cc"><i class="cc"></i>회사 · 원형</label>
+        </div>
+
+        <div class="field" id="f-name"><label for="name">이름</label><input type="text" class="big" id="name" maxlength="6" placeholder="이름 (2~4자)" autocomplete="off">
+          <label class="check"><input type="checkbox" id="in"> 끝에 '인' 붙이기 (예: ○○○인)</label></div>
+        <div class="field" id="f-corp" hidden><label for="corp">새길 글자</label><input type="text" id="corp" maxlength="24" placeholder="예: 주식회사회사명대표이사인" autocomplete="off">
+          <p class="hint">오른쪽 줄 위에서부터 세로로 읽히게 채워요. 띄어쓰기는 무시해요.</p></div>
+        <div id="f-round" hidden>
+          <div class="field"><label for="outer">둘레 글자</label><input type="text" id="outer" maxlength="24" placeholder="회사명" autocomplete="off"></div>
+          <div class="field" style="margin-top:10px"><label for="center">가운데 글자</label><input type="text" id="center" maxlength="8" placeholder="예: 대표이사인" autocomplete="off"></div>
+        </div>
+
+        <div class="field"><label>글꼴</label>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="font" id="ft-m" value="m" checked><label for="ft-m">명조</label>
+            <input type="radio" name="font" id="ft-s" value="s"><label for="ft-s">송명</label>
+            <input type="radio" name="font" id="ft-g" value="g"><label for="ft-g">고딕</label>
+            <input type="radio" name="font" id="ft-b" value="b"><label for="ft-b">굵은</label>
+          </div></div>
+
+        <div class="field"><label>인주 색</label>
+          <div class="swatches" role="radiogroup">
+            <input type="radio" name="ink" id="i-red" value="#d7262e" checked><label for="i-red" style="background:#d7262e" title="빨강"></label>
+            <input type="radio" name="ink" id="i-ver" value="#e8452c"><label for="i-ver" style="background:#e8452c" title="주홍"></label>
+            <input type="radio" name="ink" id="i-dark" value="#a3121b"><label for="i-dark" style="background:#a3121b" title="진한 빨강"></label>
+            <input type="radio" name="ink" id="i-blk" value="#1d1d1f"><label for="i-blk" style="background:#1d1d1f" title="검정"></label>
+            <input type="radio" name="ink" id="i-blu" value="#1f4fb8"><label for="i-blu" style="background:#1f4fb8" title="파랑"></label>
+          </div></div>
+
+        <div class="row2">
+          <div class="field"><label for="bw">테두리 <span class="num" id="bwv"></span></label><input type="range" id="bw" min="2" max="10" value="5"></div>
+          <div class="field"><label for="bold">글자 굵기 <span class="num" id="boldv"></span></label><input type="range" id="bold" min="0" max="10" value="3"></div>
+        </div>
+        <div class="field"><label for="tex">찍힌 질감 <span class="num" id="texv"></span></label><input type="range" id="tex" min="0" max="100" value="25">
+          <p class="hint">0이면 깨끗한 디지털 도장, 올릴수록 실제로 찍은 것처럼 인주가 고르지 않아요.</p></div>
+
+        <div class="field"><label>저장 크기</label>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="size" id="sz-s" value="300"><label for="sz-s">300px</label>
+            <input type="radio" name="size" id="sz-m" value="600" checked><label for="sz-m">600px</label>
+            <input type="radio" name="size" id="sz-l" value="1200"><label for="sz-l">1200px</label>
+          </div></div>
+
+        <button class="btn btn-primary btn-block" id="save" disabled>투명 PNG 받기</button>
+        <p class="status" id="status"></p>
+        <p class="hint">받은 PNG는 견적서·계약서 같은 <a href="../../#cat-form">서류 양식</a>의 도장 칸에 그대로 올리면 돼요.</p>
+        <p class="hint">이미지 도장은 관공서에 등록하는 실물 인감을 대신하지 못해요. 본인이나 본인 회사 이름으로만 만들어 주세요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer id="foot"></footer>
+
+
+<script src="../../assets/common.js"></script>
+<script src="../../assets/i18n.js"></script>
+<script src="../../assets/shell.js" data-root="../../"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const say = TT.sayTo($("#status"));
+  const cv = $("#cv"), ctx = cv.getContext("2d");
+  const FONT = { m: '"Nanum Myeongjo", "Noto Serif KR", serif', s: '"Song Myung", "Nanum Myeongjo", serif', g: '"Nanum Gothic", "Noto Sans KR", sans-serif', b: '"Black Han Sans", "Nanum Gothic", sans-serif' };
+  const WEIGHT = { m: 800, s: 400, g: 800, b: 400 };
+  const val = n => document.querySelector(`input[name=${n}]:checked`).value;
+  const clean = s => (s || "").replace(/\s+/g, "");
+  let seed = 7;
+
+  // 같은 seed면 같은 질감이 나오게 (입력할 때마다 얼룩이 바뀌지 않도록)
+  const rng = s => () => { s |= 0; s = s + 0x6D2B79F5 | 0; let t = Math.imul(s ^ s >>> 15, 1 | s); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+
+  /* ---------- 글자 칸 나누기 ---------- */
+  // 세로쓰기: 오른쪽 줄부터, 위에서 아래로
+  function cols(chars, box) {
+    const n = chars.length, cells = [];
+    if (!n) return cells;
+    let layout;
+    if (n === 1) layout = [1];
+    else if (n === 2) layout = [2];
+    else if (n === 3) layout = [1, 2];          // 성은 오른쪽에 길게, 이름은 왼쪽 위아래
+    else if (n === 4) layout = [2, 2];
+    else {
+      const rows = Math.ceil(Math.sqrt(n)), c = Math.ceil(n / rows);
+      layout = []; let left = n;
+      for (let i = 0; i < c; i++) { const k = Math.ceil(left / (c - i)); layout.push(k); left -= k; }
+    }
+    const cw = box.w / layout.length; let k = 0;
+    layout.forEach((cnt, ci) => {
+      const x = box.x + box.w - cw * (ci + 1), ch = box.h / cnt;
+      for (let r = 0; r < cnt; r++) cells.push({ ch: chars[k++], x, y: box.y + ch * r, w: cw, h: ch });
+    });
+    return cells;
+  }
+
+  // 한 글자를 칸에 꽉 차게 (도장처럼 가로세로로 늘려서)
+  function glyph(c, cell, font, weight, bold, pad = 0.9) {
+    ctx.save();
+    ctx.font = `${weight} 200px ${font}`;
+    const m = ctx.measureText(c.ch);
+    const gw = Math.max(1, m.actualBoundingBoxLeft + m.actualBoundingBoxRight), gh = Math.max(1, m.actualBoundingBoxAscent + m.actualBoundingBoxDescent);
+    let sx = cell.w * pad / gw, sy = cell.h * pad / gh;
+    const r = sx / sy; if (r > 1.9) sx = sy * 1.9; if (r < 0.45) sy = sx / 0.45; // 너무 찌그러지지 않게
+    ctx.translate(cell.x + cell.w / 2, cell.y + cell.h / 2);
+    ctx.scale(sx, sy);
+    ctx.translate(-(m.actualBoundingBoxRight - m.actualBoundingBoxLeft) / 2, (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);
+    ctx.fillText(c.ch, 0, 0);
+    if (bold > 0) { ctx.lineWidth = bold / ((sx + sy) / 2); ctx.lineJoin = "round"; ctx.strokeText(c.ch, 0, 0); }
+    ctx.restore();
+  }
+
+  // 둘레 글자 (원형 회사 도장)
+  function ring(text, cx, cy, r, size, font, weight, bold) {
+    const chars = [...text]; if (!chars.length) return;
+    const span = Math.min(Math.PI * 1.72, chars.length * (size * 1.08) / r); // 위쪽부터 시계 방향으로 고르게
+    const start = -Math.PI / 2 - span / 2, step = chars.length > 1 ? span / (chars.length - 1) : 0;
+    chars.forEach((ch, i) => {
+      const a = chars.length > 1 ? start + step * i : -Math.PI / 2;
+      ctx.save();
+      ctx.translate(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      ctx.rotate(a + Math.PI / 2);
+      ctx.font = `${weight} ${size}px ${font}`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(ch, 0, 0);
+      if (bold > 0) { ctx.lineWidth = bold; ctx.lineJoin = "round"; ctx.strokeText(ch, 0, 0); }
+      ctx.restore();
+    });
+  }
+
+  /* ---------- 찍힌 질감 ---------- */
+  function noiseLayer(N, cells, rand) {
+    const s = document.createElement("canvas"); s.width = s.height = cells;
+    const g = s.getContext("2d"), d = g.createImageData(cells, cells);
+    for (let i = 0; i < d.data.length; i += 4) { const v = rand() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+    g.putImageData(d, 0, 0);
+    const b = document.createElement("canvas"); b.width = b.height = N;
+    const bg = b.getContext("2d"); bg.imageSmoothingEnabled = true; bg.imageSmoothingQuality = "high"; bg.drawImage(s, 0, 0, N, N);
+    return bg.getImageData(0, 0, N, N).data;
+  }
+  function texture(N, amt, rand) {
+    if (amt <= 0) return;
+    const img = ctx.getImageData(0, 0, N, N), p = img.data;
+    const lo = noiseLayer(N, 10, rand), mid = noiseLayer(N, 40, rand), hi = noiseLayer(N, Math.round(N / 3), rand);
+    const t = amt / 100;
+    for (let i = 3; i < p.length; i += 4) {
+      if (!p[i]) continue;
+      const n = (lo[i - 3] * 0.45 + mid[i - 3] * 0.35 + hi[i - 3] * 0.2) / 255;   // 0~1
+      const cut = 0.25 + t * 0.32;                                                  // 이보다 낮은 곳은 인주가 덜 묻어요
+      let a = n < cut - 0.08 ? 0 : n < cut ? (n - (cut - 0.08)) / 0.08 : 1;
+      a *= 1 - t * 0.28 * (1 - lo[i - 3] / 255);                                     // 전체 농도 얼룩
+      p[i] = p[i] * Math.max(0, Math.min(1, a));
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  /* ---------- 그리기 ---------- */
+  function render(N) {
+    cv.width = cv.height = N;
+    const kind = val("kind"), f = val("font"), font = FONT[f], weight = WEIGHT[f], ink = val("ink");
+    const bw = N * (+$("#bw").value) / 200, bold = N * (+$("#bold").value) / 1000, tex = +$("#tex").value;
+    ctx.clearRect(0, 0, N, N);
+    ctx.fillStyle = ctx.strokeStyle = ink;
+    const m = N * 0.04, c = N / 2, R = N / 2 - m - bw / 2;
+    let chars = [];
+    if (kind === "pc" || kind === "ps") { chars = [...clean($("#name").value)]; if (chars.length && $("#in").checked) chars.push("인"); }
+    else if (kind === "cs") chars = [...clean($("#corp").value)];
+    else chars = [...clean($("#center").value)];
+    const outer = clean($("#outer").value);
+    const empty = kind === "cc" ? !chars.length && !outer : !chars.length;
+
+    ctx.lineWidth = bw;
+    if (kind === "pc" || kind === "cc") { ctx.beginPath(); ctx.arc(c, c, R, 0, Math.PI * 2); ctx.stroke(); }
+    else { const rr = kind === "ps" ? N * 0.06 : N * 0.015; ctx.beginPath(); ctx.roundRect(m + bw / 2, m + bw / 2, N - 2 * m - bw, N - 2 * m - bw, rr); ctx.stroke(); }
+
+    if (kind === "pc") {
+      const s = R * 1.3; cols(chars, { x: c - s / 2, y: c - s / 2, w: s, h: s }).forEach(cell => glyph(cell, cell, font, weight, bold, chars.length === 1 ? 0.95 : 0.92));
+    } else if (kind === "ps" || kind === "cs") {
+      const in_ = m + bw + N * (kind === "ps" ? 0.05 : 0.035), s = N - 2 * in_;
+      cols(chars, { x: in_, y: in_, w: s, h: s }).forEach(cell => glyph(cell, cell, font, weight, bold, kind === "cs" ? 0.9 : 0.92));
+    } else {
+      const r2 = R * 0.6, band = R - r2;
+      ctx.lineWidth = bw * 0.7; ctx.beginPath(); ctx.arc(c, c, r2, 0, Math.PI * 2); ctx.stroke();
+      ring([...outer].join(""), c, c, r2 + band / 2, band * 0.62, font, weight, bold * 0.6);
+      const s = r2 * 1.28; cols(chars, { x: c - s / 2, y: c - s / 2, w: s, h: s }).forEach(cell => glyph(cell, cell, font, weight, bold * 0.8, 0.9));
+    }
+    texture(N, tex, rng(seed * 9973 + N));
+    return !empty;
+  }
+
+  async function update() {
+    const kind = val("kind");
+    $("#f-name").hidden = !(kind === "pc" || kind === "ps");
+    $("#f-corp").hidden = kind !== "cs";
+    $("#f-round").hidden = kind !== "cc";
+    $("#bwv").textContent = $("#bw").value; $("#boldv").textContent = $("#bold").value; $("#texv").textContent = $("#tex").value;
+    const f = val("font");
+    try { await document.fonts.load(`${WEIGHT[f]} 40px ${FONT[f]}`, "가나다도장"); } catch {}
+    const ok = render(600);
+    $("#save").disabled = !ok;
+    say(ok ? "" : "새길 글자를 넣어 주세요.");
+  }
+
+  document.querySelectorAll("input").forEach(el => el.addEventListener("input", update));
+  document.querySelectorAll("input[type=radio], input[type=checkbox]").forEach(el => el.addEventListener("change", update));
+  $("#reseed").onclick = () => { seed = Math.floor(Math.random() * 1e6); update(); };
+  $("#paper").onclick = () => { const p = $("#stage").classList.toggle("paper"); $("#paper").textContent = p ? "투명 배경으로 보기" : "종이 위에서 보기"; };
+  $("#save").onclick = () => {
+    const N = +val("size"); render(N);
+    const kind = val("kind");
+    const label = clean(kind === "cs" ? $("#corp").value : kind === "cc" ? ($("#outer").value || $("#center").value) : $("#name").value).slice(0, 12) || "stamp";
+    cv.toBlob(b => { TT.download(b, `도장_${label}.png`); render(600); }, "image/png");
+  };
+  if (document.fonts) document.fonts.ready.then(update);
+  update();
+
+})();
+</script>
+</body>
+</html>
