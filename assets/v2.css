@@ -91,7 +91,7 @@ button { font: inherit; color: inherit; }
 .sdlg .sbox { max-width: 640px; margin: 0 auto; }
 
 /* ---------- 첫 화면 ---------- */
-.hero { text-align: center; padding: clamp(48px, 9vw, 96px) 0 clamp(36px, 6vw, 56px); position: relative; overflow: hidden; }
+.hero { text-align: center; padding: clamp(48px, 9vw, 96px) 0 clamp(36px, 6vw, 56px); position: relative; overflow-x: clip; overflow-y: visible; z-index: 2; } /* 세로는 열어 둬야 검색 목록이 안 잘려요 */
 .hero::before { content: ""; position: absolute; inset: -40% -10% auto; height: 120%; background: radial-gradient(closest-side, color-mix(in srgb, var(--yellow) 26%, transparent), transparent 70%); opacity: .7; z-index: -1; pointer-events: none; }
 :root[data-theme="dark"] .hero::before { opacity: .18; }
 .hero h1 { font-size: min(60px, 7vw); line-height: 1.22; letter-spacing: .01em; margin: 0 auto 20px; font-weight: 900; width: fit-content; max-width: 100%; }
