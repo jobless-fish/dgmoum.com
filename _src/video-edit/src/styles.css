@@ -3,20 +3,21 @@
 @theme {
   --font-sans: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  --color-bay: #0e1014;
-  --color-panel: #171a20;
-  --color-panel-2: #1f232b;
-  --color-ink: #eceef2;
-  --color-muted: #98a1ad;
-  --color-faint: #6d7582;
-  --color-line: #2a2f38;
+  /* 사진보정Pro와 같은 라이트룸풍 회색 작업 화면 */
+  --color-bay: #121314;
+  --color-panel: #1f2022;
+  --color-panel-2: #2a2b2e;
+  --color-ink: #d6d6d6;
+  --color-muted: #8e9196;
+  --color-faint: #6b6e73;
+  --color-line: #3c3e42;
   --color-brand: #ff5a0a;
-  --color-on-brand: #1a0d06;
+  --color-on-brand: #ffffff;
   --color-paper: #f4f1ea;
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
 }
 
 @layer base {
@@ -77,10 +78,10 @@
 .topbar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  height: 52px;
-  padding: 0 10px;
-  border-bottom: 1px solid var(--color-line);
+  gap: 10px;
+  height: 48px;
+  padding: 0 12px;
+  border-bottom: 1px solid #000;
   background: var(--color-panel);
   overflow-x: auto;
 }
@@ -607,7 +608,7 @@
   font-weight: 750;
 }
 
-.subhead {
+.inspector .subhead {
   margin: 12px 12px 6px;
   color: var(--color-muted);
   font-size: 11px;
@@ -924,7 +925,7 @@
 @media (min-width: 1080px) {
   .nle {
     grid-template-columns: 280px minmax(0, 1fr) 300px;
-    grid-template-rows: 52px minmax(0, 1fr) 332px;
+    grid-template-rows: 48px minmax(0, 1fr) 332px;
     grid-template-areas:
       "top top top"
       "bin monitor inspector"
@@ -965,3 +966,22 @@
 .transport {
   scrollbar-width: thin;
 }
+
+
+/* ---------- 도구모음 사진보정Pro와 맞춘 머리줄 ---------- */
+.brand-logo { height: 30px; width: auto; display: block; flex: none; }
+.app-title { font-size: 14px; font-weight: 600; margin: 0; color: var(--color-ink); white-space: nowrap; letter-spacing: 0; }
+.topbar .btn, .topbar .icon-btn, .topbar .select { height: 30px; font-size: 12.5px; font-weight: 600; }
+.topbar .icon-btn { width: 30px; }
+.topbar .btn.primary { padding: 0 12px; }
+.dlg-note { color: var(--color-muted); font-size: 12.5px; margin: 0; }
+
+/* ---------- 얇은 스크롤바 (사이트 전체와 같은 모양) ---------- */
+* { scrollbar-width: thin; scrollbar-color: #4a4c51 transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #4a4c51; border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: #6b6e73; }
+::-webkit-scrollbar-corner { background: transparent; }
+@media (max-width: 520px) { .app-title { display: none; } .brand-logo { height: 26px; } }
+.pos-reset { margin: 0 12px 10px; align-self: flex-start; height: 30px; font-size: 12.5px; }

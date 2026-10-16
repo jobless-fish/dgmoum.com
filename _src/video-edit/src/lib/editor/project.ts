@@ -192,7 +192,7 @@ export function createSample(): {
       trackId: "tr-text",
       start: 9.7,
       duration: 2.5,
-      text: "바로 보내기",
+      text: "바로 내보내기",
       preset: "impact",
     }),
     {

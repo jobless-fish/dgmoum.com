@@ -1,6 +1,6 @@
 import { useState } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { Download, Keyboard, Redo2, Save, Undo2 } from "lucide-react";
+import { Download, Keyboard, Redo2, Undo2 } from "lucide-react";
 import { exportExtension, exportMovie } from "@/lib/editor/engine";
 import { useEditor } from "@/lib/editor/store";
 import { ASPECTS, type AspectId } from "@/lib/editor/types";
@@ -44,32 +44,13 @@ export function TopBar({ onHelp }: { onHelp: () => void }) {
     }
   }
 
-  function downloadProject() {
-    const blob = new Blob([JSON.stringify(useEditor.getState().serialize(), null, 2)], {
-      type: "application/json",
-    });
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `${name || "컷편집"}.dgcut.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-    useEditor.getState().showToast("편집 정보만 저장돼요. 영상 파일은 포함되지 않아요.");
-  }
 
   return (
     <header className="topbar">
       <a className="brand" href="../../" title="도구모음 홈으로">
-        <span className="mark" aria-hidden="true">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M2 3.5h12M2 8h12M2 12.5h7" stroke="currentColor" strokeWidth="1.6" />
-            <path d="M11 10.5 14 12.5 11 14.5" stroke="currentColor" strokeWidth="1.6" />
-          </svg>
-        </span>
-        <span className="brand-name">
-          <strong>컷편집 Pro</strong>
-          <span>도구모음</span>
-        </span>
+        <img className="brand-logo" src="../../assets/logo.png" alt="도구모음" width="168" height="58" />
       </a>
+      <h1 className="app-title">컷편집Pro</h1>
       <input
         className="project-name"
         aria-label="프로젝트 이름"
@@ -101,12 +82,9 @@ export function TopBar({ onHelp }: { onHelp: () => void }) {
         <button className="icon-btn hide-sm" type="button" aria-label="단축키" onClick={onHelp}>
           <Keyboard size={16} />
         </button>
-        <button className="icon-btn hide-sm" type="button" aria-label="프로젝트 저장" onClick={downloadProject}>
-          <Save size={16} />
-        </button>
         <button className="btn primary" type="button" onClick={() => void startExport()}>
           <Download size={16} />
-          보내기
+          내보내기
         </button>
       </div>
 
@@ -115,9 +93,9 @@ export function TopBar({ onHelp }: { onHelp: () => void }) {
           <Dialog.Overlay className="dlg-overlay" />
           <Dialog.Content className="dlg" aria-describedby={undefined}>
             <Dialog.Title asChild>
-              <h2>영상 보내기</h2>
+              <h2>영상 내보내기</h2>
             </Dialog.Title>
-            <p>재생 길이만큼 걸려요. 인점과 아웃을 모두 찍어 두면 그 구간만 나갑니다. 파일은 이 기기에만 저장돼요.</p>
+            <p>영상 길이만큼 걸려요. 인점과 아웃을 모두 찍어 두면 그 구간만 내보내요. 파일은 이 기기에만 저장돼요.</p>
             {running ? (
               <>
                 <div className="progress" aria-valuenow={Math.round(progress * 100)} aria-valuemin={0} aria-valuemax={100}>
@@ -140,8 +118,9 @@ export function TopBar({ onHelp }: { onHelp: () => void }) {
               <>
                 <video className="preview-video" src={url} controls playsInline />
                 <a className="btn primary" href={url} download={`${name || "컷편집"}.${ext}`}>
-                  {ext.toUpperCase()} 저장
+                  {ext.toUpperCase()}로 저장
                 </a>
+                {ext !== "mp4" ? <p className="dlg-note">이 브라우저는 MP4로 녹화할 수 없어 WebM으로 만들었어요. 크롬·엣지·사파리에서는 MP4로 저장돼요.</p> : null}
               </>
             ) : null}
             <div className="row-actions">

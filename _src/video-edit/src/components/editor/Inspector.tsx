@@ -133,6 +133,15 @@ export function Inspector() {
           </label>
           <FieldSlider label="크기" min={0.5} max={2.2} step={0.01} value={clip.fontScale} format={(v) => `${Math.round(v * 100)}%`} onChange={(fontScale) => patch(clip.id, { fontScale })} />
           <FieldSlider
+            label="가로 위치"
+            min={-0.45}
+            max={0.45}
+            step={0.005}
+            value={clip.x ?? 0}
+            format={(v) => `${v > 0 ? "+" : ""}${Math.round(v * 100)}%`}
+            onChange={(x) => patch(clip.id, { x } as Partial<typeof clip>)}
+          />
+          <FieldSlider
             label="세로 위치"
             min={0.1}
             max={0.95}
@@ -157,7 +166,10 @@ export function Inspector() {
               </button>
             </span>
           </label>
-          <p className="empty-note">줄바꿈은 스택 캡션에서 윗줄을 작게 보여 줘요. 단어 강조는 띄어쓰기 단위로 움직입니다.</p>
+          <button className="btn ghost pos-reset" type="button" onClick={() => edit(() => patch(clip.id, { x: null, y: null } as Partial<typeof clip>))}>
+            위치 처음으로
+          </button>
+          <p className="empty-note">자막은 미리보기 화면에서 직접 끌어서 옮길 수도 있어요. 줄바꿈은 스택 캡션에서 윗줄을 작게 보여 줘요. 단어 강조는 띄어쓰기 단위로 움직입니다.</p>
         </>
       ) : null}
 

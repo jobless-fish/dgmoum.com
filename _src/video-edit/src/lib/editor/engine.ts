@@ -235,11 +235,18 @@ export function bindCanvas(next: HTMLCanvasElement | null): void {
 
 function pickMime(): string {
   if (typeof MediaRecorder === "undefined") return "";
+  // MP4를 먼저 골라요. H.264(크롬·엣지·사파리) → MP4 안의 VP9(크로미움) → 그래도 안 되면 WebM
   const list = [
+    "video/mp4;codecs=avc1.640028,mp4a.40.2",
+    "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+    "video/mp4;codecs=avc1,mp4a.40.2",
+    "video/mp4;codecs=avc1,opus",
+    "video/mp4;codecs=avc1",
+    "video/mp4;codecs=vp9,opus",
+    "video/mp4",
     "video/webm;codecs=vp9,opus",
     "video/webm;codecs=vp8,opus",
     "video/webm",
-    "video/mp4",
   ];
   return list.find((type) => MediaRecorder.isTypeSupported(type)) ?? "";
 }
@@ -253,9 +260,10 @@ export async function exportMovie(
   signal: { cancelled: boolean },
 ): Promise<{ blob: Blob; mime: string }> {
   if (!canvas) throw new Error("미리보기가 아직 없어요");
-  if (typeof MediaRecorder === "undefined") throw new Error("이 브라우저는 보내기를 지원하지 않아요");
+  if (typeof MediaRecorder === "undefined") throw new Error("이 브라우저는 영상 내보내기를 지원하지 않아요");
   pause();
   exporting = true;
+  canvas.dataset.preview = "0"; // 내보내는 동안엔 선택 테두리·안전영역 선을 그리지 않아요
   unlockAudio();
   const dur = durationOf();
   const { inMark, outMark, fps } = useEditor.getState();
@@ -286,7 +294,7 @@ export async function exportMovie(
     if (event.data.size) chunks.push(event.data);
   };
   const stopped = new Promise<Blob>((resolve, reject) => {
-    rec.onerror = () => reject(new Error("보내기가 중단됐어요"));
+    rec.onerror = () => reject(new Error("내보내기가 중단됐어요"));
     rec.onstop = () => resolve(new Blob(chunks, { type: mime || "video/webm" }));
   });
   rec.start(200);
@@ -317,6 +325,7 @@ export async function exportMovie(
   if (rec.state !== "inactive") rec.stop();
   pauseAll();
   exporting = false;
+  canvas.dataset.preview = "1";
   transport.playing = false;
   playing = false;
   emit();

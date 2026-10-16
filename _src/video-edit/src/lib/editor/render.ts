@@ -494,7 +494,11 @@ function fillStroke(
   ctx.shadowColor = "transparent";
 }
 
-function drawTextClip(ctx: CanvasRenderingContext2D, clip: TextClip, t: number) {
+/* 미리보기 화면에서 자막을 눌러 끌 수 있게, 그린 자막의 자리를 캔버스별로 기억해요 */
+export type TextBox = { id: string; x: number; y: number; w: number; h: number; fixed: boolean };
+export const textBoxes = new WeakMap<HTMLCanvasElement, TextBox[]>();
+
+function drawTextClip(ctx: CanvasRenderingContext2D, clip: TextClip, t: number, boxes?: TextBox[]) {
   const preset = presetById(clip.preset);
   const w = ctx.canvas.width;
   const h = ctx.canvas.height;
@@ -526,6 +530,20 @@ function drawTextClip(ctx: CanvasRenderingContext2D, clip: TextClip, t: number) 
   if (preset.layout === "bar") centerY = h - h * 0.055;
   if (preset.layout === "cinema") centerY = h * 0.9;
 
+  const fixed = preset.layout === "bar" || preset.layout === "cinema";
+  const dx = fixed ? 0 : (clip.x ?? 0) * w;
+  if (boxes) {
+    let widest = 40;
+    for (const line of lines) widest = Math.max(widest, ctx.measureText(line).width);
+    if (preset.anim === "words" || preset.layout === "words") widest = Math.max(widest, ctx.measureText(clip.text).width);
+    const pad = fontSize * (preset.layout === "pill" || preset.layout === "lower" ? 0.75 : 0.35);
+    let left = preset.align === "center" ? cx - widest / 2 : preset.align === "right" ? cx - widest : cx;
+    if (preset.anim === "words" || preset.layout === "words") left = w / 2 - widest / 2;
+    let top = centerY - blockH / 2, bh = blockH;
+    if (preset.layout === "bar") { top = h - h * 0.11; bh = h * 0.11; }
+    boxes.push({ id: clip.id, x: (fixed ? 0 : left - pad) + dx, y: top - (fixed ? 0 : pad), w: fixed ? w : widest + pad * 2, h: bh + (fixed ? 0 : pad * 2), fixed });
+  }
+  ctx.translate(dx, 0);
   ctx.translate(w / 2, centerY);
   ctx.rotate(preset.rotate);
   ctx.scale(motion.scale, motion.scale);
@@ -661,13 +679,33 @@ export function drawFrame(ctx: CanvasRenderingContext2D, t: number): void {
     ctx.drawImage(lctx.canvas, 0, 0);
   }
 
+  const boxes: TextBox[] = [];
   const texts = tracks.filter((track) => track.kind === "text" && !track.hidden);
   for (const track of [...texts].reverse()) {
     const items = clips
       .filter((clip): clip is TextClip => clip.type === "text" && clip.trackId === track.id && t >= clip.start && t < clip.start + clip.duration)
       .sort((a, b) => a.start - b.start);
-    for (const clip of items) drawTextClip(ctx, clip, t);
+    for (const clip of items) drawTextClip(ctx, clip, t, boxes);
   }
 
-  if (safe) drawGuides(ctx);
+  const cv = ctx.canvas as HTMLCanvasElement;
+  if (typeof HTMLCanvasElement !== "undefined" && cv instanceof HTMLCanvasElement) {
+    textBoxes.set(cv, boxes);
+    // 미리보기에서만: 고른 자막에 점선 테두리 (내보낸 영상에는 안 들어가요)
+    if (cv.dataset.preview === "1") {
+      const sel = new Set(useEditor.getState().selectedIds);
+      for (const b of boxes) {
+        if (!sel.has(b.id)) continue;
+        ctx.save();
+        ctx.setLineDash([Math.max(4, w / 160), Math.max(3, w / 220)]);
+        ctx.lineWidth = Math.max(1.5, w / 640);
+        ctx.strokeStyle = "#ff5a0a";
+        ctx.strokeRect(b.x, b.y, b.w, b.h);
+        ctx.restore();
+      }
+    }
+  }
+
+  // 안전영역 선은 화면에서만 보여요 (내보낸 영상에는 안 들어가요)
+  if (safe && (ctx.canvas as HTMLCanvasElement).dataset?.preview === "1") drawGuides(ctx);
 }

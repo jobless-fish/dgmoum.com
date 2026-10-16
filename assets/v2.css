@@ -277,3 +277,13 @@ body[data-tool] .btn-primary:hover:not(:disabled) { filter: brightness(1.06); bo
 .vstat.free b { color: var(--brand); font-size: clamp(28px, 4vw, 38px); }
 .vstat .na { color: var(--muted); font-size: .8em; }
 .vstat b .demo { font-style: normal; font-size: 11px; font-weight: 700; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 1px 6px; margin-left: 6px; vertical-align: middle; letter-spacing: 0; }
+
+/* ---------- 얇은 스크롤바 (모든 페이지 공통) ---------- */
+* { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--muted) 45%, transparent) transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--muted) 45%, transparent); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--muted) 70%, transparent); }
+::-webkit-scrollbar-corner { background: transparent; }
+body.pe * { scrollbar-color: #4a4c51 transparent; }
+body.pe ::-webkit-scrollbar-thumb { background: #4a4c51; }

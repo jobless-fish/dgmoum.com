@@ -89,6 +89,8 @@ export type TextClip = ClipBase & {
   color: string;
   /** Null keeps the preset anchor. */
   y: number | null;
+  /** 가로로 옮긴 정도 (화면 폭 비율, 0 = 프리셋 위치). 예전 프로젝트엔 없을 수 있어요. */
+  x?: number | null;
 };
 
 export type Clip = VisualClip | AudioClip | TextClip;
