@@ -33,6 +33,7 @@ tools/
   print-size/     인쇄 크기 계산기 (px ↔ cm·mm, 용지별 DPI, 재단 여유)
   placeholder/    임시 이미지 만들기 (크기 표시 · SNS 규격 · PNG/JPG/SVG)
   korean-lorem/   한글 더미 텍스트 (문단 · 문장 · 정확한 글자 수)
+  video-edit/     컷편집Pro (타임라인·숏폼 자막·전환·배경음악, React 빌드 결과 · 소스는 _src/video-edit)
   video-trim/     영상 자르기
   video-gif/      영상 → GIF
   screen-recorder/ 화면 녹화 (화면·창·탭, 화면 소리+마이크, 일시정지, MP4)

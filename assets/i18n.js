@@ -66,7 +66,7 @@ window.I18N = {
   CAT: {
     img: { ko: ["이미지", "변환, 압축, 자르기부터 사진 보정까지"], en: ["Image", "Convert, compress, edit and more"] },
     doc: { ko: ["PDF", "합치기, 나누기, 변환, 쪽 번호, 암호 해제"], en: ["PDF", "Merge, split, convert, number, unlock"] },
-    vid: { ko: ["영상", "자르기, GIF, 세로 변환, 화면 녹화"], en: ["Video", "Trim, GIF, vertical, screen record"] },
+    vid: { ko: ["영상", "컷 편집, 자르기, GIF, 화면 녹화"], en: ["Video", "Trim, GIF, vertical, screen record"] },
     aud: { ko: ["오디오", "자르기, 변환, 볼륨, 녹음"], en: ["Audio", "Cut, convert, volume, record"] },
     des: { ko: ["디자인", "색, CSS, 파비콘, 인쇄 크기"], en: ["Design", "Colors, CSS, favicons, print size"] },
     txt: { ko: ["텍스트 · 생활", "QR코드, 글자 수, 글 비교"], en: ["Text & Life", "QR codes, word count, diff"] },
@@ -85,6 +85,7 @@ window.I18N = {
     "image-crop": ["Crop, Rotate & Flip", "Crop to 1:1, 4:5, 16:9 and more, rotate and flip."],
     "image-watermark": ["Add Watermark", "Stamp text or a logo on many images at once."],
     "image-exif": ["Remove Photo Metadata", "See and remove hidden GPS, device and date info. No quality loss."],
+    "video-edit": ["Video Editor Pro", "Timeline cutting, short-form captions, transitions and music. Export 16:9, 9:16 or 1:1."],
     "photo-edit": ["Photo Editor Pro", "Exposure, curves, HSL, grain and film presets like Portra and Tri-X."],
     "pixel-art": ["Pixel Art (8-bit / 16-bit)", "Turn photos into retro game pixel art with classic palettes."],
     "ascii-art": ["ASCII Art", "Draw your photo with characters, blocks or braille. Copy or save PNG."],

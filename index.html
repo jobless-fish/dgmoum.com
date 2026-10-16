@@ -73,8 +73,8 @@
   const $ = s => document.querySelector(s);
   const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
   // 분류마다 대표 도구
-  const FEAT_OF = { fun: "pixel-art", img: "photo-edit", doc: "pdf-merge", vid: "screen-recorder", aud: "audio-edit", des: "color-palette", txt: "qr-code", form: "form-quote" };
-  const FREE = ["photo-edit", "form-quote", "screen-recorder", "pixel-art", "text-diff", "stamp-clean"];
+  const FEAT_OF = { fun: "pixel-art", img: "photo-edit", doc: "pdf-merge", vid: "video-edit", aud: "audio-edit", des: "color-palette", txt: "qr-code", form: "form-quote" };
+  const FREE = ["photo-edit", "video-edit", "form-quote", "pixel-art", "text-diff", "stamp-clean"];
   let cat = "all", rot = 0, rotT = 0;
 
   DG.searchBox($("#heroIn"), $("#heroRes"));
