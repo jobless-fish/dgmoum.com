@@ -316,7 +316,7 @@
     $("#mq1").innerHTML = (a.map(chip).join("")).repeat(2);
     $("#mq2").innerHTML = (b.map(chip).join("")).repeat(2);
 
-    $("#what").innerHTML = DG.ORDER.map(c => {
+    $("#what").innerHTML = DG.ORDER.filter(c => c !== "pro").map(c => {
       const list = tools.filter(t => t.cat === c);
       return `<a class="wcell" href="../#cat-${c}" style="--c:${DG.color(c)}"><span class="en">${EN[c]}</span><span class="ko">${esc(DG.cat(c))}</span>
         <ul>${list.slice(0, 3).map(t => `<li>${esc(DG.name(t))}</li>`).join("")}</ul><p>${esc(L.tag[c])}</p><span class="n">${L.more(list.length)}</span></a>`;

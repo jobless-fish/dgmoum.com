@@ -71,6 +71,7 @@ window.I18N = {
     des: { ko: ["디자인", "색, CSS, 파비콘, 인쇄 크기"], en: ["Design", "Colors, CSS, favicons, print size"] },
     txt: { ko: ["텍스트 · 생활", "QR코드, 글자 수, 글 비교"], en: ["Text & Life", "QR codes, word count, diff"] },
     form: { ko: ["양식", "견적서, 계약서, 이력서, 도장 만들기"], en: ["Documents", "Quotes, contracts, resumes, stamps"] },
+    pro: { ko: ["Pro", "설치 프로그램 없이 하는 본격 편집"], en: ["Pro", "Full editors right in your browser"] },
     fun: { ko: ["FUN", "사진으로 노는 재미있는 도구"], en: ["FUN", "Playful tools for your photos"] }
   },
   TOOL: {

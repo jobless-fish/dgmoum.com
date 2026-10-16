@@ -14,7 +14,7 @@ window.TT_TOOLS = [
   { id: "image-crop", cat: "img", name: "자르기 · 회전 · 뒤집기", desc: "1:1, 4:5, 16:9 같은 비율로 자르고, 90도 돌리고, 좌우·상하로 뒤집어요.", tags: ["자르기", "크롭", "crop", "회전", "돌리기", "뒤집기", "반전", "비율"], status: "live" },
   { id: "image-watermark", cat: "img", name: "워터마크 넣기", desc: "글자나 로고를 여러 장에 한 번에. 위치, 투명도, 반복 무늬 선택.", tags: ["워터마크", "로고", "저작권", "도용", "표시"], status: "live" },
   { id: "image-exif", cat: "img", name: "사진 정보 지우기", desc: "사진에 숨은 촬영 위치·기기·날짜 정보를 보여주고 깨끗하게 지워요. 화질 손실 없이.", tags: ["exif", "위치", "gps", "메타데이터", "개인정보", "중고거래"], status: "live" },
-  { id: "photo-edit", cat: "img", name: "사진보정Pro", desc: "노출·색온도·톤 곡선·색상별 보정·그레인까지. Portra·Tri-X 같은 필름 느낌 프리셋, LUT, 여러 장 한 번에.", tags: ["사진 보정", "사진보정", "pro", "라이트룸", "lightroom", "필터", "프리셋", "필름", "색감", "보정", "lut", "포트라"], status: "live" },
+  { id: "photo-edit", cat: "img", pro: true, name: "사진보정Pro", desc: "노출·색온도·톤 곡선·색상별 보정·그레인까지. Portra·Tri-X 같은 필름 느낌 프리셋, LUT, 여러 장 한 번에.", tags: ["사진 보정", "사진보정", "pro", "라이트룸", "lightroom", "필터", "프리셋", "필름", "색감", "보정", "lut", "포트라"], status: "live" },
   { id: "pixel-art", cat: "fun", name: "도트 아트 (8비트 · 16비트)", desc: "사진을 옛날 게임 같은 도트 그림으로. 패미컴·슈퍼패미컴·게임보이·PICO-8 색, 색 수 직접, 디더링.", tags: ["도트", "픽셀아트", "pixel art", "8비트", "16비트", "8bit", "레트로", "게임보이", "도트화"], status: "live" },
   { id: "ascii-art", cat: "fun", name: "아스키 아트 만들기", desc: "사진을 글자로 그린 그림으로. 기본·블록·점자·내 글자, 컬러, 글로 복사·PNG 저장.", tags: ["아스키", "아스키아트", "ascii", "텍스트 아트", "글자 그림", "점자", "특수문자 그림"], status: "live" },
   { id: "color-palette", cat: "des", name: "색 뽑기", desc: "이미지에서 대표 색을 뽑아 HEX·RGB 코드로. 원하는 곳을 눌러 색을 집을 수도 있어요.", tags: ["색", "컬러", "팔레트", "hex", "스포이드", "color", "palette"], status: "live" },
@@ -24,7 +24,7 @@ window.TT_TOOLS = [
   { id: "placeholder", cat: "des", name: "임시 이미지 만들기", desc: "크기가 적힌 자리용 이미지를 만들어요. SNS 규격 프리셋, PNG · JPG · SVG.", tags: ["플레이스홀더", "placeholder", "더미 이미지", "임시", "시안", "목업"], status: "live" },
   { id: "css-gen", cat: "des", name: "CSS 생성기", desc: "그라데이션, 그림자, 둥근 모서리, 글래스모피즘, 패턴 CSS를 만들고 복사해요. 프리셋 80여 개.", tags: ["css", "그라데이션", "gradient", "box-shadow", "그림자", "text-shadow", "border-radius", "글래스모피즘", "뉴모피즘", "패턴", "코드"], status: "live" },
   { id: "korean-lorem", cat: "des", name: "한글 더미 텍스트", desc: "시안·목업용 한글 자리 글을 문단 · 문장 · 정확한 글자 수로 만들어요.", tags: ["더미 텍스트", "로렘 입숨", "lorem", "한글 입숨", "샘플 텍스트", "시안"], status: "live" },
-  { id: "video-edit", cat: "vid", name: "컷편집Pro", desc: "타임라인에서 컷 편집, 숏폼 자막, 화면 전환, 배경음악까지. 16:9·9:16·1:1 영상으로 보내기.", tags: ["영상 편집", "동영상 편집", "컷편집", "pro", "타임라인", "자막", "숏폼", "릴스", "쇼츠", "전환", "프리미어", "캡컷", "브루"], status: "live" },
+  { id: "video-edit", cat: "vid", pro: true, name: "컷편집Pro", desc: "타임라인에서 컷 편집, 숏폼 자막, 화면 전환, 배경음악까지. 16:9·9:16·1:1 영상으로 보내기.", tags: ["영상 편집", "동영상 편집", "컷편집", "pro", "타임라인", "자막", "숏폼", "릴스", "쇼츠", "전환", "프리미어", "캡컷", "브루"], status: "live" },
   { id: "video-trim", cat: "vid", name: "영상 자르기", desc: "원하는 구간만 골라 잘라 저장해요. 소리도 같이 들어가요.", tags: ["동영상", "video", "trim", "컷", "편집", "mp4"], status: "live" },
   { id: "video-gif", cat: "vid", name: "영상 → GIF", desc: "영상에서 짧은 구간을 골라 움짤(GIF)로 만들어요. 크기와 프레임 수 조절.", tags: ["gif", "움짤", "짤", "동영상", "변환"], status: "live" },
   { id: "shorts-maker", cat: "vid", name: "쇼츠 · 릴스 · 틱톡 세로 변환", desc: "가로 영상을 9:16 세로로 바꿔요. 남는 곳은 흐린 배경으로 채우거나, 꽉 채운 뒤 보여줄 부분을 골라요.", tags: ["쇼츠", "릴스", "틱톡", "세로", "9:16", "shorts", "reels", "tiktok", "세로 영상", "변환"], status: "live" },
@@ -70,6 +70,7 @@ window.TT_TOOLS = [
 ];
 
 window.TT_CATS = {
+  pro: { label: "Pro", color: "var(--pro)" },  /* 모음 분류: 각 도구는 원래 분류에도 그대로 있어요 */
   img: { label: "이미지", color: "var(--img)" },
   doc: { label: "PDF", color: "var(--doc)" },
   vid: { label: "영상", color: "var(--vid)" },

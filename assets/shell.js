@@ -36,10 +36,13 @@
     aud: `<svg ${S}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
     des: `<svg ${S}><circle cx="13.5" cy="6.5" r="1.5"/><circle cx="17.5" cy="10.5" r="1.5"/><circle cx="8.5" cy="7.5" r="1.5"/><circle cx="6.5" cy="12.5" r="1.5"/><path d="M12 2a10 10 0 0 0 0 20c1 0 1.7-.8 1.7-1.7 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.8-1.7 1.7-1.7H17a5 5 0 0 0 5-5C22 6 17.5 2 12 2z"/></svg>`,
     txt: `<svg ${S}><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>`,
+    pro: `<svg ${S}><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.4z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>`,
     fun: `<svg ${S}><rect x="2" y="6" width="20" height="12" rx="6"/><path d="M6 12h4"/><path d="M8 10v4"/><circle cx="15.5" cy="11" r=".6" fill="currentColor"/><circle cx="17.5" cy="13" r=".6" fill="currentColor"/></svg>`,
     form: `<svg ${S}><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v2h6V3"/><path d="M9 11h6M9 15h4"/></svg>`
   };
-  const ORDER = ["img", "doc", "vid", "aud", "form", "des", "txt", "fun"];
+  const ORDER = ["pro", "img", "doc", "vid", "aud", "form", "des", "txt", "fun"];
+  // Pro는 따로 모아 보여 주는 분류예요 (도구에 pro: true). 나머지는 도구의 cat으로 나눠요
+  const inCat = (t, c) => c === "pro" ? !!t.pro : t.cat === c;
 
   /* ---------- 언어 ---------- */
   const qp = new URLSearchParams(location.search).get("lang");
@@ -58,7 +61,7 @@
     icon: id => (window.TT_ICONS && TT_ICONS[id]) || "",
     onLang(fn) { listeners.push(fn); fn(lang); },
     setLang(l) { lang = l; store.set("dg-lang", l); document.documentElement.lang = l; renderShell(); applyText(); listeners.forEach(f => f(l)); },
-    count: c => DG.tools().filter(t => t.cat === c).length,
+    inCat, count: c => DG.tools().filter(t => inCat(t, c)).length,
     /* 집계: 숫자만 보내요 (파일 · 개인 정보는 안 보내요) */
     counterOn: !!COUNTER_URL,
     hit(kind, tool = "") { if (!COUNTER_URL) return; try { navigator.sendBeacon(COUNTER_URL.replace(/\/$/, "") + "/hit", kind + ":" + tool); } catch {} },
@@ -105,7 +108,7 @@
           <a class="peek" href="${ROOT}about/" aria-label="${lang === "ko" ? "도구모음 소개 (ABOUT)" : "About DGMU"}"><span class="slide"><span class="card"><span class="fa">${lang === "ko" ? "도구모음" : "DGMU"}</span><span class="fb">ABOUT</span></span></span></a>
         </div>
         <nav class="nav" aria-label="${DG.t("menu")}">${ORDER.map(c => {
-          const list = DG.tools().filter(t => t.cat === c);
+          const list = DG.tools().filter(t => inCat(t, c));
           return `<div class="ni" style="--c:${DG.color(c)}"><button aria-expanded="false" aria-haspopup="true">${esc(DG.cat(c))}</button>
             <div class="mega" role="menu"><div class="mh"><span class="ic" style="--c:${DG.color(c)}">${CAT_ICON[c]}</span><div><b>${esc(DG.cat(c))}</b><br><span>${esc(DG.catTag(c))}</span></div></div>
             <ul>${list.slice(0, 14).map(t => `<li>${toolLink(t)}</li>`).join("")}</ul>
@@ -134,7 +137,7 @@
     // 휴대폰 메뉴
     let d = document.getElementById("drawer");
     if (!d) { d = document.createElement("div"); d.id = "drawer"; d.className = "drawer"; document.body.appendChild(d); }
-    d.innerHTML = `<a class="dabout" href="${ROOT}about/"><b>ABOUT</b><span>${lang === "ko" ? "도구모음 소개 · 광고 문의" : "About DGMU · Advertise"}</span></a>` + ORDER.map(c => { const list = DG.tools().filter(t => t.cat === c); return `<details><summary><span class="ic sm" style="--c:${DG.color(c)}">${CAT_ICON[c]}</span>${esc(DG.cat(c))}<small>${list.length}</small></summary><ul>${list.map(t => `<li>${toolLink(t)}</li>`).join("")}</ul></details>`; }).join("");
+    d.innerHTML = `<a class="dabout" href="${ROOT}about/"><b>ABOUT</b><span>${lang === "ko" ? "도구모음 소개 · 광고 문의" : "About DGMU · Advertise"}</span></a>` + ORDER.map(c => { const list = DG.tools().filter(t => inCat(t, c)); return `<details><summary><span class="ic sm" style="--c:${DG.color(c)}">${CAT_ICON[c]}</span>${esc(DG.cat(c))}<small>${list.length}</small></summary><ul>${list.map(t => `<li>${toolLink(t)}</li>`).join("")}</ul></details>`; }).join("");
     // 검색 창
     let s = document.getElementById("sdlg");
     if (!s) { s = document.createElement("div"); s.id = "sdlg"; s.className = "sdlg"; s.addEventListener("click", e => { if (e.target === s) closeSearch(); }); document.body.appendChild(s); }
