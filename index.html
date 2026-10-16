@@ -96,7 +96,7 @@
   function render() {
     hero();
     const tools = DG.tools(), n = tools.length;
-    $("#cats").innerHTML = DG.ORDER.map(c => {
+    $("#cats").innerHTML = [...DG.ORDER.filter(c => c !== "pro"), "pro"].map(c => { // Pro 카드는 8개 아래 한 줄로
       const f = tools.find(t => t.id === FEAT_OF[c]);
       if (c === "pro") return `<a class="cat wide" id="catcard-${c}" href="#allTools" data-c="${c}" style="--c:${DG.color(c)}">
         <span class="ic lg">${DG.CAT_ICON[c]}</span>
@@ -128,7 +128,7 @@
     const tools = DG.tools();
     const cats = cat === "all" ? DG.ORDER : [cat];
     $("#list").innerHTML = cats.map(c => `<div class="ghead" style="--c:${DG.color(c)}"><span class="ic sm">${DG.CAT_ICON[c]}</span>${esc(DG.cat(c))}<small style="color:var(--muted);font-weight:600">${DG.count(c)}</small></div>
-      <div class="vgrid">${tools.filter(t => DG.inCat(t, c)).map(card).join("")}</div>`).join("");
+      <div class="vgrid">${tools.filter(t => DG.inCat(t, c)).sort((a, b) => (b.pro ? 1 : 0) - (a.pro ? 1 : 0)).map(card).join("")}</div>`).join("");
     DG.paintStars($("#list")); favList();
   }
   $("#tabs").addEventListener("click", e => { const b = e.target.closest(".vtab"); if (!b) return; cat = b.dataset.c; $("#tabs").querySelectorAll(".vtab").forEach(x => x.setAttribute("aria-pressed", x === b)); list(); });

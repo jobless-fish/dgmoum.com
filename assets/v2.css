@@ -148,12 +148,21 @@ button { font: inherit; color: inherit; }
 .cat h3 small { font-size: 12.5px; font-weight: 700; color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); padding: 2px 8px; border-radius: 999px; }
 .cat p { margin: 0; color: var(--muted); font-size: 14.5px; }
 .cat .ft { font-size: 13.5px; font-weight: 600; color: var(--c); display: flex; align-items: center; gap: 4px; }
-/* Pro 분류는 한 줄을 다 쓰는 어두운 카드 */
-.cat.wide { grid-column: 1 / -1; grid-template-columns: auto 1fr auto; align-items: center; column-gap: 18px; background: #15120f; border-color: #15120f; color: #f3efe9; }
-.cat.wide::after { width: 260px; height: 260px; right: -60px; top: -110px; background: color-mix(in srgb, var(--c) 28%, transparent); }
-.cat.wide h3 { color: #fff; } .cat.wide p { color: #c9c2ba; } .cat.wide > div { display: grid; gap: 6px; }
-.cat.wide .ft { position: relative; z-index: 1; background: var(--c); color: #fff; padding: 9px 16px; border-radius: 999px; }
-:root[data-theme="dark"] .cat.wide { background: #1c1714; border-color: #2c2420; }
+/* Pro 분류: 같은 무드에서 살짝 떠 보이는 뉴모피즘 카드 (8개 카드 아래 한 줄) */
+.cat.wide { grid-column: 1 / -1; grid-template-columns: auto 1fr auto; align-items: center; column-gap: 18px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--surface) 92%, #fff), var(--surface));
+  border-color: color-mix(in srgb, var(--c) 18%, var(--line));
+  box-shadow: 8px 8px 22px rgba(16, 20, 28, .07), -8px -8px 22px rgba(255, 255, 255, .85), inset 0 1px 0 rgba(255, 255, 255, .7); }
+.cat.wide::after { width: 220px; height: 220px; right: -50px; top: -100px; background: color-mix(in srgb, var(--c) 8%, transparent); }
+.cat.wide:hover { transform: translateY(-2px); box-shadow: 10px 12px 26px rgba(16, 20, 28, .09), -8px -8px 22px rgba(255, 255, 255, .9), inset 0 1px 0 rgba(255, 255, 255, .7); }
+.cat.wide > div { display: grid; gap: 6px; }
+.cat.wide .ft { position: relative; z-index: 1; padding: 10px 18px; border-radius: 999px; background: var(--surface); color: var(--c);
+  box-shadow: 4px 4px 10px rgba(16, 20, 28, .08), -4px -4px 10px rgba(255, 255, 255, .95); transition: box-shadow .15s; }
+.cat.wide:hover .ft { box-shadow: inset 3px 3px 7px rgba(16, 20, 28, .08), inset -3px -3px 7px rgba(255, 255, 255, .9); }
+:root[data-theme="dark"] .cat.wide { background: linear-gradient(145deg, color-mix(in srgb, var(--surface) 88%, #fff), var(--surface));
+  box-shadow: 8px 8px 22px rgba(0, 0, 0, .45), -6px -6px 18px rgba(255, 255, 255, .03), inset 0 1px 0 rgba(255, 255, 255, .05); }
+:root[data-theme="dark"] .cat.wide .ft { box-shadow: 4px 4px 10px rgba(0, 0, 0, .45), -3px -3px 8px rgba(255, 255, 255, .04); }
+:root[data-theme="dark"] .cat.wide:hover .ft { box-shadow: inset 3px 3px 7px rgba(0, 0, 0, .5), inset -2px -2px 6px rgba(255, 255, 255, .04); }
 @media (max-width: 640px) { .cat.wide { grid-template-columns: auto 1fr; } .cat.wide .ft { grid-column: 1 / -1; justify-self: start; } }
 
 /* 탭 */
