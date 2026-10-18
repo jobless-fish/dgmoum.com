@@ -1,4 +1,6 @@
-(async () => {
+/* 전체 도구 목록. 전체도구 페이지(/library/)와 홈의 '전체도구 펼쳐보기'에서 같이 써요.
+   root 안의 .category-nav · .library-grid · #library-query · #library-count · #clear-filter를 찾아 그려요. */
+window.moumMountLibrary = async (root = document, { syncUrl = true } = {}) => {
   const data = await moumCatalog;
   const labels = [
     ["all", "전체 도구", "grid-2x2"],
@@ -12,10 +14,12 @@
     ["form", "서류 양식", "file-text"],
     ["fun", "플레이", "gamepad-2"],
   ];
-  const nav = document.querySelector(".category-nav");
-  const grid = document.querySelector(".library-grid");
-  const query = document.querySelector("#library-query");
-  const params = new URLSearchParams(location.search);
+  const micro = root.querySelector(".library-intro .micro");
+  if (micro) micro.textContent = "THE TOOL LIBRARY / " + data.length;
+  const nav = root.querySelector(".category-nav");
+  const grid = root.querySelector(".library-grid");
+  const query = root.querySelector("#library-query");
+  const params = new URLSearchParams(syncUrl ? location.search : "");
   let cat = labels.some((x) => x[0] === params.get("cat"))
     ? params.get("cat")
     : "all";
@@ -124,7 +128,7 @@
           : "검색 결과가 없어요. 다른 분류나 검색어를 선택해 주세요.";
       grid.append(p);
     }
-    document.querySelector("#library-count").textContent =
+    root.querySelector("#library-count").textContent =
       `${labels.find((x) => x[0] === cat)[1]} · ${matches.length}개`;
     pager.replaceChildren();
     if (pages > 1) {
@@ -138,7 +142,7 @@
         b.onclick = () => {
           page = target;
           render();
-          document
+          root
             .querySelector("#library-count")
             .scrollIntoView?.({
               behavior: moumReduced ? "instant" : "smooth",
@@ -149,16 +153,18 @@
         pager.append(b);
       }
     }
-    const u = new URL(location.href);
-    u.search = "";
-    if (cat !== "all") u.searchParams.set("cat", cat);
-    if (q) u.searchParams.set("q", q);
-    if (page > 1) u.searchParams.set("page", page);
-    history.replaceState(null, "", u);
+    if (syncUrl) {
+      const u = new URL(location.href);
+      u.search = "";
+      if (cat !== "all") u.searchParams.set("cat", cat);
+      if (q) u.searchParams.set("q", q);
+      if (page > 1) u.searchParams.set("page", page);
+      history.replaceState(null, "", u);
+    }
     moumIcons();
     if (!moumReduced && window.gsap)
       gsap.fromTo(
-        ".library-card",
+        grid.querySelectorAll(".library-card"),
         { opacity: 0, y: 12 },
         { opacity: 1, y: 0, duration: 0.35, stagger: 0.025, clearProps: "all" },
       );
@@ -167,7 +173,7 @@
     page = 1;
     render();
   });
-  document.querySelector("#clear-filter").onclick = () => {
+  root.querySelector("#clear-filter").onclick = () => {
     cat = "all";
     page = 1;
     query.value = "";
@@ -175,4 +181,5 @@
     query.focus();
   };
   render();
-})();
+};
+if (document.body.classList.contains("library-page")) moumMountLibrary(document, { syncUrl: true });
