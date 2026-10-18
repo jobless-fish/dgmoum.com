@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(){var t;try{t=localStorage.getItem("dg-theme")}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
+<link rel="manifest" href="../../site.webmanifest">
+<meta name="theme-color" content="#f0f0f0">
+<meta property="og:site_name" content="도구모음">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://dgmoum.com/assets/og-image.png">
+<meta property="og:title" content="이미지 프롬프트 만들기 (Midjourney · 나노바나나 · ChatGPT · Stable Diffusion) · 도구모음">
+<meta property="og:description" content="주제를 적고 스타일·구도·렌즈·빛·색감·분위기를 고르면 Midjourney, 나노바나나, ChatGPT, Stable Diffusion에 맞는 영어 이미지 프롬프트로 만들어 줘요. 네거티브 프롬프트, 비율까지. 무료.">
+<title>이미지 프롬프트 만들기 (Midjourney · 나노바나나 · ChatGPT · Stable Diffusion) · 도구모음</title>
+<meta name="description" content="주제를 적고 스타일·구도·렌즈·빛·색감·분위기를 고르면 Midjourney, 나노바나나, ChatGPT, Stable Diffusion에 맞는 영어 이미지 프롬프트로 만들어 줘요. 네거티브 프롬프트, 비율까지. 무료.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="../../assets/v2.css">
+<style>
+  body { --cat: var(--des); }
+  /* 칩 고르기 (두 프롬프트 도구 공통) */
+  .grp { display: grid; gap: 8px; }
+  .grp-h { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .grp-h b { font-size: 14px; }
+  .grp-h small { color: var(--muted); font-size: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; align-content: flex-start; align-items: flex-start; }
+  .chip { border: 1px solid var(--line); background: var(--surface); color: var(--ink); border-radius: 999px; padding: 6px 12px; font: 500 13.5px var(--f-body); cursor: pointer; transition: background .12s, border-color .12s; }
+  .chip:hover { border-color: color-mix(in srgb, var(--cat) 50%, var(--line)); }
+  .chip[aria-pressed=true] { background: color-mix(in srgb, var(--cat) 14%, var(--surface)); border-color: var(--cat); color: var(--ink); font-weight: 700; }
+  .chip small { color: var(--muted); font-weight: 500; margin-left: 4px; font-size: 11.5px; }
+  .out { display: grid; gap: 10px; }
+  .out pre { margin: 0; white-space: pre-wrap; word-break: break-word; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; font: 14px/1.65 var(--f-mono); min-height: 120px; color: var(--ink); }
+  .out .ko { font-family: var(--f-body); color: var(--muted); font-size: 13.5px; min-height: 0; }
+  .out-bar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .out-bar .sp { flex: 1; }
+  .label { font-size: 12.5px; font-weight: 700; color: var(--muted); letter-spacing: .02em; }
+  textarea.in { width: 100%; min-height: 84px; resize: vertical; border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; background: var(--surface); color: var(--ink); font: 15px/1.6 var(--f-body); }
+  textarea.in:focus { outline: 2px solid color-mix(in srgb, var(--cat) 45%, transparent); border-color: var(--cat); }
+  input.in { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--surface); color: var(--ink); font: 14.5px var(--f-body); }
+  .warn { font-size: 12.5px; color: var(--warn, #b45309); margin: 0; }
+
+  body.studio-standard .model .seg, .model .seg { display: grid; grid-auto-flow: row; grid-template-columns: 1fr 1fr; gap: 6px; border: 0; overflow: visible; background: none; padding: 0; }
+  body.studio-standard .model .seg label, .model .seg label { font-size: 13px; padding: 9px 4px; white-space: nowrap; border: 1px solid var(--line); border-radius: 10px; }
+  .dims { font-size: 12.5px; color: var(--muted); }
+
+</style>
+<link rel="stylesheet" href="/transition.css"><link rel="stylesheet" href="/command.css"><link rel="stylesheet" href="/studio.css">
+<link rel="icon" type="image/png" href="/assets/dg-logo.png"><link rel="apple-touch-icon" href="/assets/dg-logo.png">
+</head>
+<body data-tool="prompt-image">
+<header id="hdr"></header>
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="prompt-image"></span>
+    <div>
+      <h1>이미지 프롬프트 만들기</h1>
+      <p>주제를 적고 스타일·구도·빛·색감을 고르면, 쓰는 AI에 맞는 영어 프롬프트로 조립해 줘요. 한국어로 골라도 영어로 나와요.</p>
+    </div>
+  </div>
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <section class="panel"><div class="panel-body">
+        <label class="label" for="subj">무엇을 그릴까요?</label>
+        <textarea class="in" id="subj" placeholder="주제를 적어 주세요 (예: a cat sleeping on a sunny windowsill)"></textarea>
+        <p class="warn" id="koWarn" hidden>주제에 한글이 있어요. 이미지 AI는 영어를 더 정확히 알아들어서, 주제만큼은 영어로 쓰면 결과가 좋아져요. (고른 칩은 자동으로 영어로 바뀌어요)</p>
+      </div></section>
+      <section class="panel"><div class="panel-body" id="groups" style="gap:18px"></div></section>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>어디에 쓸까요</h2>
+        <div class="field model"><div class="seg" role="radiogroup" aria-label="이미지 AI">
+          <input type="radio" name="model" id="m-mj" value="mj" checked><label for="m-mj">Midjourney</label>
+          <input type="radio" name="model" id="m-nb" value="nb"><label for="m-nb">나노바나나</label>
+          <input type="radio" name="model" id="m-gpt" value="gpt"><label for="m-gpt">ChatGPT</label>
+          <input type="radio" name="model" id="m-sd" value="sd"><label for="m-sd">SD · Flux</label>
+        </div></div>
+        <div class="out">
+          <div class="out-bar"><span class="label">프롬프트</span><span class="sp"></span><button class="btn btn-sm" id="copy" type="button">복사</button></div>
+          <pre id="out" aria-live="polite"></pre>
+          <div id="negWrap" hidden>
+            <div class="out-bar"><span class="label">네거티브 프롬프트</span><span class="sp"></span><button class="btn btn-sm" id="copyNeg" type="button">복사</button></div>
+            <pre id="neg"></pre>
+          </div>
+          <p class="dims" id="dims"></p>
+          <label class="check"><input type="checkbox" id="showKo"> 한국어로 풀어 보기</label>
+          <pre class="ko" id="ko" hidden></pre>
+        </div>
+        <div class="row">
+          <button class="btn" id="dice" type="button">영감 주사위</button>
+          <button class="btn" id="reset" type="button">모두 비우기</button>
+        </div>
+        <p class="status" id="status"></p>
+        <p class="hint">고른 내용은 이 기기에만 기억돼요. 실존 작가·브랜드·캐릭터 이름을 넣으면 AI가 거절하거나 저작권 문제가 생길 수 있어요.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+<footer id="foot"></footer>
+<script src="../../assets/common.js"></script>
+<script src="../../assets/i18n.js"></script>
+<script src="../../assets/shell.js" data-root="../../"></script>
+<script>
+(() => {
+
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+  const say = TT.sayTo($("#status"));
+  // 그룹: {k, title, hint, multi, items:[[ko, en], ...]}
+  function drawGroups(box, groups, state, onChange) {
+    box.innerHTML = groups.map(g => `<div class="grp" data-g="${g.k}"><div class="grp-h"><b>${esc(g.title)}</b><small>${g.multi ? "여러 개 고를 수 있어요" : "하나만"}${g.hint ? " · " + esc(g.hint) : ""}</small></div>
+      <div class="chips">${g.items.map(([ko, en], i) => `<button class="chip" type="button" data-i="${i}" aria-pressed="false">${esc(ko)}${en && /[a-z]/i.test(en) && ko !== en ? "" : ""}</button>`).join("")}</div></div>`).join("");
+    box.addEventListener("click", e => {
+      const c = e.target.closest(".chip"); if (!c) return;
+      const k = c.closest(".grp").dataset.g, g = groups.find(x => x.k === k), i = +c.dataset.i;
+      const cur = state[k] || [];
+      if (g.multi) state[k] = cur.includes(i) ? cur.filter(x => x !== i) : [...cur, i];
+      else state[k] = cur[0] === i ? [] : [i];
+      paint(box, state); onChange();
+    });
+  }
+  function paint(box, state) {
+    box.querySelectorAll(".grp").forEach(g => {
+      const sel = state[g.dataset.g] || [];
+      g.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", sel.includes(+c.dataset.i)));
+    });
+  }
+  async function copyText(text, btn, label) {
+    if (!text.trim()) { say("먼저 내용을 채워 주세요.", "err"); return; }
+    try { await navigator.clipboard.writeText(text); }
+    catch { const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); document.execCommand("copy"); t.remove(); }
+    btn.textContent = "복사했어요"; setTimeout(() => btn.textContent = label, 1400);
+    say("프롬프트를 복사했어요. AI 입력창에 붙여 넣으세요.", "ok");
+  }
+  const hasHangul = s => /[가-힣]/.test(s);
+
+  // [한국어, English] — 칩은 미리 짝을 지어 두어 한국어로 골라도 영어로 나와요
+  const GROUPS = [
+    { k: "style", title: "스타일", items: [["실사 사진", "photorealistic photograph"], ["시네마틱 스틸", "cinematic film still"], ["제품 촬영", "commercial product photography"], ["일러스트", "digital illustration"], ["수채화", "watercolor painting"], ["유화", "oil painting"], ["연필 스케치", "pencil sketch"], ["셀 애니메이션", "cel-shaded anime style"], ["3D 렌더", "3D render"], ["클레이", "claymation style"], ["픽셀 아트", "pixel art"], ["플랫 벡터", "flat vector illustration"], ["아이소메트릭", "isometric illustration"], ["라인 아트", "minimal line art"], ["포스터 디자인", "graphic poster design"], ["종이 공예", "papercraft"]] },
+    { k: "shot", title: "구도", items: [["클로즈업", "close-up shot"], ["얼굴 중심", "portrait framing"], ["상반신", "medium shot"], ["전신", "full-body shot"], ["와이드", "wide shot"], ["항공 뷰", "aerial view"], ["탑뷰", "top-down flat lay"], ["로우 앵글", "low-angle shot"], ["하이 앵글", "high-angle shot"], ["정면 대칭", "symmetrical centered composition"], ["3분할", "rule of thirds composition"], ["여백 많이", "minimalist composition with negative space"]] },
+    { k: "lens", title: "카메라 · 렌즈", hint: "사진 느낌일 때", items: [["광각 24mm", "24mm wide-angle lens"], ["35mm", "35mm lens"], ["50mm", "50mm lens"], ["인물 85mm", "85mm portrait lens"], ["망원 200mm", "200mm telephoto lens"], ["매크로", "macro lens, extreme detail"], ["얕은 심도", "shallow depth of field, soft bokeh"], ["깊은 심도", "deep focus"], ["필름 Portra 느낌", "shot on Kodak Portra 400 film, natural grain"], ["흑백 필름", "black and white film photography, Tri-X grain"], ["폴라로이드", "instant film photo"], ["드론", "drone photography"]] },
+    { k: "light", title: "빛", items: [["자연광", "soft natural light"], ["골든아워", "golden hour sunlight"], ["블루아워", "blue hour twilight"], ["흐린 날", "overcast diffused light"], ["스튜디오 조명", "studio softbox lighting"], ["역광", "backlit, rim light"], ["창가 빛", "window light"], ["네온", "neon lighting"], ["촛불", "warm candlelight"], ["강한 그림자", "hard light with dramatic shadows"], ["명암 대비", "chiaroscuro lighting"], ["어두운 무드", "low-key lighting"]] },
+    { k: "color", title: "색감", items: [["파스텔", "pastel color palette"], ["선명하게", "vibrant saturated colors"], ["흑백", "monochrome"], ["어스 톤", "earthy muted tones"], ["틸 앤 오렌지", "teal and orange color grading"], ["빈티지", "faded vintage colors"], ["하이키", "bright high-key tones"], ["따뜻한 색", "warm color palette"], ["차가운 색", "cool color palette"], ["두 가지 색", "duotone"]] },
+    { k: "mood", title: "분위기", multi: true, items: [["따뜻한", "warm and cozy"], ["몽환적인", "dreamy"], ["평온한", "calm and peaceful"], ["긴장감", "tense and dramatic"], ["쓸쓸한", "melancholic"], ["경쾌한", "playful and cheerful"], ["고급스러운", "elegant and luxurious"], ["미래적인", "futuristic"], ["레트로", "retro nostalgic"], ["신비로운", "mysterious"]] },
+    { k: "detail", title: "디테일", multi: true, items: [["고해상도", "highly detailed, sharp focus"], ["질감 살리기", "rich textures"], ["깔끔한 배경", "clean simple background"], ["흰 배경", "isolated on a white background"], ["글자 넣을 여백", "empty space for text"], ["사실적인 피부", "natural skin texture"], ["부드러운 그라데이션", "smooth gradients"]] },
+    { k: "ratio", title: "비율", items: [["1:1", "1:1"], ["4:5", "4:5"], ["3:4", "3:4"], ["2:3", "2:3"], ["16:9", "16:9"], ["9:16", "9:16"], ["21:9", "21:9"]] },
+    { k: "neg", title: "빼고 싶은 것", multi: true, items: [["글자", "text"], ["워터마크", "watermark"], ["로고", "logo"], ["흐릿함", "blurry"], ["저화질", "low quality"], ["어색한 손", "deformed hands"], ["왜곡된 얼굴", "distorted face"], ["과한 채도", "oversaturated"], ["사람", "people"], ["테두리", "border, frame"]] },
+  ];
+  const SD_SIZE = { "1:1": "1024×1024", "4:5": "896×1120", "3:4": "896×1152", "2:3": "832×1216", "16:9": "1344×768", "9:16": "768×1344", "21:9": "1536×640" };
+  const KEY = "dg-prompt-image";
+  let state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch {}
+  if (state.subj) $("#subj").value = state.subj; // 사용자가 직접 쓴 내용만 다시 채워요 (예시 글은 넣지 않아요)
+  if (state.model) { const r = document.querySelector(`input[name=model][value=${state.model}]`); if (r) r.checked = true; }
+  const box = $("#groups");
+  drawGroups(box, GROUPS, state, build);
+  paint(box, state);
+
+  const pick = (k, lang) => (state[k] || []).map(i => GROUPS.find(g => g.k === k).items[i][lang === "ko" ? 0 : 1]);
+  const model = () => document.querySelector("input[name=model]:checked").value;
+
+  function build() {
+    const subj = $("#subj").value.trim(), m = model();
+    $("#koWarn").hidden = !hasHangul(subj);
+    const style = pick("style"), shot = pick("shot"), lens = pick("lens"), light = pick("light"), color = pick("color"),
+      mood = pick("mood"), detail = pick("detail"), ratio = pick("ratio")[0] || "", neg = pick("neg");
+    const parts = [...style, subj, ...shot, ...lens, ...light, ...color, ...mood, ...detail].filter(Boolean);
+    let out = "", negOut = "";
+    if (m === "mj") {
+      out = parts.join(", ");
+      if (out) { if (ratio) out += ` --ar ${ratio}`; if (neg.length) out += ` --no ${neg.join(", ")}`; }
+    } else if (m === "sd") {
+      out = parts.join(", ");
+      negOut = neg.join(", ");
+    } else {
+      // 나노바나나·ChatGPT는 문장으로 설명할 때 잘 알아들어요
+      const s = [];
+      if (subj || style.length) s.push(`Create an image${subj ? " of " + subj : ""}.`);
+      if (style.length) s.push(`Style: ${style.join(", ")}.`);
+      if (shot.length) s.push(`Composition: ${shot.join(", ")}.`);
+      if (lens.length) s.push(`Camera: ${lens.join(", ")}.`);
+      if (light.length) s.push(`Lighting: ${light.join(", ")}.`);
+      if (color.length) s.push(`Color: ${color.join(", ")}.`);
+      if (mood.length) s.push(`Mood: ${mood.join(", ")}.`);
+      if (detail.length) s.push(`Details: ${detail.join(", ")}.`);
+      if (neg.length) s.push(`Do not include ${neg.join(", ")}.`);
+      if (ratio) s.push(`Aspect ratio ${ratio}${m === "nb" ? " (set the ratio option too if available)" : ""}.`);
+      out = s.join(" ");
+    }
+    $("#out").textContent = out || "주제를 적거나 칩을 고르면 여기에 프롬프트가 만들어져요.";
+    $("#out").style.color = out ? "" : "var(--muted)";
+    $("#negWrap").hidden = m !== "sd";
+    $("#neg").textContent = negOut || "빼고 싶은 것을 고르면 여기에 들어가요.";
+    $("#dims").textContent = m === "sd" && ratio ? `권장 크기: ${SD_SIZE[ratio]} (SDXL·Flux 기준)` : m === "mj" ? "--ar 비율, --no 제외 항목을 붙였어요." : "";
+    // 한국어로 풀어 보기
+    const ko = [["주제", subj], ["스타일", pick("style", "ko")], ["구도", pick("shot", "ko")], ["카메라", pick("lens", "ko")], ["빛", pick("light", "ko")], ["색감", pick("color", "ko")], ["분위기", pick("mood", "ko")], ["디테일", pick("detail", "ko")], ["비율", ratio], ["빼기", pick("neg", "ko")]]
+      .filter(([, v]) => (Array.isArray(v) ? v.length : v)).map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`).join("\n");
+    $("#ko").textContent = ko || "아직 고른 것이 없어요.";
+    state.subj = $("#subj").value; state.model = m;
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+  }
+  $("#subj").addEventListener("input", build);
+  document.querySelectorAll("input[name=model]").forEach(r => r.addEventListener("change", build));
+  $("#showKo").onchange = () => { $("#ko").hidden = !$("#showKo").checked; };
+  $("#copy").onclick = () => copyText($("#out").style.color ? "" : $("#out").textContent, $("#copy"), "복사");
+  $("#copyNeg").onclick = () => copyText(pick("neg").join(", "), $("#copyNeg"), "복사");
+  $("#reset").onclick = () => { const m = state.model; state = { model: m }; $("#subj").value = ""; paint(box, state); build(); say("모두 비웠어요."); };
+  $("#dice").onclick = () => {
+    const r = n => Math.floor(Math.random() * n);
+    for (const k of ["style", "shot", "light", "color"]) state[k] = [r(GROUPS.find(g => g.k === k).items.length)];
+    const moods = GROUPS.find(g => g.k === "mood").items.length; state.mood = [r(moods)];
+    state.lens = /사진|시네마|제품|photo|film/i.test(pick("style")[0] || "") ? [r(GROUPS.find(g => g.k === "lens").items.length)] : [];
+    paint(box, state); build(); say("새 조합을 골라 봤어요. 마음에 드는 것만 남기고 바꿔 보세요.");
+  };
+  build();
+
+})();
+</script>
+<script src="/vendor/gsap.min.js"></script><script src="/vendor/lucide.min.js"></script><script src="/vendor/fuse.min.js"></script><script src="/common-ui.js"></script><script src="/studio.js"></script>
+</body>
+</html>

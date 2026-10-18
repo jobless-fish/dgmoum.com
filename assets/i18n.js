@@ -115,6 +115,8 @@ window.I18N = {
     "pdf-unlock": ["Unlock PDF", "Remove the password from a PDF you can open, and lift print or copy limits."],
     "pdf-page-number": ["Add Page Numbers", "Number PDF pages. Position, style, skip cover, duplex."],
     "qr-code": ["QR Code Generator", "Links, Wi-Fi, contacts and text as QR. Colors and logo, PNG or SVG."],
+    "prompt-image": ["Image Prompt Builder", "Pick style, framing, light and color to build prompts for Midjourney, Nano Banana, ChatGPT or Stable Diffusion."],
+    "prompt-text": ["AI Writing Prompt Builder", "Fill in a few fields to get a clear work prompt for ChatGPT, Claude or Gemini."],
     "char-count": ["Character Counter", "Count characters with or without spaces, bytes and lines."],
     "text-diff": ["Text Compare", "Highlight added, removed and changed words between two texts."],
     "form-quote": ["Quotation Maker", "Fill in a quote by industry and save as PDF. Auto VAT and totals."],
