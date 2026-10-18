@@ -111,6 +111,7 @@
         grid.querySelector(`[data-tool="${t.id}"] .library-star`)?.focus();
       };
       card.dataset.tool = t.id;
+      if (t.hot) card.classList.add("is-hot"); // 많이 찾는 도구: 은은한 빛
       card.append(a, star);
       grid.append(card);
     });

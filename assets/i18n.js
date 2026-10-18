@@ -77,7 +77,7 @@ window.I18N = {
   TOOL: {
     "image-convert": ["Image Converter", "Convert between PNG, JPG and WEBP in bulk, with quality control."],
     "image-resize": ["Resize Image", "Resize by pixels or percent, keep aspect ratio, batch process."],
-    "image-compress": ["Compress Image", "Shrink file size without changing dimensions. Hit a target KB."],
+    "image-compress": ["Reduce Image Size", "Shrink file size without changing dimensions. Hit a target KB."],
     "image-mosaic": ["Blur & Redact", "Drag to pixelate, blur or black out names, numbers and faces."],
     "image-gif": ["GIF Maker", "Turn a set of photos into an animated GIF."],
     "insta-grid": ["Instagram Grid", "Split one photo into a 3-column grid that connects on your profile."],

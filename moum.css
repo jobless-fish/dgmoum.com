@@ -2030,3 +2030,17 @@ p {
 .dg-brand-icon{display:block;width:34px;height:34px;object-fit:contain;flex-shrink:0;}
 .m-logo,.studio-brand{white-space:nowrap;}
 @media(max-width:500px){.refreshed-header .m-logo{font-size:21px}.refreshed-header .brand-group{gap:8px}.dg-brand-icon{width:30px;height:30px}}
+
+/* 많이 찾는 도구 — 은은한 글로우 (catalog.json의 "hot": true) */
+.library-card.is-hot {
+  border-color: color-mix(in srgb, #9990ee 55%, var(--border));
+  box-shadow: 0 0 0 1px rgba(153, 144, 238, 0.18), 0 8px 26px -6px rgba(124, 108, 240, 0.28), 0 0 36px -8px rgba(255, 170, 120, 0.22);
+  background: radial-gradient(120% 90% at 0% 0%, rgba(153, 144, 238, 0.09), transparent 55%), radial-gradient(100% 80% at 100% 100%, rgba(255, 170, 120, 0.07), transparent 60%), white;
+}
+.library-card.is-hot:hover {
+  box-shadow: 0 0 0 1px rgba(153, 144, 238, 0.3), 0 12px 32px -6px rgba(124, 108, 240, 0.34), 0 0 44px -6px rgba(255, 170, 120, 0.28);
+}
+[data-theme="dark"] .library-card.is-hot {
+  border-color: rgba(153, 144, 238, 0.45);
+  box-shadow: 0 0 0 1px rgba(153, 144, 238, 0.22), 0 10px 30px -8px rgba(124, 108, 240, 0.45), 0 0 40px -10px rgba(255, 170, 120, 0.25);
+}

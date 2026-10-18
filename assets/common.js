@@ -3,18 +3,18 @@
 // 새 툴을 추가할 때는 여기 한 줄만 넣으면 카탈로그에 자동으로 나옵니다.
 // status: "live" = 사용 가능, "soon" = 준비 중
 window.TT_TOOLS = [
+  { id: "image-compress", cat: "img", hot: true, name: "이미지 용량 줄이기", desc: "크기는 그대로 두고 용량만 줄여요. 원하는 용량(KB)을 넣으면 거기에 맞춰줘요.", tags: ["이미지 압축", "용량 줄이기", "용량", "압축", "줄이기", "kb", "compress"], status: "live" },
+  { id: "photo-edit", cat: "img", hot: true, pro: true, name: "사진보정Pro", desc: "노출·색온도·톤 곡선·색상별 보정·그레인까지. Portra·Tri-X 같은 필름 느낌 프리셋, LUT, 여러 장 한 번에.", tags: ["사진 보정", "사진보정", "pro", "라이트룸", "lightroom", "필터", "프리셋", "필름", "색감", "보정", "lut", "포트라"], status: "live" },
+  { id: "image-exif", cat: "img", hot: true, name: "사진 정보 지우기", desc: "사진에 숨은 촬영 위치·기기·날짜 정보를 보여주고 깨끗하게 지워요. 화질 손실 없이.", tags: ["exif", "위치", "gps", "메타데이터", "개인정보", "중고거래"], status: "live" },
+  { id: "image-split", cat: "img", name: "긴 이미지 나누기", desc: "세로로 긴 상세페이지나 캡처를 원하는 높이·개수로 잘라요.", tags: ["상세페이지", "분할", "나누기", "자르기", "긴 이미지", "캡처"], status: "live" },
+  { id: "image-crop", cat: "img", name: "자르기 · 회전 · 뒤집기", desc: "1:1, 4:5, 16:9 같은 비율로 자르고, 90도 돌리고, 좌우·상하로 뒤집어요.", tags: ["자르기", "크롭", "crop", "회전", "돌리기", "뒤집기", "반전", "비율"], status: "live" },
   { id: "image-convert", cat: "img", name: "이미지 포맷 변환", desc: "PNG · JPG · WEBP 사이를 여러 장 한 번에 바꿔요. 화질 조절과 투명 배경 처리까지.", tags: ["png", "jpg", "jpeg", "webp", "변환", "확장자"], status: "live" },
   { id: "image-resize", cat: "img", name: "이미지 크기 조절", desc: "픽셀이나 퍼센트로 줄이고 늘려요. 비율 유지, 여러 장 일괄 처리.", tags: ["리사이즈", "resize", "크기", "축소"], status: "live" },
-  { id: "image-compress", cat: "img", name: "이미지 압축", desc: "크기는 그대로 두고 용량만 줄여요. 원하는 용량(KB)을 넣으면 거기에 맞춰줘요.", tags: ["용량", "압축", "줄이기", "kb", "compress"], status: "live" },
   { id: "image-mosaic", cat: "img", name: "모자이크 · 가리기", desc: "캡처나 사진에서 이름, 번호, 얼굴을 드래그해서 모자이크나 검은 박스로 가려요.", tags: ["모자이크", "블러", "가리기", "개인정보", "캡처"], status: "live" },
   { id: "image-gif", cat: "img", name: "움짤 만들기", desc: "사진 여러 장을 순서대로 이어서 GIF 움짤로 만들어요. 넘김 속도와 크기 조절.", tags: ["gif", "움짤", "짤", "애니메이션", "이미지", "만들기"], status: "live" },
   { id: "insta-grid", cat: "img", name: "인스타 그리드 자르기", desc: "사진 한 장을 3칸 × 여러 줄로 나눠 인스타 프로필에 이어지는 그림으로 올려요. 올릴 순서까지 번호로.", tags: ["인스타", "인스타그램", "instagram", "그리드", "피드", "분할", "퍼즐", "자르기"], status: "live" },
   { id: "image-merge", cat: "img", name: "이미지 합치기", desc: "여러 이미지를 가로·세로·격자로 이어 붙여요. 크기 맞춤과 간격 조절.", tags: ["합치기", "이어붙이기", "병합", "붙이기", "콜라주"], status: "live" },
-  { id: "image-split", cat: "img", name: "긴 이미지 나누기", desc: "세로로 긴 상세페이지나 캡처를 원하는 높이·개수로 잘라요.", tags: ["상세페이지", "분할", "나누기", "자르기", "긴 이미지", "캡처"], status: "live" },
-  { id: "image-crop", cat: "img", name: "자르기 · 회전 · 뒤집기", desc: "1:1, 4:5, 16:9 같은 비율로 자르고, 90도 돌리고, 좌우·상하로 뒤집어요.", tags: ["자르기", "크롭", "crop", "회전", "돌리기", "뒤집기", "반전", "비율"], status: "live" },
   { id: "image-watermark", cat: "img", name: "워터마크 넣기", desc: "글자나 로고를 여러 장에 한 번에. 위치, 투명도, 반복 무늬 선택.", tags: ["워터마크", "로고", "저작권", "도용", "표시"], status: "live" },
-  { id: "image-exif", cat: "img", name: "사진 정보 지우기", desc: "사진에 숨은 촬영 위치·기기·날짜 정보를 보여주고 깨끗하게 지워요. 화질 손실 없이.", tags: ["exif", "위치", "gps", "메타데이터", "개인정보", "중고거래"], status: "live" },
-  { id: "photo-edit", cat: "img", pro: true, name: "사진보정Pro", desc: "노출·색온도·톤 곡선·색상별 보정·그레인까지. Portra·Tri-X 같은 필름 느낌 프리셋, LUT, 여러 장 한 번에.", tags: ["사진 보정", "사진보정", "pro", "라이트룸", "lightroom", "필터", "프리셋", "필름", "색감", "보정", "lut", "포트라"], status: "live" },
   { id: "pixel-art", cat: "fun", name: "도트 아트 (8비트 · 16비트)", desc: "사진을 옛날 게임 같은 도트 그림으로. 패미컴·슈퍼패미컴·게임보이·PICO-8 색, 색 수 직접, 디더링.", tags: ["도트", "픽셀아트", "pixel art", "8비트", "16비트", "8bit", "레트로", "게임보이", "도트화"], status: "live" },
   { id: "ascii-art", cat: "fun", name: "아스키 아트 만들기", desc: "사진을 글자로 그린 그림으로. 기본·블록·점자·내 글자, 컬러, 글로 복사·PNG 저장.", tags: ["아스키", "아스키아트", "ascii", "텍스트 아트", "글자 그림", "점자", "특수문자 그림"], status: "live" },
   { id: "prompt-image", cat: "des", name: "이미지 프롬프트 만들기", desc: "스타일·구도·빛·색감을 고르면 Midjourney·나노바나나·ChatGPT·Stable Diffusion용 영어 프롬프트로 조립해요.", tags: ["프롬프트", "prompt", "이미지 생성", "미드저니", "midjourney", "나노바나나", "nano banana", "stable diffusion", "flux", "ai 그림", "네거티브 프롬프트"], status: "live" },
