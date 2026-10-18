@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>(function(){var t;try{t=localStorage.getItem("dg-theme")}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
-<link rel="icon" href="../../favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
-<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+
+
+
 <link rel="manifest" href="../../site.webmanifest">
 <meta name="theme-color" content="#f0f0f0">
 <meta property="og:site_name" content="도구모음">
@@ -25,8 +25,16 @@
 <style>
   body { --cat: var(--aud); }
   .wave-wrap { padding: 14px 16px 16px; display: grid; gap: 12px; }
-  .wave { position: relative; height: 150px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--line); overflow: hidden; touch-action: none; cursor: crosshair; }
-  .wave canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .wave { position: relative; height: 150px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--line); overflow: visible; touch-action: none; cursor: crosshair; }
+  .wave-handle { position:absolute; top:0; bottom:0; width:28px; padding:0; border:0; border-radius:6px; background:transparent; color:var(--aud); cursor:ew-resize; touch-action:none; z-index:2; transform:translateX(-50%); }
+  .wave-handle::after { content:"Ⅱ"; position:absolute; top:50%; left:4px; width:20px; height:40px; display:grid; place-items:center; transform:translateY(-50%); background:var(--aud); color:var(--surface); border-radius:6px; box-shadow:0 2px 8px #0004; font-weight:900; }
+  .wave-handle:focus-visible { outline:2px solid var(--ink); outline-offset:-2px; }
+  .wave.dragging .wave-handle { opacity:.22; }
+  .wave-handle { transition:opacity .12s; }
+  .wave-zoom { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:12px; color:var(--muted); }
+  .wave-zoom select { width:auto; }
+  .wave-pan { display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center; font-size:12px; color:var(--muted); }
+  .wave canvas { border-radius:8px; position: absolute; inset: 0; width: 100%; height: 100%; }
   .times { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
   .times b { color: var(--ink); font-weight: 600; }
   .controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
@@ -37,10 +45,14 @@
   .dial .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
   .dial .top label { font-size: 13px; font-weight: 600; }
   .dial .val { font-family: var(--f-mono); font-size: 18px; font-weight: 600; color: var(--aud); font-variant-numeric: tabular-nums; }
-  .ticks { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); font-family: var(--f-mono); }
+  .ticks { display: grid; grid-template-columns: 1fr 1fr 1fr; font-size: 11px; color: var(--muted); font-family: var(--f-mono); }
+  .ticks span:nth-child(2) { text-align:center; }
+  .ticks span:last-child { text-align:right; }
   .note { font-size: 12.5px; color: var(--muted); }
   .divider { height: 1px; background: var(--line); }
 </style>
+<link rel="stylesheet" href="/transition.css"><link rel="stylesheet" href="/command.css"><link rel="stylesheet" href="/studio.css">
+<link rel="icon" type="image/png" href="/assets/dg-logo.png"><link rel="apple-touch-icon" href="/assets/dg-logo.png">
 </head>
 <body data-tool="audio-edit">
 <header id="hdr"></header>
@@ -65,7 +77,9 @@
 
       <div class="panel" id="editor" hidden>
         <div class="wave-wrap">
-          <div class="wave" id="wave" aria-label="파형. 드래그해서 구간 선택"><canvas id="cv"></canvas></div>
+          <div class="wave" id="wave" aria-label="파형. 드래그해서 구간 선택"><canvas id="cv"></canvas><button type="button" class="wave-handle" id="hs" role="slider" aria-label="구간 시작" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></button><button type="button" class="wave-handle" id="he" role="slider" aria-label="구간 끝" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0"></button></div>
+          <div class="wave-zoom"><label for="waveZoom">파형 확대</label><select id="waveZoom"><option value="1">1× · 전체</option><option value="2">2×</option><option value="4">4×</option><option value="8">8×</option><option value="16">16×</option><option value="32">32×</option></select><button class="btn btn-sm" id="zoomSelection">선택 구간 확대</button><span id="viewTimes" class="num"></span></div>
+          <label class="wave-pan" id="panRow" hidden>좌우 이동<input type="range" id="wavePan" min="0" max="1000" step="1" value="0" aria-label="확대한 파형 좌우 이동"></label>
           <div class="times num">
             <span>선택 <b id="tSel">0:00.0 – 0:00.0</b></span>
             <span>결과 길이 <b id="tOut">0:00.0</b></span>
@@ -99,7 +113,7 @@
         </div>
         <div class="dial">
           <div class="top"><label for="speed">빠르기</label><span class="val" id="sv">1.00×</span></div>
-          <input type="range" id="speed" min="0.5" max="2" step="0.05" value="1">
+          <input type="range" id="speed" min="-100" max="100" step="1" value="0" aria-valuetext="1.00배">
           <div class="ticks"><span>0.5×</span><span>1×</span><span>2×</span></div>
         </div>
         <p class="note">키와 빠르기는 서로 영향을 주지 않아요. 키만 올리면 길이는 그대로예요. 더블클릭하면 원래 값으로 돌아가요.</p>
@@ -148,6 +162,9 @@
   const inS = $("#s"), inE = $("#e"), runBtn = $("#run");
   let actx = null, buf = null, file = null, start = 0, end = 0, peaks = null;
   let playing = null; // { node, kind, t0, offset, rate }
+  let zoom = 1, viewStart = 0;
+  const viewSpan = () => buf.duration / zoom;
+  const fraction = t => (t - viewStart) / viewSpan();
   let cache = null;   // 마지막으로 처리한 결과 { key, chs, sr }
 
   const ctx = () => (actx ||= new (window.AudioContext || window.webkitAudioContext)());
@@ -170,6 +187,7 @@
       const data = await f.arrayBuffer();
       buf = await ctx().decodeAudioData(data);
     } catch { say("이 파일의 소리를 읽지 못했어요. 다른 형식으로 시도해 보세요.", "err"); return; }
+    zoom = 1; viewStart = 0; $("#waveZoom").value = "1";
     file = f; start = 0; end = buf.duration; cache = null;
     $("#drop").hidden = true; $("#editor").hidden = false;
     inS.disabled = inE.disabled = false; runBtn.disabled = false;
@@ -180,11 +198,11 @@
 
   /* ---------- 파형 ---------- */
   function computePeaks(width) {
-    const n = buf.length, ch = buf.numberOfChannels, step = n / width;
+    const n = buf.length, ch = buf.numberOfChannels, step = n / zoom / width, offset = Math.floor(viewStart * buf.sampleRate);
     const data = []; for (let c = 0; c < ch; c++) data.push(buf.getChannelData(c));
     const out = new Float32Array(width * 2);
     for (let x = 0; x < width; x++) {
-      const a = Math.floor(x * step), b = Math.min(n, Math.floor((x + 1) * step));
+      const a = offset + Math.floor(x * step), b = Math.min(n, offset + Math.max(Math.floor(x * step) + 1, Math.floor((x + 1) * step)));
       let mn = 0, mx = 0;
       const inc = Math.max(1, Math.floor((b - a) / 400)); // 긴 곡은 표본만 봐도 충분
       for (let i = a; i < b; i += inc) {
@@ -208,7 +226,7 @@
     const g = cv.getContext("2d"), W = cv.width, H = cv.height, css = getComputedStyle(document.body);
     const col = n => css.getPropertyValue(n).trim();
     g.clearRect(0, 0, W, H);
-    const xs = start / buf.duration * W, xe = end / buf.duration * W;
+    const xs = fraction(start) * W, xe = fraction(end) * W;
     g.fillStyle = col("--aud"); g.globalAlpha = .13; g.fillRect(xs, 0, xe - xs, H); g.globalAlpha = 1;
     const mid = H / 2;
     for (let x = 0; x < W; x++) {
@@ -225,65 +243,110 @@
     g.fillRect(xs - dpr, 0, 2 * dpr, H); g.fillRect(xe - dpr, 0, 2 * dpr, H);
     if (playing) {
       const t = playPos();
-      if (t !== null) { g.fillStyle = col("--ink"); g.fillRect(t / buf.duration * W, 0, 1.5 * dpr, H); }
+      if (t !== null) { g.fillStyle = col("--ink"); g.fillRect(fraction(t) * W, 0, 1.5 * dpr, H); }
     }
   }
 
   /* ---------- 구간 선택 ---------- */
   const MIN = 0.05;
-  const tAt = x => { const r = wave.getBoundingClientRect(); return Math.max(0, Math.min(1, (x - r.left) / r.width)) * buf.duration; };
+  const tAt = x => { const r = wave.getBoundingClientRect(); return viewStart + (x - r.left) / r.width * viewSpan(); };
   wave.addEventListener("pointerdown", e => {
+    if (!e.isPrimary || e.button !== 0) return;
     if (!buf) return;
     wave.setPointerCapture(e.pointerId);
+    wave.classList.add("dragging");
     const r = wave.getBoundingClientRect();
-    const px = t => r.left + t / buf.duration * r.width;
-    let edge = null;
-    if (Math.abs(e.clientX - px(start)) < 10) edge = "s";
-    else if (Math.abs(e.clientX - px(end)) < 10) edge = "e";
-    const anchor = tAt(e.clientX), x0 = e.clientX, prev = [start, end];
+    const px = t => r.left + fraction(t) * r.width;
+    let edge = e.target.closest("#hs") ? "s" : e.target.closest("#he") ? "e" : null;
+    if (!edge && Math.abs(e.clientX - px(start)) < 10) edge = "s";
+    else if (!edge && Math.abs(e.clientX - px(end)) < 10) edge = "e";
+    const anchor = Math.max(0, Math.min(buf.duration, tAt(e.clientX))), x0 = e.clientX, prev = [start, end];
     let moved = false;
     const mv = ev => {
       if (Math.abs(ev.clientX - x0) > 3) moved = true;
       if (!moved) return;
-      const t = tAt(ev.clientX);
-      if (edge === "s") start = Math.min(t, end - MIN);
-      else if (edge === "e") end = Math.max(t, start + MIN);
+      if (ev.pointerId !== e.pointerId) return;
+      const t = edge ? (edge === "s" ? prev[0] : prev[1]) + tAt(ev.clientX) - anchor : Math.max(0, Math.min(buf.duration, tAt(ev.clientX)));
+      if (edge === "s") start = Math.max(0, Math.min(t, end - Math.min(MIN, buf.duration)));
+      else if (edge === "e") end = Math.min(buf.duration, Math.max(t, start + Math.min(MIN, buf.duration)));
       else { start = Math.min(anchor, t); end = Math.max(anchor, t); if (end - start < MIN) end = Math.min(buf.duration, start + MIN); }
       sync();
     };
     const up = () => {
-      wave.removeEventListener("pointermove", mv); wave.removeEventListener("pointerup", up);
+      wave.classList.remove("dragging");
+      wave.removeEventListener("pointermove", mv); wave.removeEventListener("pointerup", up); wave.removeEventListener("pointercancel", up); wave.removeEventListener("lostpointercapture", up);
       if (!moved && !edge) { [start, end] = prev; sync(); }
     };
-    wave.addEventListener("pointermove", mv); wave.addEventListener("pointerup", up);
+    wave.addEventListener("pointermove", mv); wave.addEventListener("pointerup", up); wave.addEventListener("pointercancel", up); wave.addEventListener("lostpointercapture", up);
   });
   inS.addEventListener("change", () => { start = Math.max(0, Math.min(+inS.value || 0, end - MIN)); sync(); });
   inE.addEventListener("change", () => { end = Math.min(buf.duration, Math.max(+inE.value || 0, start + MIN)); sync(); });
   $("#selAll").onclick = () => { start = 0; end = buf.duration; sync(); };
 
+  ["hs", "he"].forEach(id => $("#" + id).addEventListener("keydown", e => {
+    if (!buf || !["ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key)) return;
+    e.preventDefault();
+    const step = e.shiftKey ? 1 : 0.1, minimum = Math.min(MIN, buf.duration);
+    const current = id === "hs" ? start : end;
+    const value = e.key === "Home" ? 0 : e.key === "End" ? buf.duration : current + (e.key === "ArrowRight" ? step : -step);
+    if (id === "hs") start = Math.max(0, Math.min(value, end - minimum));
+    else end = Math.min(buf.duration, Math.max(value, start + minimum));
+    sync();
+  }));
   const pitchEl = $("#pitch"), speedEl = $("#speed");
+  const speed = () => Math.round(100 * Math.pow(2, +speedEl.value / 100)) / 100;
   pitchEl.addEventListener("input", sync); speedEl.addEventListener("input", sync);
   pitchEl.addEventListener("dblclick", () => { pitchEl.value = 0; sync(); });
-  speedEl.addEventListener("dblclick", () => { speedEl.value = 1; sync(); });
+  speedEl.addEventListener("dblclick", () => { speedEl.value = 0; sync(); });
   ["#fi", "#fo"].forEach(s => $(s).addEventListener("input", sync));
 
   function sync() {
-    if (!buf) return;
-    inS.value = start.toFixed(2); inE.value = end.toFixed(2);
-    const st = +pitchEl.value, sp = +speedEl.value;
+    const st = +pitchEl.value, sp = speed();
     $("#pv").textContent = (st > 0 ? "+" : "") + st;
     $("#sv").textContent = sp.toFixed(2) + "×";
+    speedEl.setAttribute("aria-valuetext", sp.toFixed(2) + "배");
+    if (!buf) return;
+    inS.value = start.toFixed(2); inE.value = end.toFixed(2);
+    [[$("#hs"), start, 0, Math.max(0, end - Math.min(MIN, buf.duration))], [$("#he"), end, Math.min(buf.duration, start + Math.min(MIN, buf.duration)), buf.duration]].forEach(([handle, value, min, max]) => {
+      handle.style.left = `${fraction(value) * 100}%`;
+      handle.hidden = fraction(value) < -0.00001 || fraction(value) > 1.00001;
+      handle.setAttribute("aria-valuemin", min);
+      handle.setAttribute("aria-valuemax", max);
+      handle.setAttribute("aria-valuenow", value.toFixed(2));
+      handle.setAttribute("aria-valuetext", value.toFixed(2) + "초");
+    });
+    $("#panRow").hidden = zoom === 1;
+    $("#wavePan").value = zoom === 1 ? 0 : Math.round(viewStart / (buf.duration - viewSpan()) * 1000);
+    $("#wavePan").setAttribute("aria-valuetext", TT.time(viewStart) + "부터");
+    $("#viewTimes").textContent = TT.time(viewStart) + " – " + TT.time(viewStart + viewSpan());
     $("#tSel").textContent = `${TT.time(start)} – ${TT.time(end)}`;
     $("#tOut").textContent = TT.time((end - start) / sp);
     if (playing && playing.kind === "out") stop();
     draw();
   }
 
+  function setZoom(next, center = viewStart + viewSpan() / 2) {
+    if (!buf) return;
+    zoom = next;
+    viewStart = Math.max(0, Math.min(buf.duration - viewSpan(), center - viewSpan() / 2));
+    resize(); sync();
+  }
+  $("#waveZoom").addEventListener("change", e => { if (buf) setZoom(+e.target.value); });
+  $("#wavePan").addEventListener("input", e => {
+    if (!buf) return;
+    viewStart = +e.target.value / 1000 * (buf.duration - viewSpan());
+    resize(); sync();
+  });
+  $("#zoomSelection").onclick = () => {
+    if (!buf) return;
+    const next = [32,16,8,4,2,1].find(z => buf.duration / z >= (end - start) * 1.15) || 1;
+    $("#waveZoom").value = next; setZoom(next, (start + end) / 2);
+  };
   /* ---------- 재생 ---------- */
   function playPos() {
     if (!playing) return null;
     const el = (ctx().currentTime - playing.t0) * playing.rate;
-    return playing.kind === "orig" ? playing.offset + el : start + el * (+speedEl.value);
+    return playing.kind === "orig" ? playing.offset + el : start + el * (speed());
   }
   function stop() {
     if (playing) { try { playing.node.stop(); } catch {} playing = null; }
@@ -318,7 +381,7 @@
 
   /* ---------- 처리: 자르기 → 시간 늘이기(WSOLA) → 리샘플(키) → 페이드 ---------- */
   async function render() {
-    const st = +pitchEl.value, sp = +speedEl.value, fi = Math.max(0, +$("#fi").value || 0), fo = Math.max(0, +$("#fo").value || 0);
+    const st = +pitchEl.value, sp = speed(), fi = Math.max(0, +$("#fi").value || 0), fo = Math.max(0, +$("#fo").value || 0);
     const key = [file.name, start, end, st, sp, fi, fo].join("|");
     if (cache && cache.key === key) return cache;
     const sr = buf.sampleRate;
@@ -461,7 +524,7 @@
       } else {
         blob = f === "mp3" ? await mp3(r.chs, r.sr, +$("#br").value) : wav(r.chs, r.sr);
       }
-      const st = +pitchEl.value, sp = +speedEl.value;
+      const st = +pitchEl.value, sp = speed();
       const tag = [st ? `key${st > 0 ? "+" : ""}${st}` : "", sp !== 1 ? `x${sp}` : "", "cut"].filter(Boolean).join("_");
       TT.download(blob, `${TT.baseName(file.name)}_${tag}.${blob.type === "audio/mpeg" ? "mp3" : "wav"}`);
       say(`저장했어요 · ${TT.bytes(blob.size)}`, "ok");
@@ -473,5 +536,6 @@
   };
 })();
 </script>
+<script src="/vendor/gsap.min.js"></script><script src="/vendor/lucide.min.js"></script><script src="/vendor/fuse.min.js"></script><script src="/common-ui.js"></script><script src="/studio.js"></script>
 </body>
 </html>

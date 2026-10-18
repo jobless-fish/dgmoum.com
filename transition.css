@@ -1,0 +1,57 @@
+@view-transition {
+  navigation: auto;
+}
+::view-transition-old(root) {
+  animation: 0.42s cubic-bezier(0.76, 0, 0.24, 1) both m-exit;
+}
+::view-transition-new(root) {
+  animation: 0.6s cubic-bezier(0.22, 1, 0.36, 1) both m-enter;
+}
+@keyframes m-exit {
+  to {
+    opacity: 0;
+    transform: translateY(-35px) scale(0.97);
+  }
+}
+@keyframes m-enter {
+  from {
+    opacity: 0;
+    transform: translateY(70px);
+    clip-path: inset(15% 0 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0);
+  }
+}
+.page-curtain {
+  visibility: hidden;
+  position: fixed;
+  inset: 0;
+  background: #c6b9fa;
+  z-index: 99999;
+  transform: translateY(100%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #25242b;
+  font:
+    850 90px/1 "Pretendard Variable",
+    sans-serif;
+  letter-spacing: -8px;
+}
+.page-curtain.is-covering {
+  visibility: visible;
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+  .page-curtain {
+    display: none;
+  }
+}

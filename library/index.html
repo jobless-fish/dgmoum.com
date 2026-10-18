@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>전체 도구 · 도구모음</title>
+    <meta
+      name="description"
+      content="일을 가볍게, 아이디어는 자유롭게. 이미지·PDF·영상·오디오·디자인을 위한 64개의 브라우저 도구."
+    />
+    <meta name="theme-color" content="#f5f5f7" />
+    
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css"
+    />
+    <link rel="stylesheet" href="/moum.css" />
+    <link rel="stylesheet" href="/transition.css" />
+  <link rel="icon" type="image/png" href="/assets/dg-logo.png"><link rel="apple-touch-icon" href="/assets/dg-logo.png">
+</head>
+  <body class="library-page">
+    <header class="m-header refreshed-header"><div class="brand-group"><a class="m-logo" href="/" aria-label="도구모음 홈"
+        >dg.moum</a
+      ><a class="header-about" href="/about/" >About ↗</a></div><nav aria-label="주 메뉴"><a href="/" >홈화면</a><a href="/library/" aria-current="page">전체도구</a></nav><button class="m-search" data-command aria-label="도구 검색 열기"><i data-lucide="search"></i><span>도구 검색</span></button></header>
+    <main class="library-main" id="main">
+      <div class="library-intro">
+        <div>
+          <span class="micro">THE TOOL LIBRARY / 64</span>
+          <h1>무엇이든, 도구모음.</h1>
+          <p>복잡한 작업을 단순하게 만드는 작은 도구들.</p>
+        </div>
+        <label class="library-search"
+          ><i data-lucide="search"></i
+          ><input
+            id="library-query"
+            type="search"
+            placeholder="도구 이름이나 작업을 검색하세요"
+            aria-label="전체 도구 검색"
+        /></label>
+      </div>
+      <div class="library-layout">
+        <aside class="category-nav" aria-label="카테고리"></aside>
+        <section>
+          <div class="library-controls">
+            <span id="library-count" aria-live="polite"></span
+            ><button id="clear-filter">전체 보기 ↺</button>
+          </div>
+          <div class="library-grid"></div>
+        </section>
+      </div>
+    </main>
+    <footer class="m-footer">
+      <span>도구모음 <span class="muted">작은 도구, 넓어진 가능성.</span></span
+      ><span>설치 없이. 가입 없이. 무료로.</span
+      ><a href="/about/">Behind the tools ↗</a>
+    </footer>
+    <script src="/vendor/gsap.min.js"></script>
+    <script src="/vendor/lucide.min.js"></script>
+    <script src="/vendor/fuse.min.js"></script>
+    <script src="/common-ui.js"></script>
+    <script src="/library.js"></script>
+  </body>
+</html>

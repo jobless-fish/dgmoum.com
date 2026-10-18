@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>(function(){var t;try{t=localStorage.getItem("dg-theme")}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
-<link rel="icon" href="../../favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="../../assets/favicon-32.png">
-<link rel="apple-touch-icon" href="../../assets/apple-touch-icon.png">
+
+
+
 <link rel="manifest" href="../../site.webmanifest">
 <meta name="theme-color" content="#f0f0f0">
 <meta property="og:site_name" content="도구모음">
@@ -42,6 +42,8 @@
   .result { display: grid; gap: 8px; }
   .result video { width: 100%; border-radius: 8px; background: #0b0d10; }
 </style>
+<link rel="stylesheet" href="/transition.css"><link rel="stylesheet" href="/command.css"><link rel="stylesheet" href="/studio.css">
+<link rel="icon" type="image/png" href="/assets/dg-logo.png"><link rel="apple-touch-icon" href="/assets/dg-logo.png">
 </head>
 <body data-tool="video-trim">
 <header id="hdr"></header>
@@ -192,8 +194,8 @@
     handle.addEventListener("pointerdown", e => {
       e.stopPropagation(); handle.setPointerCapture(e.pointerId);
       const mv = ev => { const t = tAt(ev.clientX); setter(t); v.currentTime = handle === hs ? start : end; };
-      const up = () => { handle.removeEventListener("pointermove", mv); handle.removeEventListener("pointerup", up); };
-      handle.addEventListener("pointermove", mv); handle.addEventListener("pointerup", up);
+      const up = () => { handle.removeEventListener("pointermove", mv); handle.removeEventListener("pointerup", up); handle.removeEventListener("pointercancel", up); handle.removeEventListener("lostpointercapture", up); };
+      handle.addEventListener("pointermove", mv); handle.addEventListener("pointerup", up); handle.addEventListener("pointercancel", up); handle.addEventListener("lostpointercapture", up);
     });
     handle.addEventListener("keydown", e => {
       const step = e.shiftKey ? 1 : 0.1;
@@ -279,5 +281,6 @@
   function say(t, cls = "") { status.textContent = t; status.className = "status " + cls; }
 })();
 </script>
+<script src="/vendor/gsap.min.js"></script><script src="/vendor/lucide.min.js"></script><script src="/vendor/fuse.min.js"></script><script src="/common-ui.js"></script><script src="/studio.js"></script>
 </body>
 </html>

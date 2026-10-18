@@ -1,143 +1,46 @@
-# 도구모음
+# 모음 · moum — DGMU 개편본
 
-브라우저에서 바로 쓰는 무료 파일 도구 모음. 모든 처리는 사용자 기기 안에서 이뤄지고 서버가 필요 없어요.
+2026-10-16. 제공된 DGMU-landing.zip과 이전 작업 기록을 바탕으로 이어서 구현한 정적 웹사이트입니다.
 
-## 구조
+## 실행
 
-```
-index.html                 카탈로그 (도구 목록 · 검색 · 분류)
-assets/
-  site.css                 공용 스타일 (색·글꼴·버튼·드롭존 등)
-  common.js                공용 함수 + 도구 목록(TT_TOOLS)
-  audio.js                 오디오 공용 함수 (읽기 · MP3/WAV 저장 · LUFS · 리미터 · 파형)
-tools/
-  image-convert/  이미지 포맷 변환 (PNG·JPG·WEBP)
-  image-resize/   이미지 크기 조절 (긴 변 / 픽셀 / 퍼센트)
-  image-compress/ 이미지 압축 (목표 용량 KB 맞추기)
-  image-mosaic/   모자이크 · 흐리게 · 박스로 가리기
-  image-gif/      움짤 만들기 (사진 여러 장 → GIF)
-  insta-grid/     인스타 그리드 자르기 (3칸 × 1~5줄, 올리는 순서 번호)
-  image-merge/    이미지 합치기 (세로·가로·격자)
-  image-split/    긴 이미지 나누기 (높이·개수 기준)
-  image-crop/     자르기 · 회전 · 뒤집기 (비율 프리셋)
-  image-watermark/ 워터마크 넣기 (글자·로고, 사선 반복)
-  photo-edit/     사진보정Pro (라이트룸식 화면: 기본·톤 곡선·HSL·색 보정·효과, 필름·카메라 프리셋 31종, LUT, 여러 장 동기화)
-                  engine.js(WebGL2 셰이더) · presets.js(프리셋 값) · app.js(화면)
-  pixel-art/      [FUN] 도트 아트 (8비트 패미컴·16비트 슈퍼패미컴·게임보이·PICO-8·CGA·1비트, 색 수 직접, 디더링)
-  ascii-art/      [FUN] 아스키 아트 (기본·자세히·블록·점자·0과1·내 글자, 컬러, TXT·PNG 저장)
-  image-exif/     사진 정보 지우기 (GPS·기기 정보, JPG·PNG는 화질 그대로)
-  color-palette/  색 뽑기 (대표 색 · 스포이드 · CSS 변수)
-  favicon/        파비콘 만들기 (ico · 홈 화면 아이콘 · webmanifest)
-  color-convert/  색 코드 변환 (HEX · RGB · HSL · HSB · CMYK 근사)
-  css-gen/        CSS 생성기 (그라데이션·박스/글자 그림자·둥근 모서리·글래스모피즘·패턴, 프리셋 88개)
-  print-size/     인쇄 크기 계산기 (px ↔ cm·mm, 용지별 DPI, 재단 여유)
-  placeholder/    임시 이미지 만들기 (크기 표시 · SNS 규격 · PNG/JPG/SVG)
-  korean-lorem/   한글 더미 텍스트 (문단 · 문장 · 정확한 글자 수)
-  video-edit/     컷편집Pro (타임라인·숏폼 자막·전환·배경음악, React 빌드 결과 · 소스는 _src/video-edit)
-  video-trim/     영상 자르기
-  video-gif/      영상 → GIF
-  screen-recorder/ 화면 녹화 (화면·창·탭, 화면 소리+마이크, 일시정지, MP4)
-  shorts-maker/   쇼츠 · 릴스 · 틱톡 세로 변환 (9:16·4:5·1:1, 흐린 배경·꽉 채우기)
-  audio-edit/     음원 자르기 · 키 · 빠르기 · 페이드
-  audio-convert/  오디오 형식 변환 (M4A·FLAC·OGG·WAV → MP3·WAV)
-  video-to-audio/ 영상에서 소리 추출 (MP4·MOV → MP3·WAV)
-  audio-volume/   볼륨 키우기 · 맞추기 (LUFS 측정, 깨짐 방지 리미터)
-  audio-silence/  무음 자르기 (앞뒤·중간 긴 침묵, 자동 기준)
-  voice-recorder/ 음성 녹음 (마이크 선택, 목소리 보정, 여러 개 녹음, MP3·WAV)
-  audio-eq/       이퀄라이저 (10밴드 31Hz~16kHz, 전체 볼륨, 프리셋, 들으면서 조절, 깨짐 방지)
-  pdf-merge/      PDF 합치기
-  pdf-split/      PDF 나누기 · 정리 (삭제·회전·순서·추출·분할)
-  image-to-pdf/   이미지 → PDF (A4 맞춤)
-  pdf-to-image/   PDF → 이미지 (PNG·JPG, dpi 선택)
-  pdf-unlock/     PDF 암호 해제 (qpdf WebAssembly, assets/vendor/qpdf · 여러 파일 한 번에)
-  pdf-page-number/ PDF 쪽 번호 넣기 (위치·형식·시작 번호·표지 빼기·양면, 돌아간 쪽 대응)
-  qr-code/        QR코드 만들기 (링크·와이파이·연락처·문자·이메일, PNG·SVG)
-  char-count/     글자 수 세기 (공백 포함·제외·바이트·목표)
-  text-diff/      텍스트 비교 (줄·글자 단위 차이, 나란히·한 줄 보기, 띄어쓰기 무시, EUC-KR 파일)
-  form-quote/     견적서 (업종별 프리셋, 부가세 별도·포함·없음, 한글 금액)
-  form-statement/ 거래명세서 (공급자·공급받는자, 보관용 두 부)
-  form-receipt/   영수증 · 청구서 (보관용 두 부 + 자르는 선)
-  form-resume/    이력서 (사진·학력·경력·자격·활동, 자기소개는 2쪽)
-  form-labor/     표준근로계약서 (고용노동부 항목, 정규직·계약직)
-  form-service/   용역계약서 (일반 서식, 정부 표준 아님)
-  form-iou/       차용증
-  form-resign/    사직서
-  form-poa/       위임장
-  form-employ/    재직증명서
-  form-career/    경력증명서
-  form-retire/    퇴직증명서
-  form-incident/  경위서 · 시말서 (결재란)
-  form-leave/     휴가신청서 (주말 뺀 일수 자동, 결재란)
-  form-handover/  인수인계서 (업무·자료 위치·연락처 표)
-  form-minutes/   회의록 (안건·결정 번호 목록, 할 일 표)
-  form-pledge/    각서
-  form-agreement/ 합의서 (합의금 한글 표기, 이의 제기 금지 조항 선택)
-  form-notice/    내용증명
-  form-trade/     중고거래 물품 매매계약서 (하자 책임 선택, 계약금 해제 조항)
-  stamp-maker/    도장 만들기 (개인 원형·사각, 회사 직인·원형, 찍힌 질감, 투명 PNG)
-  stamp-clean/    도장 · 서명 배경 지우기 (투명 PNG)
-```
+압축을 푼 폴더에서 `python -m http.server 8000`을 실행하고 `http://localhost:8000/`을 여세요. 파일을 직접 더블클릭하는 file:// 환경에서는 검색 목록, 모듈, 일부 도구가 동작하지 않습니다. 서버의 최상위 경로(`/`)에 배치해야 합니다. HTTPS 호스팅에서는 마이크·화면 녹화 등 브라우저 권한 기능을 이용할 수 있습니다.
 
-양식 도구는 `assets/forms.css`(A4 문서·인쇄 스타일, 기본·모던·클래식)와 `assets/forms.js`(입력칸 생성, 미리보기, 도장 배경 지우기, 서명판, 이 기기 기억)를 같이 써요.
+## 변경 사항
 
-각 도구는 독립된 페이지라서 `tools/<이름>/` 주소로 바로 들어갈 수 있어요.
+- 홈: 이미지 압축, PDF 합치기, 이미지 변환, 영상 자르기, 이미지 크기 조절, QR 코드를 먼저 배치. 사용 통계 기반 인기 순위가 아닌 작업 우선순위입니다.
+- 전체 도구: 64개 도구 검색, 분류, 즐겨찾기, 12개 단위 페이지 이동. 검색·분류·페이지 상태를 URL에 반영합니다.
+- About: Three.js 3D 조형물, GSAP/ScrollTrigger 스크롤 연출, Lenis 스크롤, Matter.js 드래그 물리 효과. 모션 일시정지와 OS 동작 줄이기 설정 대응.
+- 페이지 전환: 지원 브라우저의 View Transitions와 GSAP 커튼 대체 효과.
+- 도구 화면: 공통 헤더, 카테고리 레일, 작업 순서, 통일된 입력/설정 패널, 접힌 사용 안내. 언어와 라이트/다크 전환 유지.
+- 사진보정·영상편집 전문 화면: 기존 편집기 구조를 유지하면서 색상·버튼·글꼴과 탐색 경로를 정리.
+- 빠른 검색: Ctrl+K / Cmd+K, 방향키, Enter, Escape 지원.
+- 최근 사용 및 즐겨찾기는 현재 브라우저에 저장됩니다.
 
-## 새 도구 추가하기
+## 주요 파일
 
-1. `tools/<새-이름>/index.html` 만들기 (기존 도구 하나 복사해서 시작하면 편해요)
-2. `assets/common.js`의 `TT_TOOLS`에 한 줄 추가 → 카탈로그에 자동으로 나와요
-3. 아이콘은 같은 파일의 `TT_ICONS`에 `"<새-이름>": '<svg…>'`로 추가
+- `index.html`, `home.js`: 짧은 작업 시작 화면
+- `library/index.html`, `library.js`: 검색/분류/페이지 나누기
+- `about/index.html`, `about.js`: 독립 포트폴리오 화면
+- `moum.css`: 홈/목록/About 공통 디자인
+- `common-ui.js`, `transition.css`, `command.css`: 검색과 전환
+- `studio.js`, `studio.css`: 64개 도구 화면의 공통 UI 계층
+- `tools/`, `assets/`: 제공된 기존 도구 구현과 공통 처리 함수
+- `vendor/`: 신규 UI/모션 라이브러리의 고정 버전 로컬 사본
 
-준비 중인 도구는 `status: "soon"`으로 두면 흐린 카드로 보여요.
+추가된 라이브러리: GSAP 3.13.0 + ScrollTrigger, Three.js 0.170.0, Lenis 1.3.11, Matter.js 0.20.0, Fuse.js 7.1.0, Lucide 0.468.0. 기존 도구의 외부 CDN 의존성과 폰트는 여전히 인터넷 연결을 사용합니다. 기존 영상 편집기는 제공된 번들 형태이며 원래 TypeScript 프로젝트는 첨부 ZIP에 없습니다.
 
-## 도메인 (dgmoum.com)
+## 검증
 
-도메인을 산 뒤에 하면 돼요. 먼저 하면 github.io 주소가 깨질 수 있어요.
+- 67개 HTML 페이지의 정적 로컬 링크: 누락 없음.
+- 전체 JavaScript 파일과 125개 인라인 스크립트: 문법 검사 통과.
+- jsdom 기반 검사 511개 통과: 빠른 검색/키보드, 12개 페이지 나누기, 카테고리, 검색 결과 없음, 즐겨찾기, 62개 일반 도구의 헤더/분류/테마/언어 전환, 실제 글자 수 계산.
+- 기존 64개 도구의 인라인 처리 코드는 원본과 동일합니다.
+- 이번 환경에서는 브라우저 화면 검수를 수행하지 못했습니다. 실제 WebGL·물리 드래그·모바일 시각 배치 및 이미지/PDF/영상의 최종 파일 출력은 별도 실브라우저 검수가 필요합니다. 이전 작업 기록의 브라우저 검증을 이번 검증으로 계산하지 않았습니다.
 
-1. 도메인 업체 DNS 설정에 아래를 넣기
-   - A 레코드 `@` → `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`
-   - CNAME 레코드 `www` → `jobless-fish.github.io`
-2. 저장소 Settings → Pages → Custom domain에 `dgmoum.com` 입력 → 저장 (저장소에 CNAME 파일이 자동으로 생겨요)
-3. DNS가 연결되면(몇 분~하루) 같은 화면에서 **Enforce HTTPS** 체크
+## 배포 상태
 
-`robots.txt`, `sitemap.xml`, 공유 미리보기 이미지(og:image)는 이미 `https://dgmoum.com` 기준으로 만들어 뒀어요.
-
-## 배포 (GitHub Pages)
-
-저장소 루트에 이 폴더 내용을 그대로 올리고 Settings → Pages에서 main 브랜치를 고르면 끝이에요.
-
-## 광고
-
-AdSense 같은 외부 광고 네트워크는 쓰지 않아요. 문의를 받아 검증한 광고만 직접 내보내요.
-각 페이지의 `<div class="ad-slot">` 자리에 광고 이미지와 링크를 넣으면 돼요. 비어 있을 땐 흐린 점선 칸과 '광고 문의' 버튼이 보여요.
-광고 문의 연락처는 `assets/shell.js` 위쪽의 `AD_CONTACT` 한 줄만 채우면 모든 칸과 하단 메뉴에 한꺼번에 연결돼요(이메일 `mailto:`, 텔레그램 `https://t.me/…`, 카카오톡 오픈채팅 `https://open.kakao.com/o/…` 모두 가능). 비워 두면 버튼을 눌러도 '연락처 준비 중이에요'만 잠깐 보여요.
-광고 링크에는 `rel="sponsored noopener"`를 달고, 광고임을 알 수 있게 '광고' 표시를 같이 두세요.
-
-## 알아둘 점
-
-- **양식**: PDF는 브라우저 인쇄 창에서 'PDF로 저장'으로 만들어요. 상호·도장 같은 내 정보는 체크해 두면 그 브라우저(localStorage)에만 남아요. 견적서 '업종 추가 요청' 링크는 `assets/forms.js`의 `REQUEST_URL`(지금은 GitHub 이슈 작성 화면)을 바꾸면 돼요.
-
-- **영상 자르기**: 고른 구간을 재생하면서 녹화하는 방식이라 구간 길이만큼 시간이 걸려요. 최신 크롬·엣지는 MP4로, 그 외에는 WEBM으로 저장돼요.
-- **사진 보정**: 화면 미리보기는 긴 변 3000px(휴대폰 2000px)로 줄여서 그리고, 저장할 때 원본 크기로 다시 그려요(최대 8192px). RAW 파일은 아직 안 돼요. 프리셋 값은 `tools/photo-edit/presets.js`에서 고치면 돼요.
-- **화면 녹화**: 휴대폰 브라우저는 화면 공유를 지원하지 않아요. 화면 소리는 크롬·엣지에서 탭(모든 OS) 또는 화면 전체(윈도우)일 때 들어가요.
-- **PDF 쪽 번호**: 번호 글꼴이 PDF 기본 글꼴(Helvetica)이라 영문·숫자 형식만 있어요.
-- **쇼츠 · 릴스 · 틱톡 세로 변환**: 영상 자르기처럼 재생하면서 녹화해요.
-- **음원 피치**: 키와 빠르기를 따로 바꿔요(WSOLA 방식). ±12반음, 0.5~2배.
-- 외부 라이브러리는 모두 cdnjs에서 불러와요: MP3 저장(lamejs), zip 받기(JSZip), PDF 편집(pdf-lib), PDF 그리기(pdf.js), GIF 만들기(gif.js), QR코드(qrcode-generator, jsDelivr), 사진 정보 읽기(exifr, jsDelivr).
-- **MP3 저장**과 **zip 받기**는 불러오지 못하면 WAV 저장 / 파일 하나씩 받기로 자동 전환돼요.
-- HEIC(아이폰 사진)는 사파리 외 브라우저에서 열리지 않아요.
-
-## v2 디자인
-
-첫 화면(index.html)과 모든 도구 페이지에 적용돼 있어요.
-- `assets/v2.css` 새 디자인 (밝게 · 어둡게)
-- `assets/shell.js` 상단 메뉴 · 큰 메뉴 · 검색(/ 키) · 휴대폰 메뉴 · 바닥글 · 한/영 · 밝기 전환
-- `assets/i18n.js` 화면 문구와 도구 이름·설명의 영어 번역
-
-## 사용 횟수 · 즐겨찾기 집계
-
-첫 화면 숫자 칸의 "사용된 횟수"와 "즐겨찾기"는 `counter-worker/`의 작은 Cloudflare 서버로 모아요. 배포 방법은 `counter-worker/README.md`에 있어요. 배포 전에는 "—"로 보여요.
-
-## 도구 제안 받기
-
-About 페이지 제안 폼 → `suggest-worker`(Cloudflare) → 비공개 저장소 `dgmoum-inbox/requests.md`에 `#요청N` 형식으로 쌓여요. 설치 방법은 `suggest-worker/README.md`.
+이 개편본은 기존 운영 사이트에 아직 반영되지 않았습니다.
+기존 주소: https://dgmu-creative-toolbox.workspace-655977.chatgpt.site/
+이전 기록의 프로젝트 ID: appgprj_6ad1da3eb70c819182fea9b8423c69b3
+현재 연결된 Sites에서 프로젝트 조회는 NOT_FOUND였고, 소유·편집 목록 모두 비어 있었습니다. 기존 프로젝트 접근을 복구해 반영하거나, 사용자 선택에 따라 새 사이트로 게시해야 합니다. 이 ZIP은 별도 사이트를 생성하거나 기존 프로젝트의 공개 범위를 변경하지 않습니다.

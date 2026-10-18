@@ -1,381 +1,145 @@
 <!doctype html>
 <html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ABOUT · 도구모음 DGMU</title>
-<meta name="description" content="도구모음은 설치·가입·업로드 없이 브라우저에서 바로 쓰는 무료 도구 모음이에요. 보안과 속도, 앞으로 나올 Pro 도구, 도구 제안과 광고 문의 안내.">
-<script>(function(){var t;try{t=localStorage.getItem("dg-theme")}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
-<link rel="icon" href="../favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
-<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
-<link rel="manifest" href="../site.webmanifest">
-<meta name="theme-color" content="#f0f0f0">
-<meta property="og:site_name" content="도구모음">
-<meta property="og:type" content="website">
-<meta property="og:image" content="https://dgmoum.com/assets/og-image.png">
-<meta property="og:title" content="ABOUT · 도구모음 DGMU">
-<meta property="og:description" content="설치·가입·업로드 없이 브라우저에서 바로 쓰는 무료 도구 모음, 도구모음을 소개해요.">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
-<link rel="stylesheet" href="../assets/v2.css">
-<style>
-  .ab { --big: clamp(40px, 8.4vw, 112px); }
-  .ab section { padding: clamp(56px, 9vw, 120px) 0; }
-  .ab .lbl { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 800; letter-spacing: .16em; color: var(--brand); text-transform: uppercase; margin-bottom: 22px; }
-  .ab .lbl::before { content: ""; width: 26px; height: 2px; background: currentColor; }
-  .ab h2.big { font-size: clamp(32px, 5.6vw, 64px); line-height: 1.15; font-weight: 900; margin: 0 0 18px; letter-spacing: 0; }
-  .ab .sub { color: var(--muted); font-size: clamp(16px, 1.8vw, 19px); max-width: 60ch; margin: 0; }
-
-  /* 첫 화면 */
-  .ab-hero { padding-top: clamp(48px, 8vw, 96px) !important; padding-bottom: clamp(36px, 6vw, 64px) !important; position: relative; overflow-x: clip; }
-  .ab-hero h1 { font-size: var(--big); line-height: 1.08; font-weight: 900; margin: 0; letter-spacing: 0; }
-  .ab-hero h1 em { font-style: normal; color: var(--brand); }
-  .ab-hero h1 .u { background: linear-gradient(transparent 62%, color-mix(in srgb, var(--yellow) 80%, transparent) 62% 92%, transparent 92%); }
-  .ab-hero .sub { margin-top: 28px; }
-  .stripe3 { display: flex; gap: 8px; margin-top: 36px; }
-  .stripe3 i { width: 64px; height: 10px; border-radius: 99px; }
-
-  /* 숫자 */
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-  .stat { padding: 30px 22px; border-left: 1px solid var(--line); }
-  .stat:first-child { border-left: 0; padding-left: 0; }
-  .stat b { display: block; font-size: clamp(40px, 5.6vw, 72px); line-height: 1; font-weight: 900; font-variant-numeric: tabular-nums; }
-  .stat b small { font-size: .45em; font-weight: 800; margin-left: 4px; }
-  .stat > span { display: block; margin-top: 10px; color: var(--muted); font-size: 14.5px; }
-  @media (max-width: 760px) { .stats { grid-template-columns: 1fr 1fr; } .stat:nth-child(3) { border-left: 0; padding-left: 0; } .stat:nth-child(n+3) { border-top: 1px solid var(--line); } }
-
-  /* 흐르는 도구 띠 */
-  .marq { overflow: hidden; padding: 6px 0; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
-  .marq + .marq { margin-top: 12px; }
-  .mtrack { display: flex; gap: 12px; width: max-content; animation: mq 70s linear infinite; }
-  .marq.rev .mtrack { animation-direction: reverse; animation-duration: 80s; }
-  .marq:hover .mtrack { animation-play-state: paused; }
-  @keyframes mq { to { transform: translateX(-50%); } }
-  .chip { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px 12px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); text-decoration: none; white-space: nowrap; font-weight: 700; font-size: 15px; box-shadow: var(--shadow-sm); }
-  .chip:hover { border-color: var(--c); }
-  .chip .ic { width: 34px; height: 34px; border-radius: 50%; }
-  @media (prefers-reduced-motion: reduce) { .mtrack { animation: none; flex-wrap: wrap; width: auto; } .marq { mask-image: none; -webkit-mask-image: none; } }
-
-  /* 분야 */
-  .what { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; border-top: 1px solid var(--line); margin-top: 40px; }
-  .wcell { padding: 28px 22px 30px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); text-decoration: none; display: grid; gap: 14px; align-content: start; transition: background .2s; }
-  .wcell:nth-child(4n) { border-right: 0; }
-  .wcell:hover { background: color-mix(in srgb, var(--c) 7%, transparent); }
-  .wcell .en { font-size: clamp(22px, 2.4vw, 30px); font-weight: 900; letter-spacing: .02em; color: var(--c); line-height: 1; }
-  .wcell .ko { font-weight: 700; font-size: 14px; color: var(--muted); }
-  .wcell ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 15px; font-weight: 600; }
-  .wcell ul li::before { content: "— "; color: var(--c); }
-  .wcell p { margin: 0; color: var(--muted); font-size: 13.5px; }
-  .wcell .n { font-size: 12.5px; font-weight: 800; color: var(--c); }
-  @media (max-width: 960px) { .what { grid-template-columns: 1fr 1fr; } .wcell:nth-child(4n) { border-right: 1px solid var(--line); } .wcell:nth-child(2n) { border-right: 0; } }
-  @media (max-width: 520px) { .what { grid-template-columns: 1fr; } .wcell { border-right: 0 !important; } }
-
-  /* 보안 · 속도 */
-  .twin { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 40px; }
-  .pane { border-radius: 24px; padding: clamp(26px, 4vw, 44px); position: relative; overflow: hidden; min-height: 360px; display: grid; align-content: start; gap: 18px; }
-  .pane.sec { background: #15120f; color: #f3efe9; }
-  .pane.spd { background: var(--brand); color: #fff; }
-  .pane .tag { font-size: 13px; font-weight: 900; letter-spacing: .16em; opacity: .85; }
-  .pane h3 { font-size: clamp(26px, 3.2vw, 40px); line-height: 1.2; margin: 0; font-weight: 900; letter-spacing: 0; }
-  .pane p { margin: 0; opacity: .85; font-size: 15.5px; }
-  .pane ul { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 10px; position: relative; z-index: 1; }
-  .pane li { display: flex; gap: 10px; align-items: flex-start; font-weight: 600; font-size: 15px; }
-  .pane li svg { width: 20px; height: 20px; flex: none; margin-top: 1px; }
-  .pane.sec li svg { color: var(--yellow); }
-  .pane .deco { position: absolute; right: -40px; bottom: -40px; font-size: 220px; font-weight: 900; line-height: 1; opacity: .07; pointer-events: none; }
-  @media (max-width: 860px) { .twin { grid-template-columns: 1fr; } .pane { min-height: 0; } }
-
-  /* Pro 예고 */
-  .pros { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 40px; }
-  .pro { border: 1px solid var(--line); border-radius: 20px; padding: 22px; background: var(--surface); display: grid; gap: 14px; align-content: start; position: relative; text-decoration: none; }
-  .pro .badge { justify-self: start; font-size: 12px; font-weight: 800; letter-spacing: .06em; padding: 5px 10px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
-  .pro.live .badge { background: color-mix(in srgb, var(--brand) 14%, transparent); color: var(--brand); }
-  .pro .ic { width: 52px; height: 52px; border-radius: 14px; }
-  .pro h3 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: 0; }
-  .pro h3 sup { color: var(--brand); font-size: .55em; font-weight: 900; margin-left: 3px; letter-spacing: .06em; }
-  .pro ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; color: var(--muted); font-size: 14px; }
-  .pro ul li::before { content: "· "; }
-  .pro.soon { border-style: dashed; }
-  .pro.live:hover { border-color: var(--brand); }
-  .note { margin-top: 16px; color: var(--muted); font-size: 13.5px; }
-  @media (max-width: 960px) { .pros { grid-template-columns: 1fr 1fr; } }
-  @media (max-width: 520px) { .pros { grid-template-columns: 1fr; } }
-
-  /* 도구 제안 */
-  .ask { border-radius: 28px; background: var(--yellow); color: #1a1714; padding: clamp(30px, 6vw, 72px); display: grid; grid-template-columns: 1.4fr 1fr; gap: 28px; align-items: end; }
-  .ask h2 { font-size: clamp(32px, 5.4vw, 64px); line-height: 1.12; font-weight: 900; margin: 0; letter-spacing: 0; }
-  .ask p { margin: 0 0 22px; font-size: 16.5px; color: #3a302c; }
-  .ask .lbl { color: #1a1714; }
-  .btn-big { display: inline-flex; align-items: center; gap: 10px; padding: 16px 26px; border-radius: 999px; font-weight: 800; font-size: 16.5px; text-decoration: none; background: #1a1714; color: #fff; transition: transform .15s; }
-  .btn-big:hover { transform: translateY(-2px); }
-  .btn-big svg { width: 18px; height: 18px; }
-  @media (max-width: 760px) { .ask { grid-template-columns: 1fr; } }
-  .ask { align-items: start; scroll-margin-top: 90px; }
-  .sform { display: grid; gap: 10px; position: relative; }
-  .sform p { margin: 0 0 6px; }
-  .sform textarea, .sform input[type=text] { width: 100%; border: 2px solid #1a1714; border-radius: 16px; background: #fffdf2; color: #1a1714; font: 16px/1.5 var(--f); padding: 14px 16px; resize: vertical; }
-  .sform textarea:focus, .sform input:focus { outline: 0; box-shadow: 0 0 0 4px rgba(26, 23, 20, .18); }
-  .sform textarea::placeholder, .sform input::placeholder { color: #8a7f74; }
-  .srow { display: grid; grid-template-columns: 1fr auto; gap: 10px; }
-  .srow .btn-big { border: 0; cursor: pointer; font-family: var(--f); }
-  .srow .btn-big:disabled { opacity: .5; cursor: wait; transform: none; }
-  .smsg { min-height: 1.4em; font-size: 14.5px; font-weight: 700; color: #1a1714; }
-  .smsg.err { color: #b42318; }
-  @media (max-width: 520px) { .srow { grid-template-columns: 1fr; } }
-
-  /* 광고 */
-  .ab h2.big em { font-style: normal; color: var(--brand); }
-  .rules { margin-top: 44px; border-top: 2px solid var(--ink); }
-  .rule { display: grid; grid-template-columns: 120px 1fr 1.3fr; gap: 24px; padding: 30px 0; border-bottom: 1px solid var(--line); align-items: start; }
-  .rule .no { font-size: clamp(40px, 5vw, 64px); font-weight: 900; line-height: .9; color: var(--brand); font-variant-numeric: tabular-nums; }
-  .rule h3 { margin: 0; font-size: clamp(20px, 2.4vw, 28px); font-weight: 900; line-height: 1.3; letter-spacing: 0; }
-  .rule p { margin: 0; color: var(--muted); font-size: 15.5px; }
-  .rule p b { color: var(--ink); }
-  @media (max-width: 760px) { .rule { grid-template-columns: 1fr; gap: 10px; } }
-  .talk { margin-top: 48px; border-radius: 28px; background: #15120f; color: #fff; overflow: hidden; }
-  .talk .in { padding: clamp(30px, 5vw, 56px); display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
-  .talk h3 { margin: 0; font-size: clamp(30px, 5vw, 60px); font-weight: 900; line-height: 1.05; letter-spacing: 0; }
-  .talk h3 small { display: block; font-size: 15px; font-weight: 600; color: #c9c2ba; margin-top: 12px; letter-spacing: 0; line-height: 1.5; }
-  .talk .btn-big { background: var(--brand); }
-  .tband { border-top: 1px solid rgba(255,255,255,.12); padding: 16px 0; overflow: hidden; }
-  .tband .mtrack { animation-duration: 30s; gap: 40px; }
-  .tband span { font-size: 22px; font-weight: 900; letter-spacing: .08em; white-space: nowrap; color: var(--yellow); }
-  .tband span i { font-style: normal; color: #fff; opacity: .35; margin-left: 40px; }
-</style>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>About — Less friction. More flow. · 도구모음</title>
+    <meta
+      name="description"
+      content="일을 가볍게, 아이디어는 자유롭게. 이미지·PDF·영상·오디오·디자인을 위한 64개의 브라우저 도구."
+    />
+    <meta name="theme-color" content="#f5f5f7" />
+    
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css"
+    />
+    <link rel="stylesheet" href="/moum.css" />
+    <link rel="stylesheet" href="/transition.css" />
+  <link rel="icon" type="image/png" href="/assets/dg-logo.png"><link rel="apple-touch-icon" href="/assets/dg-logo.png">
 </head>
-<body>
-<header id="hdr"></header>
-
-<main class="ab">
-  <section class="ab-hero"><div class="wrap">
-    <div class="lbl">About DGMU</div>
-    <h1 id="heroH"></h1>
-    <p class="sub" id="heroP"></p>
-    <div class="stripe3"><i style="background:#ffe600"></i><i style="background:#ff5a0a"></i><i style="background:#3a302c"></i></div>
-  </div></section>
-
-  <div class="wrap"><div class="stats" id="stats"></div></div>
-
-  <section style="padding-bottom:0"><div class="wrap">
-    <div class="lbl" data-t="toolsLbl"></div>
-    <h2 class="big" data-t="toolsH"></h2>
-    <p class="sub" data-t="toolsP"></p>
-  </div>
-  <div style="margin-top:36px">
-    <div class="marq"><div class="mtrack" id="mq1"></div></div>
-    <div class="marq rev"><div class="mtrack" id="mq2"></div></div>
-  </div>
-  <div class="wrap"><div class="what" id="what"></div></div>
-  </section>
-
-  <section><div class="wrap">
-    <div class="lbl">Secure &amp; Fast</div>
-    <h2 class="big" data-t="sfH"></h2>
-    <p class="sub" data-t="sfP"></p>
-    <div class="twin">
-      <div class="pane sec"><span class="tag">SECURE</span><h3 data-t="secH"></h3><p data-t="secP"></p><ul id="secL"></ul><span class="deco">0</span></div>
-      <div class="pane spd"><span class="tag">FAST</span><h3 data-t="spdH"></h3><p data-t="spdP"></p><ul id="spdL"></ul><span class="deco">⚡</span></div>
-    </div>
-  </div></section>
-
-  <section style="padding-top:0"><div class="wrap">
-    <div class="lbl">Coming Pro</div>
-    <h2 class="big" data-t="proH"></h2>
-    <p class="sub" data-t="proP"></p>
-    <div class="pros" id="pros"></div>
-    <p class="note" data-t="proNote"></p>
-  </div></section>
-
-  <section style="padding-top:0"><div class="wrap">
-    <div class="ask">
-      <div><div class="lbl">Request a tool</div><h2 data-t="askH"></h2></div>
-      <form class="sform" id="suggest" novalidate>
-        <p data-t="askP"></p>
-        <label class="sr" for="sText" data-t="fText"></label>
-        <textarea id="sText" maxlength="1000" rows="4" required></textarea>
-        <div class="srow">
-          <label class="sr" for="sContact" data-t="fContact"></label>
-          <input type="text" id="sContact" maxlength="120" autocomplete="email">
-          <button class="btn-big" id="sSend" type="submit"></button>
+  <body class="about-page">
+    <header class="m-header refreshed-header"><div class="brand-group"><a class="m-logo" href="/" aria-label="도구모음 홈"
+        >dg.moum</a
+      ><a class="header-about" href="/about/" aria-current="page">About ↗</a></div><nav aria-label="주 메뉴"><a href="/" >홈화면</a><a href="/library/" >전체도구</a></nav><button class="m-search" data-command aria-label="도구 검색 열기"><i data-lucide="search"></i><span>도구 검색</span></button></header>
+    <main id="main">
+      <section class="about-hero">
+        <div class="about-kicker">
+          <span>MOUM — AN INDEPENDENT TOOLBOX</span
+          ><button id="motion-toggle" aria-pressed="false">
+            모션 일시정지 <i data-lucide="pause"></i>
+          </button>
         </div>
-        <input type="text" name="website" id="sHp" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">
-        <p class="smsg" id="sMsg" role="status"></p>
-      </form>
-    </div>
-  </div></section>
-
-  <section class="ads" id="advertise" style="padding-top:0"><div class="wrap">
-    <div class="lbl">Advertise</div>
-    <h2 class="big" data-t="adH"></h2>
-    <p class="sub" data-t="adP"></p>
-    <div class="rules" id="rules"></div>
-    <div class="talk">
-      <div class="in"><h3><span data-t="talkH"></span><small data-t="talkS"></small></h3><a class="btn-big" id="talkBtn"></a></div>
-      <div class="tband"><div class="mtrack" id="tband"></div></div>
-    </div>
-  </div></section>
-</main>
-
-<footer id="foot"></footer>
-
-<script src="../assets/common.js"></script>
-<script src="../assets/i18n.js"></script>
-<script src="../assets/shell.js" data-root="../"></script>
-<script>
-(() => {
-  const $ = s => document.querySelector(s);
-  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-  const CHECK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`;
-  const ARROW = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></svg>`;
-  const EN = { img: "IMAGE", doc: "PDF", vid: "VIDEO", aud: "AUDIO", form: "DOCUMENTS", des: "DESIGN", txt: "TEXT & LIFE", fun: "FUN" };
-
-  const T = {
-    ko: {
-      heroH: `필요한 순간,<br><span class="u">설치 없이</span> 바로 쓰는<br><em>도구</em>를 한곳에.`,
-      heroP: "도구모음은 사진 변환부터 PDF, 영상, 오디오, 서류 양식까지 일상과 일에 자주 필요한 작업을 브라우저에서 바로 끝내는 무료 도구 모음이에요. 프로그램을 깔거나 가입하지 않아도 되고, 파일은 내 기기 밖으로 나가지 않아요.",
-      st: [["개", "지금 쓸 수 있는 도구"], ["", "서버로 보내는 파일"], ["원", "모든 도구 이용 요금"], ["", "필요한 회원가입"]],
-      toolsLbl: "What we do", toolsH: "하나만 잘하는 도구를<br>여러 개 모았어요",
-      toolsP: "도구 하나에 한 가지 일. 버튼을 찾느라 헤매지 않도록, 필요한 기능만 꺼내 쓰게 만들었어요.",
-      tag: { img: "변환·압축부터 사진 보정까지", doc: "합치고, 나누고, 풀고, 번호 매기고", vid: "자르기, 움짤, 세로 영상, 화면 녹화", aud: "음원 자르기, 변환, 녹음, 이퀄라이저", form: "견적서, 계약서, 이력서, 도장까지", des: "색, CSS, 파비콘, 인쇄 크기", txt: "QR코드, 글자 수, 글 비교", fun: "사진으로 노는 재미있는 도구" },
-      more: n => `${n}개 도구 보기 →`,
-      sfH: "안전하고, 빠르게", sfP: "도구모음의 모든 도구는 서버가 아니라 지금 보고 있는 브라우저 안에서 일해요. 그래서 안전하고, 그래서 빨라요.",
-      secH: "파일이 기기 밖으로<br>나가지 않아요", secP: "대부분의 무료 도구는 파일을 서버에 올려서 처리해요. 도구모음은 올리지 않아요. 계약서, 신분증 사진, 회사 자료도 안심하고 쓰세요.",
-      secL: ["서버 업로드 없음, 처리는 내 기기에서", "작업 기록·파일을 저장하지 않음", "회원가입·로그인이 필요 없음"],
-      spdH: "올리고 기다리는 시간이<br>없어요", spdP: "파일을 서버로 보냈다가 다시 받는 과정이 없으니, 큰 파일도 기다림이 짧아요. 내 기기의 성능을 그대로 써요.",
-      spdL: ["업로드·다운로드 대기 없음", "WebAssembly·WebGL로 기기 성능 활용", "여러 파일을 한 번에 처리"],
-      proH: "더 큰 작업을 위한<br><em>Pro</em> 도구를 만들고 있어요", proP: "간단한 도구 다음은, 설치형 프로그램이 하던 일을 브라우저로 옮기는 Pro 도구예요.",
-      pros: [
-        { live: true, id: "photo-edit", n: "사진보정", f: ["노출·색온도·톤 곡선", "필름·카메라 프리셋", "원본 해상도로 저장"] },
-        { live: true, id: "video-edit", n: "컷편집", f: ["타임라인 컷 편집", "숏폼 자막 프리셋", "화면 전환·배경음악"] },
-        { n: "웹 DAW", ic: "aud", f: ["멀티트랙 녹음", "믹싱·이펙트", "건반·드럼 패드"] },
-        { n: "포스터 · 카드뉴스", ic: "des", f: ["레이어 편집", "템플릿", "인쇄용 PDF 저장"] },
-      ],
-      live: "지금 쓸 수 있어요", soon: "만들고 있어요",
-      proNote: "Pro 도구의 순서와 시기는 바뀔 수 있어요. 나오면 이 페이지와 첫 화면에서 가장 먼저 알려 드릴게요.",
-      askH: "필요한 도구가<br>없나요?", askP: "어떤 작업이 번거로운지 알려 주세요. 많은 분께 필요한 도구라면 최대한 빨리 만들어 추가할게요.", askBtn: "제안 보내기",
-      fText: "필요한 도구", fContact: "연락처 (선택)", phText: "예: 사진 여러 장에서 글자만 뽑아 주는 도구가 있으면 좋겠어요", phContact: "답장 받을 이메일 (선택)",
-      sOk: n => `고마워요! 제안이 잘 전달됐어요${n ? ` (요청 #${n})` : ""}. 꼼꼼히 읽어 볼게요.`, sShort: "어떤 도구가 필요한지 조금만 더 적어 주세요.", sSoon: "제안 받기를 준비하고 있어요. 조금만 기다려 주세요.", sFail: "보내지 못했어요. 잠시 뒤에 다시 시도해 주세요.", sSlow: "잠시 뒤에 다시 보내 주세요.", sSending: "보내는 중…", sNote: "적어 주신 글과 연락처만 운영자에게 전달돼요.",
-      adH: "광고도 <em>도구처럼</em><br>깔끔하게", adP: "도구모음은 자동 광고 대신, 직접 확인한 광고만 받아요. 아래는 광고를 받는 기본 원칙이에요. 자세한 집행 방식과 단가는 준비 중이에요.",
-      rules: [
-        ["애드센스 같은 자동 광고는 넣지 않아요", "화면을 덮는 광고, 커머스 도배, 성인 광고처럼 <b>무분별하고 지저분한 광고</b>는 받지 않아요. 도구를 쓰는 화면을 깨끗하게 지키는 게 먼저예요."],
-        ["모든 광고는 직접 받고, 직접 검토해요", "문의 주신 광고는 운영자가 <b>내용과 연결되는 페이지를 직접 확인한 뒤</b>에만 게시해요. 원하시면 사이트 분위기에 맞는 <b>광고 배너도 직접 만들어 드려요</b>(선택)."],
-        ["목적이 분명한 사람에게 닿아요", "도구마다 찾는 사람이 뚜렷해요. PDF·양식 도구엔 사무와 자영업, 사진·디자인 도구엔 크리에이터처럼 <b>맞는 자리에 맞는 광고</b>를 걸 수 있어요."],
-      ],
-      talkH: "광고 문의", talkS: "광고 종류, 기간, 원하는 도구 자리를 알려 주시면 검토 후 답을 드려요.", talkBtn: "광고 문의하기", band: "ADVERTISE WITH DGMU",
-    },
-    en: {
-      heroH: `The tools you need,<br><span class="u">no install</span>, all in<br><em>one place</em>.`,
-      heroP: "DGMU is a free collection of tools for everyday work: images, PDF, video, audio and documents, right in your browser. No install, no sign-up, and your files never leave your device.",
-      st: [["", "Tools ready to use"], ["", "Files sent to a server"], ["$", "Price of every tool"], ["", "Sign-ups required"]],
-      toolsLbl: "What we do", toolsH: "Many tools,<br>each doing one thing well",
-      toolsP: "One tool, one job. No hunting for buttons — just the feature you came for.",
-      tag: { img: "From converting to photo editing", doc: "Merge, split, unlock, number", vid: "Trim, GIFs, vertical video, recording", aud: "Cut, convert, record, equalize", form: "Quotes, contracts, resumes, stamps", des: "Colors, CSS, favicons, print size", txt: "QR codes, counts, text compare", fun: "Playful tools for your photos" },
-      more: n => `See ${n} tools →`,
-      sfH: "Safe and fast", sfP: "Every DGMU tool works inside the browser you're using, not on a server. That's why it's safe, and that's why it's fast.",
-      secH: "Your files never<br>leave your device", secP: "Most free tools upload your files to process them. DGMU doesn't. Use it for contracts, ID photos and work files with peace of mind.",
-      secL: ["No uploads — processed on your device", "No history or files kept", "No sign-up or login"],
-      spdH: "No waiting for<br>uploads", spdP: "Nothing goes to a server and back, so even big files are quick. DGMU uses your device's own power.",
-      spdL: ["No upload or download wait", "WebAssembly & WebGL under the hood", "Batch many files at once"],
-      proH: "<em>Pro</em> tools for<br>bigger jobs are coming", proP: "After simple tools come Pro tools that bring desktop-app work into the browser.",
-      pros: [
-        { live: true, id: "photo-edit", n: "Photo Editor", f: ["Exposure, white balance, curves", "Film & camera presets", "Full-resolution export"] },
-        { live: true, id: "video-edit", n: "Video Editor", f: ["Timeline cutting", "Short-form caption presets", "Transitions & music"] },
-        { n: "Web DAW", ic: "aud", f: ["Multitrack recording", "Mixing & effects", "Keys & drum pads"] },
-        { n: "Poster & Card News", ic: "des", f: ["Layer editing", "Templates", "Print-ready PDF"] },
-      ],
-      live: "Available now", soon: "In the works",
-      proNote: "Order and timing of Pro tools may change. We'll announce them here and on the home page first.",
-      askH: "Missing a tool<br>you need?", askP: "Tell us what's slowing you down. If it helps many people, we'll build it and add it as fast as we can.", askBtn: "Send",
-      fText: "Tool you need", fContact: "Contact (optional)", phText: "e.g. A tool that pulls text out of several photos", phContact: "Email for a reply (optional)",
-      sOk: n => `Thank you! Your idea reached us${n ? ` (request #${n})` : ""}.`, sShort: "Please describe the tool a little more.", sSoon: "Suggestions open soon. Please check back.", sFail: "Couldn't send. Please try again in a moment.", sSlow: "Please try again in a little while.", sSending: "Sending…", sNote: "Only what you write here is sent to us.",
-      adH: "Ads as clean<br>as <em>the tools</em>", adP: "Instead of automated ad networks, DGMU only runs ads we review ourselves. Here are our basic principles. Details and pricing are on the way.",
-      rules: [
-        ["No AdSense or automated ads", "No pop-overs, spammy shopping ads or adult ads. <b>Keeping the tool screen clean</b> comes first."],
-        ["Every ad is received and reviewed by us", "We publish an ad only <b>after checking its content and landing page</b>. If you like, <b>we'll design the banner for you</b> (optional)."],
-        ["Reach people with a clear purpose", "Each tool has a distinct audience — office and small business for PDF and forms, creators for photo and design — so <b>the right ad lands in the right place</b>."],
-      ],
-      talkH: "Advertise", talkS: "Tell us the ad type, period and which tools you'd like. We'll review and get back to you.", talkBtn: "Contact us", band: "ADVERTISE WITH DGMU",
-    },
-  };
-
-  let counted = false;
-  function render(lang) {
-    const L = T[lang] || T.ko, tools = DG.tools();
-    document.title = lang === "ko" ? "ABOUT · 도구모음 DGMU" : "About · DGMU";
-    $("#heroH").innerHTML = L.heroH; $("#heroP").textContent = L.heroP;
-    document.querySelectorAll("[data-t]").forEach(el => { const v = L[el.dataset.t]; if (typeof v === "string") el.innerHTML = v; });
-
-    // 숫자 (모두 사실인 값만)
-    const vals = [tools.length, 0, 0, 0];
-    $("#stats").innerHTML = L.st.map(([u, t], i) => `<div class="stat"><b>${lang === "en" && u === "$" ? "$" : ""}<span class="cnt" data-to="${vals[i]}">${counted || i ? vals[i] : 0}</span>${u && u !== "$" ? `<small>${u}</small>` : ""}</b><span>${esc(t)}</span></div>`).join("");
-    if (!counted) countUp();
-
-    // 흐르는 도구 띠 (두 번 이어 붙여 끊김 없이)
-    const chip = t => `<a class="chip" href="${DG.href(t.id)}" style="--c:${DG.color(t.cat)}"><span class="ic" style="--c:${DG.color(t.cat)}">${DG.icon(t.id)}</span>${esc(DG.name(t))}</a>`;
-    const half = Math.ceil(tools.length / 2), a = tools.slice(0, half), b = tools.slice(half);
-    $("#mq1").innerHTML = (a.map(chip).join("")).repeat(2);
-    $("#mq2").innerHTML = (b.map(chip).join("")).repeat(2);
-
-    $("#what").innerHTML = DG.ORDER.filter(c => c !== "pro").map(c => {
-      const list = tools.filter(t => t.cat === c);
-      return `<a class="wcell" href="../#cat-${c}" style="--c:${DG.color(c)}"><span class="en">${EN[c]}</span><span class="ko">${esc(DG.cat(c))}</span>
-        <ul>${list.slice(0, 3).map(t => `<li>${esc(DG.name(t))}</li>`).join("")}</ul><p>${esc(L.tag[c])}</p><span class="n">${L.more(list.length)}</span></a>`;
-    }).join("");
-
-    $("#secL").innerHTML = L.secL.map(x => `<li>${CHECK}${esc(x)}</li>`).join("");
-    $("#spdL").innerHTML = L.spdL.map(x => `<li>${CHECK}${esc(x)}</li>`).join("");
-
-    $("#pros").innerHTML = L.pros.map(p => {
-      const t = p.live && DG.tools().find(x => x.id === p.id), icon = p.live ? DG.icon(p.id) : DG.CAT_ICON[p.ic], c = p.live ? DG.color(t ? t.cat : "img") : DG.color(p.ic);
-      const inner = `<span class="badge">${p.live ? L.live : L.soon}</span><span class="ic" style="--c:${c}">${icon}</span><h3>${esc(p.n)}<sup>PRO</sup></h3><ul>${p.f.map(x => `<li>${esc(x)}</li>`).join("")}</ul>`;
-      return p.live ? `<a class="pro live" href="${DG.href(p.id)}">${inner}</a>` : `<div class="pro soon">${inner}</div>`;
-    }).join("");
-
-    $("#sText").placeholder = L.phText; $("#sContact").placeholder = L.phContact;
-    $("#sSend").innerHTML = `${esc(L.askBtn)}${ARROW}`; cur = L;
-
-    $("#rules").innerHTML = L.rules.map(([h, p], i) => `<div class="rule"><span class="no">0${i + 1}</span><h3>${esc(h)}</h3><p>${p}</p></div>`).join("");
-    // 광고 문의 버튼: 연락처는 shell.js의 AD_CONTACT 한 곳에서 정해요
-    const tb = $("#talkBtn"); const tmp = document.createElement("div"); tmp.innerHTML = `<a ${DG.adAttr()}></a>`;
-    const src = tmp.firstChild; [...tb.attributes].forEach(at => at.name !== "id" && at.name !== "class" && tb.removeAttribute(at.name));
-    [...src.attributes].forEach(at => tb.setAttribute(at.name, at.value)); tb.innerHTML = `${esc(L.talkBtn)}${ARROW}`;
-    $("#tband").innerHTML = Array.from({ length: 8 }, () => `<span>${L.band}<i>✦</i></span>`).join("");
-  }
-
-  function countUp() {
-    const el = document.querySelector(".cnt[data-to]"); if (!el) return;
-    const to = +el.dataset.to;
-    const go = () => {
-      if (counted) return; counted = true;
-      if (matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to; return; }
-      const t0 = performance.now(), dur = 1100;
-      const step = now => { const k = Math.min(1, (now - t0) / dur); el.textContent = Math.round(to * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
-      requestAnimationFrame(step);
-    };
-    if ("IntersectionObserver" in window) { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }); io.observe(el); } else go();
-  }
-
-  // 도구 제안 보내기 → suggest-worker → 운영자의 비공개 GitHub 저장소 md 파일에 한 줄씩 쌓여요
-  let cur = T.ko;
-  const msg = (t, err) => { const m = $("#sMsg"); m.textContent = t; m.classList.toggle("err", !!err); };
-  $("#suggest").addEventListener("submit", async e => {
-    e.preventDefault();
-    const text = $("#sText").value.trim(), contact = $("#sContact").value.trim();
-    if (text.length < 4) { msg(cur.sShort, true); $("#sText").focus(); return; }
-    if (!DG.suggestApi) { msg(cur.sSoon, true); return; }
-    const btn = $("#sSend"); btn.disabled = true; msg(cur.sSending);
-    try {
-      const r = await fetch(DG.suggestApi.replace(/\/$/, "") + "/suggest", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text, contact, page: location.pathname + location.hash, website: $("#sHp").value }) });
-      const j = await r.json().catch(() => ({}));
-      if (r.ok && j.ok) { msg(cur.sOk(j.n)); $("#sText").value = ""; $("#sContact").value = ""; }
-      else msg(r.status === 429 ? cur.sSlow : r.status === 400 ? cur.sShort : cur.sFail, true);
-    } catch { msg(cur.sFail, true); }
-    btn.disabled = false;
-  });
-  if (location.hash === "#suggest") requestAnimationFrame(() => { const a = $(".ask"); scrollTo({ top: a.getBoundingClientRect().top + scrollY - 90 }); });
-
-  DG.onLang(render);
-})();
-</script>
-</body>
+        <h1>
+          <span>LESS</span><span class="outline-word">FRICTION.</span
+          ><span class="last-line">MORE <em>FLOW.</em></span>
+        </h1>
+        <div id="sculpture" aria-label="마우스와 스크롤에 반응하는 3D 조형물">
+          <div class="sculpture-fallback">✳</div>
+        </div>
+        <div class="hero-under">
+          <p>번거로운 일을 덜어내면,<br />새로운 가능성이 보이니까.</p>
+          <a href="#manifesto">SCROLL TO EXPLORE <span>↓</span></a
+          ><span>DESIGN × TECHNOLOGY<br />BUILT FOR EVERYDAY CREATIVITY</span>
+        </div>
+        <div class="about-progress"></div>
+      </section>
+      <section class="manifesto" id="manifesto">
+        <span class="micro">01 / THE IDEA</span>
+        <p class="manifesto-text">
+          좋은 도구는<br />존재감을 줄이고,<br /><em>가능성을 넓힙니다.</em>
+        </p>
+        <div class="manifesto-bottom">
+          <span>LESS, BUT BETTER.</span>
+          <p>
+            프로그램을 설치하고, 계정을 만들고, 사용법을 배우는 시간.<br />도구모음은
+            그 사이의 마찰을 줄입니다.<br />당신의 브라우저가 곧 작업실이
+            되도록.
+          </p>
+        </div>
+        <div class="manifesto-sticker" aria-hidden="true">
+          MAKE<br />ROOM<br />FOR YOU.
+        </div>
+      </section>
+      <section class="process-section">
+        <div class="process-title">
+          <span class="micro">02 / MADE TO FLOW</span>
+          <h2>생각에서 결과까지.<br />단 세 번의 움직임.</h2>
+        </div>
+        <div class="process-cards">
+          <article class="process-card step-one">
+            <span>01 / DROP</span>
+            <div class="process-visual">
+              <i data-lucide="mouse-pointer-2"></i><b>YOUR<br />IDEA.</b>
+            </div>
+            <h3>가볍게 가져오고.</h3>
+            <p>
+              파일을 선택하거나 끌어다 놓으세요.<br />작업의 시작은 이만큼
+              간단해야 하니까.
+            </p>
+          </article>
+          <article class="process-card step-two">
+            <span>02 / MAKE</span>
+            <div class="process-visual knobs"><i></i><i></i><i></i></div>
+            <h3>딱 필요한 만큼.</h3>
+            <p>
+              설정은 명확하게, 결과는 직관적으로.<br />한 화면에서 나의 작업에
+              집중하세요.
+            </p>
+          </article>
+          <article class="process-card step-three">
+            <span>03 / KEEP</span>
+            <div class="process-visual">
+              <i data-lucide="arrow-down-to-line"></i><b>DONE.</b>
+            </div>
+            <h3>결과는 나에게.</h3>
+            <p>
+              완성된 파일은 내 기기로.<br />이제 더 중요한 다음 일을 시작하세요.
+            </p>
+          </article>
+        </div>
+      </section>
+      <section class="play-section">
+        <div class="play-heading">
+          <div>
+            <span class="micro">03 / A LITTLE PLAY GOES A LONG WAY</span>
+            <h2>쓸모에도,<br /><em>재미가 필요해.</em></h2>
+          </div>
+          <div>
+            <p>
+              도구를 잡아 던져 보세요.<br />아이디어에는 정해진 자리가 없으니까.
+            </p>
+            <button id="shuffle">
+              다시 섞기 <i data-lucide="shuffle"></i>
+            </button>
+          </div>
+        </div>
+        <div id="physics-stage" aria-hidden="true"></div>
+        <p class="play-caption">
+          DRAG TO PLAY · <span>키보드로는 ‘다시 섞기’를 눌러보세요.</span>
+        </p>
+      </section>
+      <section class="about-end">
+        <div class="micro">LESS BUSYWORK. MORE YOU.</div>
+        <a href="/" class="end-link"
+          >LET’S<br /><em>MAKE.</em><span>↗</span></a
+        >
+        <div class="end-bottom">
+          <p>
+            64개의 도구. 하나의 흐름.<br />당신의 다음 아이디어를 기다립니다.
+          </p>
+          <a href="/library/">도구 둘러보기 ↗</a
+          ><span>MOUM<br />DESIGN EXPERIMENT / 2026</span>
+        </div>
+      </section>
+    </main>
+    <script src="/vendor/gsap.min.js"></script>
+    <script src="/vendor/lucide.min.js"></script>
+    <script src="/vendor/fuse.min.js"></script>
+    <script src="/common-ui.js"></script>
+    <script src="/vendor/ScrollTrigger.min.js"></script>
+    <script src="/vendor/lenis.min.js"></script>
+    <script src="/vendor/matter.min.js"></script>
+    <script type="module" src="/about.js"></script>
+  </body>
 </html>
