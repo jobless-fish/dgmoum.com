@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>(function(){var t;try{t=localStorage.getItem("dg-theme")}catch(e){}if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.dataset.theme=t})()</script>
+
+
+
+<link rel="manifest" href="../../site.webmanifest">
+<meta name="theme-color" content="#f0f0f0">
+<meta property="og:site_name" content="도구모음">
+<meta property="og:type" content="website">
+<meta property="og:image" content="https://dgmoum.com/assets/og-image.png">
+<meta property="og:title" content="이미지 용량 줄이기 (이미지 압축) · 도구모음">
+<meta property="og:description" content="사진·이미지 용량 줄이기. 원하는 용량(KB)에 맞춰 자동 압축, 여러 장 일괄 처리. 업로드 없이 브라우저에서.">
+<title>이미지 용량 줄이기 (이미지 압축) · 도구모음</title>
+<meta name="description" content="사진·이미지 용량 줄이기. 원하는 용량(KB)에 맞춰 자동 압축, 여러 장 일괄 처리. 업로드 없이 브라우저에서.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600&display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<link rel="stylesheet" href="../../assets/v2.css">
+<style>
+  body { --cat: var(--img); }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .kb { display: flex; gap: 8px; align-items: center; }
+  .kb input { max-width: 140px; }
+</style>
+<link rel="stylesheet" href="/transition.css"><link rel="stylesheet" href="/command.css"><link rel="stylesheet" href="/studio.css">
+<link rel="icon" type="image/png" href="/assets/dg-logo.png"><link rel="apple-touch-icon" href="/assets/dg-logo.png">
+</head>
+<body data-tool="image-compress">
+<header id="hdr"></header>
+
+<main class="wrap">
+  <div class="tool-head">
+    <span class="tool-tag" data-icon="image-compress"></span>
+    <div>
+      <h1>이미지 용량 줄이기</h1>
+      <p>"300KB 이하로 올려주세요" 같은 제한이 있을 때 쓰세요. 목표 용량을 넣으면 화질을 알아서 조절하고, 그래도 크면 크기를 조금씩 줄여서 맞춰요.</p>
+    </div>
+  </div>
+
+  <div class="workspace">
+    <section style="display:grid; gap:14px; min-width:0">
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="이미지 파일 선택">
+        <span data-icon="upload"></span>
+        <strong>이미지를 끌어다 놓거나 눌러서 고르세요</strong>
+        <span>여러 장 가능 · Ctrl+V로 붙여넣기도 돼요</span>
+        <input type="file" id="file">
+      </div>
+      <div id="listWrap" hidden>
+        <div class="list-head">
+          <p id="summary"></p>
+          <button class="btn btn-sm" id="clear">모두 비우기</button>
+        </div>
+        <div class="files" id="files"></div>
+      </div>
+      <div class="ad-slot" id="ad-main"></div>
+    </section>
+
+    <aside class="panel side">
+      <div class="panel-body">
+        <h2>압축 설정</h2>
+        <div class="field">
+          <span class="label">방식</span>
+          <div class="seg" role="radiogroup">
+            <input type="radio" name="mode" id="m-kb" value="kb" checked><label for="m-kb">목표 용량</label>
+            <input type="radio" name="mode" id="m-q" value="q"><label for="m-q">화질 지정</label>
+          </div>
+        </div>
+        <div class="field" data-mode="kb">
+          <label for="kb">한 장당 최대 용량</label>
+          <div class="kb"><input type="number" id="kb" min="10" max="50000" value="500"><span>KB</span></div>
+          <div class="presets">
+            <button class="btn btn-sm" data-kb="100">100KB</button>
+            <button class="btn btn-sm" data-kb="300">300KB</button>
+            <button class="btn btn-sm" data-kb="500">500KB</button>
+            <button class="btn btn-sm" data-kb="1024">1MB</button>
+          </div>
+        </div>
+        <div class="field" data-mode="q" hidden>
+          <label for="q">화질 <span class="num" id="qv">75</span></label>
+          <input type="range" id="q" min="10" max="95" value="75">
+        </div>
+        <div class="field">
+          <label for="fmt">저장 형식</label>
+          <select id="fmt">
+            <option value="auto" selected>자동 (사진은 JPG, 투명 배경은 WEBP)</option>
+            <option value="image/jpeg">JPG</option>
+            <option value="image/webp">WEBP (더 작음)</option>
+          </select>
+        </div>
+        <button class="btn btn-primary btn-block" id="run" disabled>압축하기</button>
+        <div class="progress" id="prog" hidden><i></i></div>
+        <p class="status" id="status"></p>
+        <button class="btn btn-block" id="zip" hidden data-icon="download"> 전부 zip으로 받기</button>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer id="foot"></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="../../assets/common.js"></script>
+<script src="../../assets/i18n.js"></script>
+<script src="../../assets/shell.js" data-root="../../"></script>
+<script>
+(() => {
+  const $ = s => document.querySelector(s);
+  const EXT = { "image/jpeg": "jpg", "image/webp": "webp", "image/png": "png" };
+  const filesEl = $("#files"), runBtn = $("#run"), zipBtn = $("#zip"), prog = $("#prog"), bar = prog.firstElementChild;
+  const say = TT.sayTo($("#status"));
+  const items = [];
+  const mode = () => document.querySelector("input[name=mode]:checked").value;
+  const WEBP = (() => { const c = document.createElement("canvas"); c.width = c.height = 1; return c.toDataURL("image/webp").startsWith("data:image/webp"); })();
+
+  document.querySelectorAll("input[name=mode]").forEach(r => r.onchange = () => {
+    document.querySelectorAll("[data-mode]").forEach(el => el.hidden = el.dataset.mode !== mode()); stale();
+  });
+  document.querySelectorAll("[data-kb]").forEach(b => b.onclick = () => { $("#kb").value = b.dataset.kb; stale(); });
+  $("#q").oninput = e => { $("#qv").textContent = e.target.value; stale(); };
+  ["#kb", "#fmt"].forEach(s => $(s).addEventListener("change", stale));
+
+  TT.dropzone($("#drop"), add, { accept: "image/*" });
+
+  async function add(files) {
+    for (const file of files) {
+      const it = { file, url: URL.createObjectURL(file) };
+      try { const b = await createImageBitmap(file); it.w = b.width; it.h = b.height; b.close(); } catch { it.bad = true; }
+      items.push(it); filesEl.appendChild(row(it));
+    }
+    refresh();
+  }
+  function row(it) {
+    const el = document.createElement("div");
+    el.className = "file";
+    el.innerHTML = `
+      <img class="thumb" alt="" ${it.bad ? "" : `src="${it.url}"`}>
+      <div class="meta"><div class="name"></div><div class="info">${it.bad ? "열 수 없는 형식" : `${it.w}×${it.h} · ${TT.bytes(it.file.size)}`}<span class="res"></span></div></div>
+      <div class="acts">
+        <button class="icon-btn dl" title="받기" hidden>${TT.icon("download")}</button>
+        <button class="icon-btn rm" title="빼기">${TT.icon("x")}</button>
+      </div>`;
+    el.querySelector(".name").textContent = it.file.name;
+    el.querySelector(".rm").onclick = () => { URL.revokeObjectURL(it.url); items.splice(items.indexOf(it), 1); el.remove(); refresh(); };
+    el.querySelector(".dl").onclick = () => it.out && TT.download(it.out.blob, it.out.name);
+    it.el = el; return el;
+  }
+  function refresh() {
+    $("#listWrap").hidden = !items.length;
+    const ok = items.filter(i => !i.bad);
+    runBtn.disabled = !ok.length;
+    $("#summary").textContent = `${items.length}개 파일 · ${TT.bytes(ok.reduce((s, i) => s + i.file.size, 0))}`;
+    zipBtn.hidden = !(ok.length > 1 && ok.every(i => i.out));
+  }
+  function stale() {
+    items.forEach(i => { if (i.out) { i.out = null; i.el.querySelector(".dl").hidden = true; i.el.querySelector(".res").textContent = ""; } });
+    refresh();
+  }
+  $("#clear").onclick = () => { items.forEach(i => URL.revokeObjectURL(i.url)); items.length = 0; filesEl.innerHTML = ""; refresh(); say(""); };
+
+  function hasAlpha(c) {
+    const s = Math.min(1, 256 / Math.max(c.width, c.height));
+    const t = document.createElement("canvas"); t.width = Math.max(1, c.width * s | 0); t.height = Math.max(1, c.height * s | 0);
+    const g = t.getContext("2d", { willReadFrequently: true }); g.drawImage(c, 0, 0, t.width, t.height);
+    const d = g.getImageData(0, 0, t.width, t.height).data;
+    for (let i = 3; i < d.length; i += 4) if (d[i] < 250) return true;
+    return false;
+  }
+  function scaled(src, s, type) {
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(src.width * s)); c.height = Math.max(1, Math.round(src.height * s));
+    const g = c.getContext("2d"); g.imageSmoothingQuality = "high";
+    if (type === "image/jpeg") { g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); }
+    g.drawImage(src, 0, 0, c.width, c.height);
+    return c;
+  }
+  // 목표 용량: 화질을 이분 탐색하고, 화질 0.4로도 크면 크기를 줄여가며 다시
+  async function toTarget(src, type, limit) {
+    let s = 1, best = null;
+    for (let round = 0; round < 12; round++) {
+      const c = scaled(src, s, type);
+      let lo = 0.4, hi = 0.95, pick = null;
+      for (let k = 0; k < 7; k++) {
+        const q = (lo + hi) / 2, b = await TT.canvasBlob(c, type, q);
+        if (b.size <= limit) { pick = { blob: b, q, s, w: c.width, h: c.height }; lo = q; } else hi = q;
+      }
+      if (!pick) { const b = await TT.canvasBlob(c, type, 0.4); if (b.size <= limit) pick = { blob: b, q: 0.4, s, w: c.width, h: c.height }; }
+      if (pick) return pick;
+      best = { blob: await TT.canvasBlob(c, type, 0.4), q: 0.4, s, w: c.width, h: c.height };
+      s *= 0.85;
+    }
+    return best;
+  }
+
+  runBtn.onclick = async () => {
+    const todo = items.filter(i => !i.bad);
+    runBtn.disabled = true; prog.hidden = false; zipBtn.hidden = true;
+    const limit = Math.max(10, +$("#kb").value || 500) * 1024;
+    let before = 0, after = 0, done = 0, missed = 0;
+    for (const it of todo) {
+      say(`압축 중… ${done + 1}/${todo.length}`);
+      try {
+        const src = await TT.toCanvas(it.file);
+        let type = $("#fmt").value;
+        if (type === "auto") type = hasAlpha(src) ? "image/webp" : "image/jpeg";
+        if (type === "image/webp" && !WEBP) type = "image/jpeg"; // WEBP 저장이 안 되는 브라우저
+        let r;
+        if (mode() === "kb") r = await toTarget(src, type, limit);
+        else { const c = scaled(src, 1, type); r = { blob: await TT.canvasBlob(c, type, +$("#q").value / 100), s: 1, w: c.width, h: c.height }; }
+        let note = "";
+        if (r.blob.size >= it.file.size && mode() === "q") { r = { blob: it.file, s: 1, w: it.w, h: it.h }; note = " · 이미 작아서 원본 유지"; }
+        if (mode() === "kb" && r.blob.size > limit) { missed++; note = " · 목표보다 커요"; }
+        if (r.s < 1) note += ` · 크기 ${r.w}×${r.h}로 줄임`;
+        const ext = EXT[r.blob.type] || it.file.name.split(".").pop();
+        it.out = { blob: r.blob, name: r.blob === it.file ? it.file.name : `${TT.baseName(it.file.name)}_압축.${ext}` };
+        before += it.file.size; after += r.blob.size;
+        const pct = Math.round((1 - r.blob.size / it.file.size) * 100);
+        it.el.querySelector(".res").innerHTML = ` → ${TT.bytes(r.blob.size)} <b class="${pct < 0 ? "up" : ""}">${pct >= 0 ? "-" + pct : "+" + -pct}%</b>${note}`;
+        it.el.querySelector(".dl").hidden = false;
+      } catch (e) { console.error(e); it.el.querySelector(".res").textContent = " → 압축 실패"; }
+      done++; bar.style.width = (done / todo.length * 100) + "%";
+    }
+    prog.hidden = true; bar.style.width = 0; runBtn.disabled = false;
+    say(`${done}개 완료 · ${TT.bytes(before)} → ${TT.bytes(after)}${missed ? ` · ${missed}개는 목표 용량을 못 맞췄어요` : ""}`, missed ? "err" : "ok");
+    const outs = todo.filter(i => i.out);
+    if (outs.length === 1) TT.download(outs[0].out.blob, outs[0].out.name);
+    refresh();
+  };
+  zipBtn.onclick = () => TT.downloadZip(items.filter(i => i.out).map(i => i.out), "compressed.zip");
+})();
+</script>
+<script src="/vendor/gsap.min.js"></script><script src="/vendor/lucide.min.js"></script><script src="/vendor/fuse.min.js"></script><script src="/common-ui.js"></script><script src="/studio.js"></script>
+</body>
+</html>
