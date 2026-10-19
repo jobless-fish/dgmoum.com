@@ -12,3 +12,9 @@
 @media(max-width:600px){.tools-drawer{padding:22px 16px}.tools-drawer .drawer-library .library-tool-link{padding:20px}}
 .tools-drawer .library-layout{margin:0}
 .tools-drawer-head strong{font-size:15px;color:#4d4366}
+
+/* 전체도구 버튼: 글자는 항상 '전체도구', 펼쳤을 때만 홈화면과 같은 선택 표시 */
+.refreshed-header .tool-menu-toggle{font-size:13px;font-weight:550;letter-spacing:-0.04em;padding:11px 18px;border-radius:40px;line-height:normal;background:none;color:#777982;transition:background .15s,color .15s}
+.refreshed-header .tool-menu-toggle:hover{color:#61518d}
+@media(max-width:500px){.refreshed-header .tool-menu-toggle{font-size:11px;padding:9px 10px}}
+.refreshed-header .tool-menu-toggle[aria-expanded=true]{background:#e9e6f2;color:#61518d}
