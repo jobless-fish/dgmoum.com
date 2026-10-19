@@ -774,3 +774,38 @@ body.studio-standard .studio-upload.has-files .studio-add-label {
 .m-logo,.studio-brand{white-space:nowrap;}
 @media(max-width:500px){.refreshed-header .m-logo{font-size:21px}.refreshed-header .brand-group{gap:8px}.dg-brand-icon{width:30px;height:30px}}
 .studio-brand .logo-dot{font-size:12px;align-self:flex-start;margin:2px 0 0 -6px;letter-spacing:0;}
+
+/* Pro 도구(사진보정Pro·컷편집Pro)도 다른 도구와 같은 사이트 상단 바를 써요.
+   편집기 자체 도구 막대는 그 아래에 붙고, 화면 높이에서 상단 바만큼 빼요. */
+body.has-site-top { --site-top: 64px; }
+@media (max-width: 800px) { body.has-site-top { --site-top: 60px; } }
+.has-site-top > .studio-top {
+  flex: none;
+  color: var(--ink);
+  font-family: var(--f);
+  font-size: 16px;
+  line-height: 1.6;
+  letter-spacing: -0.4px;
+}
+.has-site-top > .studio-top .studio-brand { color: var(--ink); }
+.has-site-top > .studio-top .studio-action {
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.4;
+  letter-spacing: normal;
+}
+.has-site-top .phead .brand,
+.has-site-top .topbar .brand,
+.has-site-top .editor-back { display: none !important; }
+.pe.has-site-top .phead { position: relative; top: auto; }
+@media (min-width: 901px) {
+  .pe.has-site-top .app {
+    height: calc(100vh - 48px - var(--site-top));
+    height: calc(100dvh - 48px - var(--site-top));
+  }
+}
+@media (max-width: 900px) {
+  .pe.has-site-top .center { top: var(--site-top); }
+  .pe.has-site-top .mtabs { top: calc(58vh + var(--site-top)); top: calc(58dvh + var(--site-top)); }
+}
+.studio-video.has-site-top .nle { height: calc(100dvh - var(--site-top)); }

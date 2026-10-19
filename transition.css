@@ -64,15 +64,6 @@
   z-index: 60;
   view-transition-name: site-header;
 }
-.phead {
-  position: sticky;
-  top: 0;
-  z-index: 60;
-  view-transition-name: site-header;
-}
-.topbar {
-  view-transition-name: site-header;
-}
 ::view-transition-group(site-header),
 ::view-transition-old(site-header),
 ::view-transition-new(site-header) {

@@ -12,48 +12,22 @@
       );
     } catch {}
     const special = id === "photo-edit" || id === "video-edit";
-    if (special) {
-      document.body.classList.add(
-        id === "video-edit" ? "studio-video" : "studio-photo",
-      );
-      const addBack = () => {
-        const header = document.querySelector(".phead,.topbar");
-        if (header && !header.querySelector(".editor-back")) {
-          const a = document.createElement("a");
-          a.href = "/library/";
-          a.className = "editor-back";
-          a.textContent = "전체 도구 ↗";
-          header.append(a);
-        }
-      };
-      addBack();
-      if (id === "video-edit" && document.querySelector("#app")) {
-        const obs = new MutationObserver(() => {
-          if (document.querySelector(".topbar")) {
-            addBack();
-            obs.disconnect();
-          }
-        });
-        obs.observe(document.querySelector("#app"), {
-          childList: true,
-          subtree: true,
-        });
-      }
-      return;
-    }
-    document.body.classList.add("studio-standard");
-    function renderHeader() {
-      const hdr = document.querySelector("#hdr");
-      if (!hdr) return;
+    // 다른 도구와 똑같은 사이트 상단 바를 그려요 (Pro 도구도 같은 함수를 써요)
+    function fillTop(hdr) {
       hdr.className = "studio-top";
       hdr.innerHTML =
-        '<a class="studio-brand" href="/" aria-label="도구모음 홈">dg.moum</a><span class="studio-divider"></span><nav aria-label="주 메뉴"><a href="/">홈화면</a><a href="/library/">전체 도구</a><a href="/about/">About ↗</a></nav><div class="studio-actions"><button class="studio-action" id="studio-search" aria-label="전체 도구 검색"><i data-lucide="search"></i><span>도구 검색</span></button><button class="studio-action" id="studio-language" aria-label="언어 전환">' +
-        (window.DG?.lang === "en" ? "한국어" : "EN") +
-        '</button><button class="studio-action" id="studio-theme" aria-label="화면 테마 전환"><i data-lucide="sun-moon"></i></button></div>';
+        '<a class="studio-brand" href="/" aria-label="도구모음 홈">dg.moum</a><span class="studio-divider"></span><nav aria-label="주 메뉴"><a href="/">홈화면</a><a href="/library/">전체 도구</a><a href="/about/">About ↗</a></nav><div class="studio-actions"><button class="studio-action" id="studio-search" aria-label="전체 도구 검색"><i data-lucide="search"></i><span>도구 검색</span></button>' +
+        (window.DG
+          ? '<button class="studio-action" id="studio-language" aria-label="언어 전환">' +
+            (DG.lang === "en" ? "한국어" : "EN") +
+            "</button>"
+          : "") +
+        '<button class="studio-action" id="studio-theme" aria-label="화면 테마 전환"><i data-lucide="sun-moon"></i></button></div>';
       hdr.querySelector("#studio-search").onclick = () =>
         window.moumOpenSearch?.();
-      hdr.querySelector("#studio-language").onclick = () =>
-        window.DG?.setLang(DG.lang === "en" ? "ko" : "en");
+      const lang = hdr.querySelector("#studio-language");
+      if (lang)
+        lang.onclick = () => window.DG?.setLang(DG.lang === "en" ? "ko" : "en");
       hdr.querySelector("#studio-theme").onclick = () => {
         const t =
           document.documentElement.dataset.theme === "dark" ? "light" : "dark";
@@ -62,6 +36,28 @@
           localStorage.setItem("dg-theme", t);
         } catch {}
       };
+      window.moumIcons?.();
+    }
+    if (special) {
+      document.body.classList.add(
+        id === "video-edit" ? "studio-video" : "studio-photo",
+        "has-site-top",
+      );
+      let top = document.querySelector("body > header.studio-top");
+      if (!top) {
+        top = document.createElement("header");
+        document.body.prepend(top);
+      }
+      const drawTop = () => fillTop(top);
+      if (window.DG) DG.onLang(drawTop);
+      else drawTop();
+      return;
+    }
+    document.body.classList.add("studio-standard");
+    function renderHeader() {
+      const hdr = document.querySelector("#hdr");
+      if (!hdr) return;
+      fillTop(hdr);
       const foot = document.querySelector("#foot");
       if (foot) {
         foot.className = "studio-bottom";
