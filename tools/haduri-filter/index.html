@@ -42,11 +42,43 @@
   input.in { width: 100%; border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; background: var(--surface); color: var(--ink); font: 14.5px var(--f-body); }
   .warn { font-size: 12.5px; color: var(--warn, #b45309); margin: 0; }
 
-  .stage { display: grid; place-items: center; background: var(--surface-2); border-radius: 12px; padding: 14px; min-height: 260px; }
-  .stage canvas { display: block; max-width: 100%; max-height: 72vh; height: auto; border-radius: 2px; box-shadow: 0 2px 14px rgba(0,0,0,.12); }
-  .fgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
-  .fcard { display: grid; gap: 4px; padding: 4px; border: 2px solid transparent; border-radius: 10px; background: none; cursor: pointer; color: var(--ink); font: 600 12.5px var(--f-body); text-align: center; }
-  .fcard canvas { width: 100%; height: auto; display: block; border-radius: 6px; background: var(--surface-2); }
+  .workspace { scroll-margin-top: 76px; }
+  .hd-main { display: grid; gap: 10px; }
+  .pstrip { display: flex; gap: 6px; align-items: center; overflow-x: auto; padding: 2px; scrollbar-width: thin; }
+  .pth { position: relative; flex: none; width: 54px; height: 44px; border-radius: 8px; border: 2px solid transparent; padding: 0; background: var(--surface-2); cursor: pointer; overflow: visible; }
+  .pth img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: block; }
+  .pth[aria-pressed=true] { border-color: var(--cat); }
+  .pth .x { position: absolute; top: -6px; right: -6px; width: 18px; height: 18px; border-radius: 50%; border: 0; background: var(--ink); color: var(--surface); font-size: 11px; line-height: 18px; padding: 0; cursor: pointer; display: none; }
+  .pth:hover .x, .pth[aria-pressed=true] .x { display: block; }
+  .padd { flex: none; width: 44px; height: 44px; border-radius: 8px; border: 1.5px dashed var(--line); background: none; color: var(--muted); font-size: 20px; cursor: pointer; }
+  .padd:hover { border-color: var(--cat); color: var(--cat); }
+  .pinfo { margin-left: auto; flex: none; font-size: 11.5px; color: var(--muted); white-space: nowrap; padding-left: 8px; }
+  .hd-ctl { display: grid; gap: 9px; }
+  .hd-ctl h3 { margin: 4px 0 0; font-size: 13px; font-weight: 800; }
+  .hd-ctl h3:first-child { margin-top: 0; }
+  .hd-ctl .check { margin: 0; font-size: 12.5px; }
+  .hd-ctl .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+  .hd-ctl .seg label { font-size: 12px !important; padding: 6px 4px !important; text-align: center; white-space: nowrap; }
+  .hd-ctl .row { flex-wrap: nowrap; }
+  .hd-ctl .row .check { white-space: nowrap; }
+  .hd-ctl .corner { width: 128px; flex: none; }
+  .hd-ctl .corner label { padding: 4px 0 !important; font-size: 13px !important; }
+  .hd-ctl .f-dot { font-family: Galmuri11, monospace; }
+  .hd-ctl .two { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .mini { display: grid; grid-template-columns: 34px 1fr 52px; align-items: center; gap: 8px; font-size: 12.5px; }
+  .mini label { font-weight: 700; color: var(--muted); }
+  .mini b { text-align: right; font-size: 12.5px; white-space: nowrap; }
+  .hd-ctl textarea.in { min-height: 0; padding: 8px 10px; font-size: 14px; }
+  .hd-ctl .syms { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .hd-ctl .syms button { flex: none; min-width: 0; padding: 2px 6px; font-size: 12.5px; }
+  .hd-ctl .swatches button { width: 22px; height: 22px; }
+  .hd-ctl .status { margin: 0; min-height: 0; }
+
+  .stage { display: grid; place-items: center; background: var(--surface-2); border-radius: 12px; padding: 10px; min-height: 220px; }
+  .stage canvas { display: block; max-width: 100%; max-height: calc(100vh - 330px); max-height: calc(100dvh - 330px); min-height: 160px; object-fit: contain; height: auto; border-radius: 2px; box-shadow: 0 2px 14px rgba(0,0,0,.12); }
+  .fgrid { display: grid; grid-auto-flow: column; grid-auto-columns: 74px; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
+  .fcard { display: grid; gap: 3px; padding: 3px; font-size: 11.5px !important; border: 2px solid transparent; border-radius: 10px; background: none; cursor: pointer; color: var(--ink); font: 600 12.5px var(--f-body); text-align: center; }
+  .fcard canvas { width: 100%; height: 52px; object-fit: cover; display: block; border-radius: 6px; background: var(--surface-2); }
   .fcard:hover { border-color: color-mix(in srgb, var(--cat) 40%, transparent); }
   .fcard[aria-pressed=true] { border-color: var(--cat); background: color-mix(in srgb, var(--cat) 10%, transparent); }
   .sub-h { font-size: 13px; font-weight: 700; margin: 0; }
@@ -67,7 +99,6 @@
 <link rel="stylesheet" href="/transition.css"><link rel="stylesheet" href="/command.css"><link rel="stylesheet" href="/studio.css">
 <link rel="icon" type="image/png" href="/assets/dg-logo.png"><link rel="apple-touch-icon" href="/assets/dg-logo.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/galmuri@2.40.3/dist/galmuri.css">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap">
 </head>
 <body data-tool="haduri-filter">
 <header id="hdr"></header>
@@ -84,77 +115,75 @@
       <div class="drop" id="drop" tabindex="0" role="button" aria-label="사진 선택">
         <span data-icon="upload"></span>
         <strong>사진을 올려 주세요</strong>
-        <span>JPG · PNG · WEBP · 붙여넣기도 돼요</span>
+        <span>여러 장 한 번에 · JPG · PNG · WEBP · 붙여넣기도 돼요</span>
         <input type="file" id="file">
       </div>
       <section class="panel" id="work" hidden>
-        <div class="panel-body" style="display:grid; gap:14px">
+        <div class="panel-body hd-main">
           <div class="stage"><canvas id="out" aria-label="하두리 사진 미리보기"></canvas></div>
-          <div class="row"><span class="hint" id="info"></span><span class="sp"></span><button class="btn btn-sm" id="other">다른 사진</button></div>
-          <div style="display:grid; gap:8px">
-            <p class="sub-h">필터</p>
-            <div class="fgrid" id="fgrid"></div>
-          </div>
+          <div class="pstrip" id="pstrip" aria-label="편집할 사진"></div>
+          <div class="fgrid" id="fgrid" aria-label="필터"></div>
         </div>
       </section>
       <div class="ad-slot" id="ad-main"></div>
     </section>
     <aside class="panel side">
       <div class="panel-body">
-        <h2>사진</h2>
-        <div class="field"><label for="size">크기</label>
-          <select id="size"><option value="320">작게 · 320px (옛날 웹캠)</option><option value="640" selected>보통 · 640px</option><option value="1080">크게 · 1080px</option><option value="0">원본 크기</option></select></div>
-        <div class="field"><label for="q">화질 <span class="num" id="qV">3</span></label><input type="range" id="q" min="1" max="10" value="3">
-          <p class="hint">낮을수록 뭉개지고 깍두기가 생겨요. 그 시절 웹캠 느낌은 2~4 정도예요.</p></div>
-        <label class="check"><input type="checkbox" id="banner" checked> 하두리 로고 넣기</label>
+        <div class="hd-ctl">
+          <h3>사진</h3>
+          <div class="seg four" role="radiogroup" aria-label="크기">
+            <input type="radio" name="size" id="s-320" value="320"><label for="s-320">320</label>
+            <input type="radio" name="size" id="s-640" value="640" checked><label for="s-640">640</label>
+            <input type="radio" name="size" id="s-1080" value="1080"><label for="s-1080">1080</label>
+            <input type="radio" name="size" id="s-0" value="0"><label for="s-0">원본</label>
+          </div>
+          <div class="mini"><label for="q">화질</label><input type="range" id="q" min="1" max="10" value="3"><b id="qV">3</b></div>
+          <div class="row"><label class="check"><input type="checkbox" id="banner" checked> 하두리 로고</label><span class="sp"></span>
+            <div class="seg corner" role="radiogroup" aria-label="로고 위치">
+              <input type="radio" name="lpos" id="lp-tl" value="tl" checked><label for="lp-tl" title="왼쪽 위">↖</label>
+              <input type="radio" name="lpos" id="lp-tr" value="tr"><label for="lp-tr" title="오른쪽 위">↗</label>
+              <input type="radio" name="lpos" id="lp-bl" value="bl"><label for="lp-bl" title="왼쪽 아래">↙</label>
+              <input type="radio" name="lpos" id="lp-br" value="br"><label for="lp-br" title="오른쪽 아래">↘</label>
+            </div></div>
+          <div class="mini" id="lsizeRow"><label for="lsize">로고</label><input type="range" id="lsize" min="12" max="70" value="32"><b id="lsizeV">32%</b></div>
 
-        <h2>문구</h2>
-        <div class="field"><label for="txt">넣을 문구</label>
-          <textarea class="in" id="txt" placeholder="사진에 넣을 말을 적어 주세요 (줄바꿈 가능)"></textarea>
-          <div class="syms" id="syms"></div></div>
-        <div class="field"><label for="cy">글자 바꾸기</label>
-          <select id="cy" aria-label="글자 바꾸는 방식">
-            <option value="none">그대로 두기</option>
-            <option value="base" selected>싸이체 · 기본</option>
-            <option value="strong">싸이체 · 더 심하게</option>
-            <option value="round">싸이체 · 동글동글</option>
-            <option value="best">싸이체 · 한 가지로 (섞지 않음)</option>
-            <option value="chae">말줄임 버전 (난... 가끔...)</option>
-            <option value="cam">캠브리지체 (가운데 글자 섞기)</option>
-          </select>
-          <p class="cy" id="cyOut"></p>
-          <div class="row"><button class="btn btn-sm" id="shuffle" type="button">다시 섞기</button><button class="btn btn-sm" id="copyCy" type="button">바뀐 글 복사</button></div></div>
-        <div class="field"><span class="label">문구 자리</span>
-          <div class="seg" role="radiogroup">
-            <input type="radio" name="pos" id="p-b" value="bottom" checked><label for="p-b">아래</label>
-            <input type="radio" name="pos" id="p-r" value="right"><label for="p-r">오른쪽</label>
-          </div></div>
-        <div class="field"><span class="label">넣는 방식</span>
-          <div class="seg" role="radiogroup">
-            <input type="radio" name="place" id="pl-o" value="over" checked><label for="pl-o">사진 위에</label>
-            <input type="radio" name="place" id="pl-p" value="pad"><label for="pl-p">여백 붙여서</label>
-          </div></div>
-        <div class="field"><span class="label">정렬</span>
-          <div class="seg three" role="radiogroup">
+          <h3>문구</h3>
+          <div class="seg" role="radiogroup" aria-label="글꼴">
+            <input type="radio" name="font" id="f-dot" value="dot" checked><label for="f-dot" class="f-dot">도트체</label>
+            <input type="radio" name="font" id="f-base" value="base"><label for="f-base">고딕</label>
+          </div>
+          <textarea class="in" id="txt" rows="2" placeholder="사진에 넣을 말 (줄바꿈 가능)" aria-label="넣을 문구"></textarea>
+          <div class="syms" id="syms"></div>
+          <div class="mini"><label for="tone">어투</label><input type="range" id="tone" min="0" max="4" value="2"><b id="toneV">기본</b></div>
+          <div class="row"><label class="check"><input type="checkbox" id="dots"> 말줄임…</label><span class="sp"></span><button class="btn btn-sm" id="shuffle" type="button">다시 섞기</button><button class="btn btn-sm" id="copyCy" type="button">글 복사</button></div>
+          <div class="two">
+            <div class="seg" role="radiogroup" aria-label="문구 자리">
+              <input type="radio" name="pos" id="p-b" value="bottom" checked><label for="p-b">아래</label>
+              <input type="radio" name="pos" id="p-r" value="right"><label for="p-r">오른쪽</label>
+            </div>
+            <div class="seg" role="radiogroup" aria-label="넣는 방식">
+              <input type="radio" name="place" id="pl-o" value="over" checked><label for="pl-o">사진 위</label>
+              <input type="radio" name="place" id="pl-p" value="pad"><label for="pl-p">여백</label>
+            </div>
+          </div>
+          <div class="seg three" role="radiogroup" aria-label="정렬">
             <input type="radio" name="align" id="a-l" value="left"><label for="a-l">왼쪽</label>
             <input type="radio" name="align" id="a-c" value="center" checked><label for="a-c">가운데</label>
             <input type="radio" name="align" id="a-r" value="right"><label for="a-r">오른쪽</label>
-          </div></div>
-        <div class="field"><label for="font">글꼴</label>
-          <select id="font"><option value="dot" selected>도트체 (갈무리)</option><option value="pen">손글씨 (나눔손글씨 펜)</option><option value="base">기본 고딕</option></select></div>
-        <div class="field"><label for="fs">글자 크기 <span class="num" id="fsV">5</span></label><input type="range" id="fs" min="3" max="12" value="5"></div>
-        <div class="field"><span class="label">글자 색</span><div class="swatches" id="colors"></div></div>
-        <label class="check"><input type="checkbox" id="stroke" checked> 글자 테두리</label>
-        <div class="field" id="bgRow" hidden><span class="label">여백 색</span><div class="swatches" id="bgs"></div></div>
+          </div>
+          <div class="mini"><label for="fs">크기</label><input type="range" id="fs" min="3" max="12" value="5"><b id="fsV">5</b></div>
+          <div class="row"><div class="swatches" id="colors" aria-label="글자 색"></div><span class="sp"></span><label class="check"><input type="checkbox" id="stroke" checked> 테두리</label></div>
+          <div class="row" id="bgRow" hidden><span class="hint" style="margin:0">여백 색</span><div class="swatches" id="bgs"></div></div>
 
-        <button class="btn btn-primary btn-block" id="save" disabled>JPG 받기</button>
-        <p class="status" id="status"></p>
-        <p class="hint">사진은 이 브라우저 안에서만 바뀌고 어디에도 올라가지 않아요.</p>
+          <div class="row"><button class="btn btn-primary" id="save" disabled style="flex:1">JPG 받기</button><button class="btn" id="saveAll" hidden>모두 (ZIP)</button></div>
+          <p class="status" id="status"></p>
+        </div>
       </div>
     </aside>
   </div>
 </main>
 <footer id="foot"></footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="../../assets/common.js"></script>
 <script src="../../assets/i18n.js"></script>
 <script src="../../assets/shell.js" data-root="../../"></script>
@@ -282,16 +311,6 @@
       return ch;
     }
 
-    // 캠브리지체: 세 글자 이상 낱말은 처음·끝만 두고 가운데를 섞어요
-    function cambridge(s) {
-      let n = 0;
-      return s.replace(/[가-힣]{3,}/g, w => {
-        const a = [...w], mid = a.slice(1, -1); n++;
-        for (let k = mid.length - 1; k > 0; k--) { const j = Math.floor(rnd(n * 31 + k, 20) * (k + 1)); [mid[k], mid[j]] = [mid[j], mid[k]]; }
-        if (mid.join("") === a.slice(1, -1).join("") && mid.length > 1) mid.reverse();
-        return a[0] + mid.join("") + a[a.length - 1];
-      });
-    }
     // 채연 버전: 낱말마다 말줄임… 받침 없는 글자 일부만 살짝 바꿔요
     function chaeyeon(s) {
       let i = 0;
@@ -303,7 +322,6 @@
 
     function convert(s, mode) {
       if (!mode || mode === "none") return s;
-      if (mode === "cam") return cambridge(s);
       if (mode === "chae") return chaeyeon(s);
       const lv = { base: 1, strong: 2, round: 3, best: 4 }[mode] || 1;
       let i = 0, out = "";
@@ -317,13 +335,22 @@
 
   // ── 상태
   let src = null, name = "haduri", fi = 1, photo = null, photoKey = "", job = 0;
-  const logo = new Image(); logo.src = "haduri-logo.png"; logo.onload = () => compose();
+  const logo = new Image(); logo.src = "haduri-logo.png"; logo.onload = () => { photoKey = ""; render(); };
   const COLORS = ["#ffffff", "#1a1a1a", "#ff5fa2", "#5ec8ff", "#ffe14d", "#b48bff"];
   const BGS = ["#ffffff", "#111111", "#ffd6e7", "#d9f0ff"];
   let color = COLORS[0], bg = BGS[0];
-  const FONT = { dot: "Galmuri11, Galmuri9, monospace", pen: "'Nanum Pen Script', cursive", base: "'Pretendard Variable', Pretendard, sans-serif" };
+  const FONT = { dot: "Galmuri11, Galmuri9, monospace", base: "'Pretendard Variable', Pretendard, sans-serif" };
+  const TONES = [["none", "그대로"], ["best", "살짝"], ["base", "기본"], ["round", "동글"], ["strong", "심하게"]];
+  // 어투 슬라이더 + 말줄임(...)을 합쳐 최종 문구를 만들어요
+  function finalText(raw) {
+    const t = TONES[+$("#tone").value];
+    let s = CY.convert(raw, t[0]);
+    if ($("#dots").checked) s = s.split("\n").map(line => line.trim().split(/\s+/).filter(Boolean).map(w => /[.!?~…]$/.test(w) ? w.replace(/[.!?~…]+$/, "...") : w + "...").join(" ")).join("\n");
+    return s;
+  }
   const SYMS = ["♡", "♥", "☆", "★", "~", "…", "ㅠㅠ", "ㅋㅋ", "ღ", "♬", "✿", "⊙"];
 
+  const paintSw = (box, cur) => box.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x.dataset.c === cur));
   function swatch(box, list, cur, onPick) {
     box.innerHTML = list.map(c => `<button type="button" style="background:${c}" data-c="${c}" aria-label="${c}" aria-pressed="${c === cur}"></button>`).join("");
     box.onclick = e => { const b = e.target.closest("button"); if (!b) return; box.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); onPick(b.dataset.c); };
@@ -339,25 +366,33 @@
   };
 
   function outSize() {
-    const want = +$("#size").value, w0 = src.naturalWidth, h0 = src.naturalHeight;
+    const want = +val("size"), w0 = src.naturalWidth, h0 = src.naturalHeight;
     const s = want ? Math.min(1, want / w0) : Math.min(1, 2400 / Math.max(w0, h0));
     return [Math.max(1, Math.round(w0 * s)), Math.max(1, Math.round(h0 * s))];
   }
   // 필터 + 낮은 화질(JPEG 깍두기)은 사진이 바뀔 때만 다시 만들어요. 문구만 바꾸면 위에 다시 쓰기만 해요.
   async function render() {
     if (!src) return;
-    const [w, h] = outSize(), q = +$("#q").value, key = [fi, w, h, q].join(",");
+    const [w, h] = outSize(), q = +$("#q").value, key = [fi, w, h, q, $("#banner").checked, val("lpos"), $("#lsize").value].join(",");
+    $("#lsizeV").textContent = $("#lsize").value + "%"; $("#lsizeRow").hidden = !$("#banner").checked;
     $("#qV").textContent = q;
     if (key === photoKey && photo) { compose(); return; }
     const my = ++job;
     const c = filtered(w, h, FILTERS[fi]);
+    // 로고도 사진과 함께 낮은 화질로 저장되게, 깍두기 만들기 전에 그려요
+    if ($("#banner").checked && logo.complete && logo.naturalWidth) {
+      const lw = Math.round(w * +$("#lsize").value / 100), lhh = Math.round(lw * logo.naturalHeight / logo.naturalWidth), mg = Math.round(w * .02);
+      const lp = val("lpos"), lx = lp[1] === "l" ? mg : w - mg - lw, ly = lp[0] === "t" ? mg : h - mg - lhh;
+      c.getContext("2d").drawImage(logo, lx, ly, lw, lhh);
+    }
     const blob = await new Promise(r => c.toBlob(r, "image/jpeg", [.03, .05, .08, .12, .17, .24, .33, .45, .62, .85][q - 1]));
     let bmp;
     try { bmp = await createImageBitmap(blob); }
     catch { bmp = new Image(); bmp.src = URL.createObjectURL(blob); await bmp.decode(); }
     if (my !== job) return;
     photo = bmp; photoKey = key;
-    $("#info").textContent = `${w} × ${h}px · ${FILTERS[fi][0]}`;
+    if (items[cur]) items[cur].fi = fi;
+    lastInfo = `${w} × ${h}px · ${FILTERS[fi][0]}`; const pi = $("#pinfo"); if (pi) pi.textContent = lastInfo;
     compose();
   }
 
@@ -382,18 +417,18 @@
   function compose() {
     if (!photo) return;
     const out = $("#out"), w = photo.width, h = photo.height;
-    const text = CY.convert($("#txt").value.replace(/\s+$/, ""), $("#cy").value);
-    $("#cyOut").textContent = $("#txt").value.trim() ? text : "";
+    const text = finalText($("#txt").value.replace(/\s+$/, ""));
+    $("#toneV").textContent = TONES[+$("#tone").value][1];
     const pos = val("pos"), place = val("place"), align = val("align");
     $("#bgRow").hidden = place !== "pad";
-    const fam = FONT[$("#font").value], weight = $("#font").value === "dot" ? 400 : 700;
+    const fam = FONT[val("font")], weight = val("font") === "dot" ? 400 : 700;
     $("#fsV").textContent = $("#fs").value;
     let fs = Math.max(10, Math.round(Math.min(w, h * 1.33) * +$("#fs").value / 100));
     const m = mk(1, 1).getContext("2d");
     let lines = [], CW = w, CH = h, box = null, fontStr = "", lh = 0, pad = 0, tw = 0, th = 0;
     const lay = () => {
       fontStr = `${weight} ${fs}px ${fam}`; m.font = fontStr;
-      pad = Math.round(fs * .8); lh = Math.round(fs * ($("#font").value === "pen" ? 1.15 : 1.35));
+      pad = Math.round(fs * .8); lh = Math.round(fs * 1.35);
       const areaW = pos === "bottom" ? w - pad * 2 : (place === "over" ? w * .46 : w * .6);
       lines = wrap(m, text, Math.max(fs * 2, areaW));
       tw = Math.max(...lines.map(l => m.measureText(l).width)); th = lines.length * lh;
@@ -418,10 +453,6 @@
     const x = out.getContext("2d");
     x.fillStyle = bg; x.fillRect(0, 0, CW, CH);
     x.drawImage(photo, 0, 0);
-    if ($("#banner").checked && logo.complete && logo.naturalWidth) {
-      const lw = Math.round(w * .32), lhh = Math.round(lw * logo.naturalHeight / logo.naturalWidth), mg = Math.round(w * .02);
-      x.drawImage(logo, mg, mg, lw, lhh);
-    }
     if (box) {
       const [x0, y0, x1] = box;
       x.font = fontStr; x.textBaseline = "middle"; x.textAlign = align;
@@ -454,29 +485,93 @@
     fi = +b.dataset.i; $("#fgrid").querySelectorAll(".fcard").forEach(x => x.setAttribute("aria-pressed", x === b)); render();
   };
 
-  async function add(files) {
-    const f = files.find(f => f.type.startsWith("image/") || /\.(jpe?g|png|webp|gif|bmp|avif)$/i.test(f.name));
-    if (!f) { say("사진 파일만 올릴 수 있어요.", "err"); return; }
-    const img = new Image(); img.src = URL.createObjectURL(f);
-    try { await img.decode(); } catch { say("이 사진은 열지 못했어요. 다른 형식으로 저장해서 올려 주세요.", "err"); return; }
-    if (src) URL.revokeObjectURL(src.src);
-    src = img; name = TT.baseName(f.name) || "haduri"; photo = null; photoKey = "";
-    $("#drop").hidden = true; $("#work").hidden = false; say("");
-    thumbs(); render();
+  // ── 여러 장: 사진마다 설정(필터·문구·글자 등)을 따로 기억해요
+  let items = [], cur = -1, lastInfo = "";
+  const RADIOS = ["size", "font", "pos", "place", "align", "lpos"], RANGES = ["q", "lsize", "tone", "fs"], CHECKS = ["banner", "dots", "stroke"];
+  function getState() {
+    const st = { fi, color, bg, seed: CY.getSeed(), txt: $("#txt").value };
+    RADIOS.forEach(n => st[n] = val(n)); RANGES.forEach(n => st[n] = $("#" + n).value); CHECKS.forEach(n => st[n] = $("#" + n).checked);
+    return st;
   }
+  function setState(st) {
+    fi = st.fi; color = st.color; bg = st.bg; CY.setSeed(st.seed); $("#txt").value = st.txt;
+    RADIOS.forEach(n => { const el = document.querySelector(`input[name=${n}][value="${st[n]}"]`); if (el) el.checked = true; });
+    RANGES.forEach(n => $("#" + n).value = st[n]); CHECKS.forEach(n => $("#" + n).checked = st[n]);
+    paintSw($("#colors"), color); paintSw($("#bgs"), bg);
+  }
+  function drawStrip() {
+    const box = $("#pstrip");
+    box.innerHTML = items.map((it, i) => `<button type="button" class="pth" data-i="${i}" aria-pressed="${i === cur}" title="${TT.baseName(it.name)}"><img src="${it.img.src}" alt=""><span class="x" data-x="${i}" role="button" aria-label="빼기">✕</span></button>`).join("")
+      + `<button type="button" class="padd" id="padd" title="사진 더 넣기" aria-label="사진 더 넣기">+</button><span class="pinfo" id="pinfo">${lastInfo}</span>`;
+    $("#saveAll").hidden = items.length < 2;
+    $("#saveAll").textContent = `모두 ${items.length}장 (ZIP)`;
+  }
+  function select(i) {
+    if (items[cur]) items[cur].st = getState();
+    cur = i; const it = items[i];
+    if (it.st) setState(it.st);
+    src = it.img; name = TT.baseName(it.name) || "haduri"; photo = null; photoKey = "";
+    drawStrip(); thumbs();
+    return render();
+  }
+  async function add(files) {
+    const imgs = files.filter(f => f.type.startsWith("image/") || /\.(jpe?g|png|webp|gif|bmp|avif)$/i.test(f.name));
+    if (!imgs.length) { say("사진 파일만 올릴 수 있어요.", "err"); return; }
+    const base = getState(); base.txt = "";
+    let first = -1, bad = 0;
+    for (const f of imgs) {
+      const img = new Image(); img.src = URL.createObjectURL(f);
+      try { await img.decode(); } catch { bad++; URL.revokeObjectURL(img.src); continue; }
+      items.push({ img, name: f.name, st: items.length ? { ...base } : null });
+      if (first < 0) first = items.length - 1;
+    }
+    if (first < 0) { say("이 사진은 열지 못했어요. 다른 형식으로 저장해서 올려 주세요.", "err"); return; }
+    const wasEmpty = $("#work").hidden;
+    $("#drop").hidden = true; $("#work").hidden = false;
+    say(bad ? `${bad}장은 열지 못했어요.` : "", bad ? "err" : "");
+    select(first);
+    if (wasEmpty) requestAnimationFrame(() => document.querySelector(".workspace").scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
+  function removeAt(i) {
+    URL.revokeObjectURL(items[i].img.src);
+    items.splice(i, 1);
+    if (!items.length) { cur = -1; src = null; photo = null; $("#work").hidden = false; $("#work").hidden = true; $("#drop").hidden = false; $("#save").disabled = true; return; }
+    const next = Math.min(i, items.length - 1);
+    if (i === cur) { cur = -1; select(next); } else { if (i < cur) cur--; drawStrip(); }
+  }
+  $("#pstrip").onclick = e => {
+    if (e.target.closest("#padd")) { $("#file").click(); return; }
+    const x = e.target.closest("[data-x]"); if (x) { e.stopPropagation(); removeAt(+x.dataset.x); return; }
+    const b = e.target.closest(".pth"); if (b && +b.dataset.i !== cur) select(+b.dataset.i);
+  };
+  $("#saveAll").onclick = async () => {
+    const keep = cur, files = [], used = {};
+    $("#saveAll").disabled = true;
+    for (let i = 0; i < items.length; i++) {
+      say(`${i + 1} / ${items.length}장 만드는 중…`);
+      await select(i);
+      const blob = await new Promise(r => $("#out").toBlob(r, "image/jpeg", .92));
+      let n = name + "_하두리"; used[n] = (used[n] || 0) + 1; if (used[n] > 1) n += "_" + used[n];
+      files.push({ blob, name: n + ".jpg" });
+    }
+    await select(keep);
+    await TT.downloadZip(files, "하두리.zip");
+    $("#saveAll").disabled = false; say(`${files.length}장을 ZIP으로 저장했어요.`, "ok");
+  };
 
   let tId = 0;
   const textChanged = () => { clearTimeout(tId); tId = setTimeout(compose, 60); };
-  TT.dropzone($("#drop"), add, { accept: "image/*", multiple: false });
-  $("#other").onclick = () => $("#file").click();
+  TT.dropzone($("#drop"), add, { accept: "image/*", multiple: true });
   $("#txt").addEventListener("input", textChanged);
-  ["#size", "#q"].forEach(s => $(s).addEventListener("input", render));
-  ["#banner", "#stroke", "#font", "#fs"].forEach(s => $(s).addEventListener("input", compose));
-  $("#cy").addEventListener("change", compose);
+  ["#q", "#banner", "#lsize"].forEach(s => $(s).addEventListener("input", render));
+  document.querySelectorAll("input[name=lpos]").forEach(el => el.addEventListener("change", render));
+  document.querySelectorAll("input[name=size]").forEach(el => el.addEventListener("change", render));
+  ["#stroke", "#fs", "#tone", "#dots"].forEach(s => $(s).addEventListener("input", compose));
+  document.querySelectorAll("input[name=font]").forEach(el => el.addEventListener("change", compose));
   document.querySelectorAll("input[name=pos],input[name=place],input[name=align]").forEach(el => el.addEventListener("change", compose));
-  $("#shuffle").onclick = () => { CY.setSeed((CY.getSeed() * 48271 + 11) % 2147483647); if ($("#cy").value === "none") $("#cy").value = "base"; compose(); };
+  $("#shuffle").onclick = () => { CY.setSeed((CY.getSeed() * 48271 + 11) % 2147483647); if ($("#tone").value === "0") $("#tone").value = "2"; compose(); };
   $("#copyCy").onclick = async () => {
-    const t = CY.convert($("#txt").value, $("#cy").value);
+    const t = finalText($("#txt").value);
     if (!t.trim()) { say("먼저 문구를 적어 주세요."); return; }
     try { await navigator.clipboard.writeText(t); say("바뀐 글을 복사했어요.", "ok"); } catch { say("복사하지 못했어요. 글을 직접 골라 복사해 주세요.", "err"); }
   };
