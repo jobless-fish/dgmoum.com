@@ -27,3 +27,11 @@
 .hot-tag{display:inline-block;margin-left:7px;padding:2px 7px;border-radius:999px;background:#ff5d7a;color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em;line-height:1.5;vertical-align:1px;box-shadow:0 2px 6px #ff5d7a55}
 @media(max-width:600px){.haduri-art img{height:110px}}
 @media(prefers-reduced-motion:reduce){.haduri-art img{transition:none}}
+/* 마우스를 올리면 짤 전체(글씨까지)가 카드를 꽉 채워 보여요 */
+.popular-card.berry{position:relative;overflow:hidden}
+.haduri-full{position:absolute;inset:0;border-radius:inherit;overflow:hidden;opacity:0;pointer-events:none;transition:opacity .3s;background:#2b2530}
+.haduri-full::before{content:"";position:absolute;inset:-24px;background:url(/tools/haduri-filter/haduri-card.jpg) center/cover;filter:blur(18px) brightness(.75);transform:scale(1.1)}
+.haduri-full img{position:relative;display:block;height:100%;width:auto;margin:0 auto;transform:scale(.96);transition:transform .35s}
+.popular-card.berry:hover .haduri-full,.popular-card.berry:focus-visible .haduri-full{opacity:1}
+.popular-card.berry:hover .haduri-full img,.popular-card.berry:focus-visible .haduri-full img{transform:scale(1)}
+@media(hover:none){.haduri-full{display:none}}
