@@ -55,3 +55,29 @@
     display: none;
   }
 }
+
+/* 상단 바는 늘 고정되고, 페이지를 옮길 때도 움직이지 않아요 (아래 내용만 바뀜) */
+.m-header,
+.studio-top {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  view-transition-name: site-header;
+}
+.phead {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  view-transition-name: site-header;
+}
+.topbar {
+  view-transition-name: site-header;
+}
+::view-transition-group(site-header),
+::view-transition-old(site-header),
+::view-transition-new(site-header) {
+  animation: none;
+}
+::view-transition-old(site-header) {
+  display: none;
+}

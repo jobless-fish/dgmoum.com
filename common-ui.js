@@ -8,6 +8,12 @@
   curtain.textContent = "도구모음";
   curtain.setAttribute("aria-hidden", "true");
   document.body.append(curtain);
+  // 커튼은 상단 바 아래만 덮어요 (상단 바는 그대로 보여요)
+  const headerBottom = () => {
+    const h = document.querySelector(".m-header, .studio-top, .phead, .topbar");
+    return h ? Math.max(0, Math.round(h.getBoundingClientRect().bottom)) : 0;
+  };
+  const placeCurtain = () => { curtain.style.top = headerBottom() + "px"; };
   let arriving = false;
   try {
     arriving = sessionStorage.getItem("moum-transition") === "1";
@@ -15,6 +21,7 @@
   } catch {}
   if (arriving && !reduced && window.gsap) {
     curtain.classList.add("is-covering");
+    requestAnimationFrame(placeCurtain);
     gsap.fromTo(
       curtain,
       { yPercent: 0 },
@@ -45,17 +52,23 @@
     )
       return;
     const u = new URL(a.href, location.href);
-    if (
-      u.origin !== location.origin ||
-      !["http:", "https:"].includes(u.protocol) ||
-      (u.pathname === location.pathname && u.search === location.search)
-    )
+    if (u.origin !== location.origin || !["http:", "https:"].includes(u.protocol)) return;
+    if (u.pathname === location.pathname && u.search === location.search) {
+      // 지금 보고 있는 페이지로 가는 링크(예: 홈에서 홈화면): 새로고침 없이 맨 위로만
+      const raw = a.getAttribute("href") || "";
+      if (!u.hash && !raw.startsWith("#")) {
+        e.preventDefault();
+        document.dispatchEvent(new CustomEvent("moum-same-page"));
+        scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+      }
       return;
+    }
     if (reduced || !window.gsap) return;
     if ("onpageswap" in window) return;
     e.preventDefault();
     if (navigating) return;
     navigating = true;
+    placeCurtain();
     curtain.classList.add("is-covering");
     try {
       sessionStorage.setItem("moum-transition", "1");
