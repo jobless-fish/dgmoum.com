@@ -1,4 +1,4 @@
-const cats=[['all','전체'],['img','이미지'],['doc','PDF'],['vid','영상'],['aud','오디오'],['des','디자인'],['txt','텍스트'],['form','서류 양식'],['fun','플레이']];
+const cats=[['all','전체'],['img','이미지'],['doc','PDF'],['vid','영상'],['aud','오디오'],['des','디자인'],['txt','텍스트'],['form','서류 양식'],['fun','FUN']];
 const palette={img:['#e4eacf','#506741','▧'],doc:['#eee5fa','#825da4','▤'],vid:['#f8dfd2','#b9643f','▷'],aud:['#dde8f7','#517ba0','≋'],des:['#f6e7b8','#90792c','◐'],txt:['#e5e6e1','#62695a','T'],form:['#e4e8df','#5d725b','☷'],fun:['#f4dfea','#9d5c83','✳']};
 let data=[],category='all',expanded=false;const input=document.querySelector('#search'),grid=document.querySelector('#tool-grid'),more=document.querySelector('#more');
 const filters=document.querySelector('.filters');cats.forEach(([id,label])=>{const b=document.createElement('button');b.textContent=label;b.dataset.cat=id;b.setAttribute('aria-pressed',id===category);b.onclick=()=>{category=id;expanded=false;filters.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));render()};filters.append(b)});

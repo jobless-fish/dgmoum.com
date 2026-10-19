@@ -89,6 +89,7 @@ window.I18N = {
     "video-edit": ["Video Editor Pro", "Timeline cutting, short-form captions, transitions and music. Export 16:9, 9:16 or 1:1."],
     "photo-edit": ["Photo Editor Pro", "Exposure, curves, HSL, grain and film presets like Portra and Tri-X."],
     "pixel-art": ["Pixel Art (8-bit / 16-bit)", "Turn photos into retro game pixel art with classic palettes."],
+    "haduri-filter": ["Haduri Filter", "Turn photos into 2000s Korean webcam shots with soft filters, low quality and Cyworld-style captions."],
     "ascii-art": ["ASCII Art", "Draw your photo with characters, blocks or braille. Copy or save PNG."],
     "color-palette": ["Color Picker", "Extract main colors from an image as HEX and RGB."],
     "favicon": ["Favicon Generator", "Make favicon.ico and app icons in every size from one image."],

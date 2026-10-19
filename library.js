@@ -12,7 +12,7 @@ window.moumMountLibrary = async (root = document, { syncUrl = true } = {}) => {
     ["des", "디자인", "palette"],
     ["txt", "텍스트", "type"],
     ["form", "서류 양식", "file-text"],
-    ["fun", "플레이", "gamepad-2"],
+    ["fun", "FUN", "gamepad-2"],
   ];
   const micro = root.querySelector(".library-intro .micro");
   if (micro) micro.textContent = "THE TOOL LIBRARY / " + data.length;

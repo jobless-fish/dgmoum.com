@@ -1,7 +1,7 @@
 (async()=>{
  const reduced=matchMedia('(prefers-reduced-motion: reduce)'),data=await window.moumCatalog;
  const rail=document.querySelector('#app-rail'),track=document.querySelector('#app-track'),prev=document.querySelector('#shelf-prev'),next=document.querySelector('#shelf-next');
- const labels={img:'이미지',doc:'PDF',vid:'영상',aud:'오디오',des:'디자인',txt:'텍스트',form:'서류 양식',fun:'플레이'};
+ const labels={img:'이미지',doc:'PDF',vid:'영상',aud:'오디오',des:'디자인',txt:'텍스트',form:'서류 양식',fun:'FUN'};
  const marks={img:'IMG',doc:'PDF',vid:'▶',aud:'WAV',des:'✦',txt:'Aa',form:'DOC',fun:'✳'};
  const read=()=>{try{const v=JSON.parse(localStorage.getItem('dg-favs')||'[]');return Array.isArray(v)?[...new Set(v)].filter(id=>data.some(t=>t.id===id)):[];}catch{return[];}};
  const status=document.createElement('p');status.className='favorite-status';status.setAttribute('role','status');rail.after(status);

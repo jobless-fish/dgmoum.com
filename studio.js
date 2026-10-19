@@ -80,7 +80,7 @@
       ["des", "디자인", "palette"],
       ["txt", "텍스트", "type"],
       ["form", "서류", "file-text"],
-      ["fun", "플레이", "gamepad-2"],
+      ["fun", "FUN", "gamepad-2"],
     ];
     const cat = window.TT_TOOLS?.find((t) => t.id === id)?.cat;
     if (!document.querySelector(".studio-rail")) {
