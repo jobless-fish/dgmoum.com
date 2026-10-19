@@ -18,3 +18,12 @@
 .refreshed-header .tool-menu-toggle:hover{color:#61518d}
 @media(max-width:500px){.refreshed-header .tool-menu-toggle{font-size:11px;padding:9px 10px}}
 .refreshed-header .tool-menu-toggle[aria-expanded=true]{background:#e9e6f2;color:#61518d}
+
+/* 하두리필터 카드: 사진을 폴라로이드처럼 여백을 두고 살짝 기울여요 */
+.popular-card.berry{background:#ede5f1}
+.haduri-art{height:125px;display:flex;align-items:center;justify-content:center}
+.haduri-art img{height:124px;width:auto;padding:6px 6px 16px;background:#fff;border-radius:6px;box-shadow:7px 9px 16px #7d5f9030;transform:rotate(-6deg);transition:transform .3s}
+.popular-grid .quick-card:hover .haduri-art img{transform:rotate(-2deg) scale(1.04)}
+.hot-tag{display:inline-block;margin-left:7px;padding:2px 7px;border-radius:999px;background:#ff5d7a;color:#fff;font-size:9px;font-weight:800;letter-spacing:.08em;line-height:1.5;vertical-align:1px;box-shadow:0 2px 6px #ff5d7a55}
+@media(max-width:600px){.haduri-art img{height:110px}}
+@media(prefers-reduced-motion:reduce){.haduri-art img{transition:none}}
