@@ -112,12 +112,16 @@
         <div class="field"><label for="txt">넣을 문구</label>
           <textarea class="in" id="txt" placeholder="사진에 넣을 말을 적어 주세요 (줄바꿈 가능)"></textarea>
           <div class="syms" id="syms"></div></div>
-        <div class="field"><span class="label">글자 바꾸기</span>
-          <div class="seg three" role="radiogroup">
-            <input type="radio" name="cy" id="cy0" value="0"><label for="cy0">그대로</label>
-            <input type="radio" name="cy" id="cy1" value="1" checked><label for="cy1">싸이체</label>
-            <input type="radio" name="cy" id="cy2" value="2"><label for="cy2">더 심하게</label>
-          </div>
+        <div class="field"><label for="cy">글자 바꾸기</label>
+          <select id="cy" aria-label="글자 바꾸는 방식">
+            <option value="none">그대로 두기</option>
+            <option value="base" selected>싸이체 · 기본</option>
+            <option value="strong">싸이체 · 더 심하게</option>
+            <option value="round">싸이체 · 동글동글</option>
+            <option value="best">싸이체 · 한 가지로 (섞지 않음)</option>
+            <option value="chae">말줄임 버전 (난... 가끔...)</option>
+            <option value="cam">캠브리지체 (가운데 글자 섞기)</option>
+          </select>
           <p class="cy" id="cyOut"></p>
           <div class="row"><button class="btn btn-sm" id="shuffle" type="button">다시 섞기</button><button class="btn btn-sm" id="copyCy" type="button">바뀐 글 복사</button></div></div>
         <div class="field"><span class="label">문구 자리</span>
@@ -213,37 +217,103 @@
     return c;
   }
 
-  // ── 싸이체: 받침 없는 글자를 자모·비슷한 기호로 풀어 써요
-  const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ", JUNG = "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ";
-  const JONG = ["", "ㄱ", "ㄲ", "ㄳ", "ㄴ", "ㄵ", "ㄶ", "ㄷ", "ㄹ", "ㄺ", "ㄻ", "ㄼ", "ㄽ", "ㄾ", "ㄿ", "ㅀ", "ㅁ", "ㅂ", "ㅄ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
-  const CV = { "ㄷ": ["ㄷ", "⊂"], "ㅇ": ["ㅇ", "○"], "ㅅ": ["ㅅ", "ヘ"], "ㅁ": ["ㅁ", "口"], "ㄹ": ["ㄹ", "己"], "ㄴ": ["ㄴ", "L"], "ㅌ": ["ㅌ", "E"], "ㅎ": ["ㅎ", "ㅎ"] };
-  const VV = { "ㅏ": ["r", "ト"], "ㅐ": ["H", "H"], "ㅣ": ["l", "ı"], "ㅜ": ["ㅜ", "T"], "ㅡ": ["ㅡ", "一"] };
-  const WHOLE = { "그": "ユ" };
-  const CIRCLE = { "ㄱ": "㉠", "ㄴ": "㉡", "ㄷ": "㉢", "ㄹ": "㉣", "ㅁ": "㉤", "ㅂ": "㉥", "ㅅ": "㉦", "ㅇ": "㉧", "ㅈ": "㉨", "ㅊ": "㉩", "ㅋ": "㉪", "ㅌ": "㉫", "ㅍ": "㉬", "ㅎ": "㉭" };
-  let seed = 1;
-  const rnd = (i, k) => { let x = Math.imul(seed, 374761393) ^ Math.imul(i + 1, 668265263) ^ Math.imul(k + 7, 1274126177); x = Math.imul(x ^ (x >>> 13), 1274126177); x ^= x >>> 16; return (x >>> 0) / 4294967296; };
-  const pick = (arr, r) => arr[Math.min(arr.length - 1, Math.floor(r * arr.length))];
-  function cyText(s, level) {
-    if (!level) return s;
-    let out = "", i = 0;
-    for (const ch of s) {
-      i++;
-      const c = ch.charCodeAt(0) - 0xac00;
-      if (c < 0 || c > 11171) { out += ch; continue; }
-      const L = CHO[Math.floor(c / 588)], V = JUNG[Math.floor((c % 588) / 28)], T = JONG[c % 28];
-      const strong = level === 2;
-      if (WHOLE[ch] && rnd(i, 9) < (strong ? .9 : .6)) { out += WHOLE[ch]; continue; }
+  // ── 싸이체
+  // 싸이체 변환기 (도구모음 자체 제작) — 브라우저와 node 양쪽에서 쓰려고 함수 하나로 묶음
+  function makeCy() {
+    const CHO = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ", JUNG = "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ";
+    const JONG = ["", "ㄱ", "ㄲ", "ㄳ", "ㄴ", "ㄵ", "ㄶ", "ㄷ", "ㄹ", "ㄺ", "ㄻ", "ㄼ", "ㄽ", "ㄾ", "ㄿ", "ㅀ", "ㅁ", "ㅂ", "ㅄ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
+    // 첫소리 → 비슷하게 생긴 글자 (앞쪽일수록 읽기 쉬움)
+    const C = {
+      "ㄱ": ["ㄱ", "ㄱ", "フ"], "ㄲ": ["ㄲ", "ㄲ"], "ㄴ": ["ㄴ", "L", "∟"], "ㄷ": ["ㄷ", "⊂", "亡"], "ㄸ": ["ㄸ", "ㄸ"],
+      "ㄹ": ["ㄹ", "己", "ㄹ"], "ㅁ": ["ㅁ", "口", "ㅁ"], "ㅂ": ["ㅂ", "ㅂ"], "ㅃ": ["ㅃ"], "ㅅ": ["ㅅ", "ヘ", "人"], "ㅆ": ["ㅆ", "ㅆ"],
+      "ㅇ": ["○", "ㅇ", "の"], "ㅈ": ["ㅈ", "ス", "ㅈ"], "ㅉ": ["ㅉ"], "ㅊ": ["ㅊ", "え", "ㅊ"], "ㅋ": ["ㅋ", "ㅋ"], "ㅌ": ["ㅌ", "E", "ㅌ"],
+      "ㅍ": ["ㅍ", "ㅍ"], "ㅎ": ["ㅎ", "ㅎ"]
+    };
+    // 동글 모드: 원문자로
+    const ROUND = { "ㄱ": "㉠", "ㄴ": "㉡", "ㄷ": "㉢", "ㄹ": "㉣", "ㅁ": "㉤", "ㅂ": "㉥", "ㅅ": "㉦", "ㅇ": "○", "ㅈ": "㉨", "ㅊ": "㉩", "ㅋ": "㉪", "ㅌ": "㉫", "ㅍ": "㉬", "ㅎ": "㉭" };
+    // 가운뎃소리 → 비슷한 글자 (풀어 쓸 수 있는 모음만)
+    const V = { "ㅏ": ["r", "ト", "卜"], "ㅐ": ["H", "H", "ㅐ"], "ㅣ": ["l", "ı", "I"], "ㅔ": ["ㅔ", "ㅔ", "ㅔ"], "ㅑ": ["ㅑ", "ㅑ"], "ㅓ": ["ㅓ", "ㅓ"], "ㅕ": ["ㅕ", "ㅕ"], "ㅒ": ["ㅒ"], "ㅖ": ["ㅖ"] };
+    // 통째로 바꾸면 더 그럴듯한 글자 (앞쪽일수록 많이 쓰임)
+    const WHOLE = {
+      "그": ["ユ", "ユ", "ュ"], "고": ["ュ", "고"], "구": ["구", "ㄱT"], "우": ["우", "ㅇT"], "누": ["ㄴT"], "두": ["⊂T", "ㄷT"], "주": ["ㅈT", "スT"],
+      "오": ["오", "○ㅗ"], "와": ["오ㅏ", "○ㅘ"], "워": ["우ㅓ", "○ㅝ"], "의": ["으ㅣ", "ㅇㅢ"], "요": ["ㅇㅛ", "○ㅛ"], "유": ["ㅇㅠ", "○ㅠ"],
+      "에": ["○ㅔ", "ㅇㅔ"], "애": ["○H", "ㅇH"], "이": ["○l", "のi", "○Ι", "ㅇl"], "아": ["○r", "のr", "ㅇr"],
+      "니": ["Ꮣl", "ㄴl", "Ll"], "나": ["ㄴr", "Lr", "∟ト"], "다": ["⊂r", "ㄷr", "⊂ト"], "시": ["ㅅl", "ヘl", "人l"], "사": ["ㅅr", "ヘr", "ᄉト"],
+      "세": ["ㅅㅔ", "ヘㅔ"], "싸": ["ㅆr"], "씨": ["ㅆl"], "해": ["ㅎH"], "하": ["ㅎr", "ㅎト"], "히": ["ㅎl"], "대": ["ㄷH", "㉢H", "⊂H"],
+      "내": ["ㄴH", "LH"], "래": ["ㄹH", "己H"], "때": ["ㄸH"], "개": ["ㄱH"], "새": ["ㅅH", "ヘH"], "재": ["ㅈH"], "체": ["ㅊㅔ", "㉩ㅔ"],
+      "제": ["ㅈㅔ", "スㅔ"], "께": ["ㄲㅔ"], "게": ["ㄱㅔ"], "네": ["ㄴㅔ"], "데": ["ㄷㅔ", "⊂ㅔ"], "레": ["ㄹㅔ", "己ㅔ"], "메": ["ㅁㅔ", "口ㅔ"],
+      "마": ["ㅁr", "口r", "㉤r"], "미": ["ㅁl", "口l"], "라": ["ㄹr", "己r"], "리": ["ㄹl", "己l"], "가": ["ㄱr", "ㄱト"], "기": ["ㄱl"], "까": ["ㄲr"],
+      "자": ["ㅈr", "スr"], "지": ["ㅈl", "スl"], "차": ["ㅊr"], "치": ["ㅊl"], "카": ["ㅋr"], "키": ["ㅋl"], "타": ["ㅌr", "Eト"], "티": ["ㅌl"],
+      "파": ["ㅍr"], "피": ["ㅍl"], "바": ["ㅂr"], "비": ["ㅂl"], "디": ["ㄷl", "⊂l"], "따": ["ㄸr"], "빠": ["ㅃr"], "짜": ["ㅉr"],
+    };
+    // 받침 → 동글 모드/강하게 모드에서 쓰는 꼬리
+    const TAIL = { "ㄴ": ["ㄴ", "Ł"], "ㅁ": ["ㅁ", "㉤"], "ㅇ": ["ㅇ", "○"], "ㄹ": ["ㄹ", "己"], "ㄱ": ["ㄱ", "㉠"], "ㅅ": ["ㅅ", "㉦"], "ㅂ": ["ㅂ", "㉥"], "ㅆ": ["ㅆ"] };
+
+    let seed = 1;
+    const rnd = (i, k) => { let x = Math.imul(seed, 374761393) ^ Math.imul(i + 1, 668265263) ^ Math.imul(k + 7, 1274126177); x = Math.imul(x ^ (x >>> 13), 1274126177); x ^= x >>> 16; return (x >>> 0) / 4294967296; };
+    const pick = (a, r) => a[Math.min(a.length - 1, Math.floor(r * a.length))];
+    const split = ch => { const c = ch.charCodeAt(0) - 0xac00; if (c < 0 || c > 11171) return null; return [CHO[Math.floor(c / 588)], JUNG[Math.floor((c % 588) / 28)], JONG[c % 28]]; };
+
+    // 글자 하나 바꾸기. lv: 1 기본, 2 강하게, 3 동글, 4 추천(늘 같은 모양)
+    function one(ch, i, lv) {
+      const s = split(ch); if (!s) return ch;
+      const [L, M, T] = s;
+      const p = lv === 4 ? 1 : lv === 2 ? .92 : lv === 3 ? .8 : .62;
+      if (lv !== 4 && rnd(i, 1) > p) return ch;
+      const w = WHOLE[ch];
+      if (w) {
+        if (lv === 4) return w[0];
+        if (lv === 3) { const r = ROUND[L]; if (r && V[M] && rnd(i, 2) < .6) return r + V[M][0]; }
+        return lv === 2 ? pick(w, rnd(i, 3)) : (rnd(i, 3) < .75 ? w[0] : pick(w, rnd(i, 4)));
+      }
       if (!T) {
-        if (rnd(i, 1) > (strong ? .9 : .55) || !(VV[V] || CV[L])) { out += ch; continue; }
-        const l = CV[L] ? (strong ? pick(CV[L], rnd(i, 2)) : (rnd(i, 2) < .2 ? CV[L][1] : L)) : L;
-        const v = VV[V] ? (strong ? pick(VV[V], rnd(i, 3)) : VV[V][0]) : V;
-        out += l + v;
-      } else if (strong && CIRCLE[T] && (VV[V] || CV[L]) && rnd(i, 4) < .4) {
-        out += (CV[L] ? pick(CV[L], rnd(i, 5)) : L) + (VV[V] ? pick(VV[V], rnd(i, 6)) : V) + CIRCLE[T];
-      } else out += ch;
+        if (!V[M]) return ch;
+        if (lv === 4) return C[L][0] + V[M][0];
+        const l = lv === 3 ? (ROUND[L] || L) : lv === 2 ? pick(C[L], rnd(i, 5)) : (rnd(i, 5) < .8 ? C[L][0] : pick(C[L], rnd(i, 6)));
+        const v = lv === 2 ? pick(V[M], rnd(i, 7)) : V[M][0];
+        return l + v;
+      }
+      // 받침 있는 글자: 강하게·동글에서만, 모음이 풀어지는 글자만 '첫소리+모음+받침'으로
+      if ((lv === 2 || lv === 3) && V[M] && TAIL[T] && T !== "ㅇ" && rnd(i, 8) < (lv === 2 ? .5 : .45)) {
+        const l = lv === 3 ? (ROUND[L] || L) : pick(C[L], rnd(i, 9));
+        const t = lv === 3 ? (ROUND[T] || TAIL[T][0]) : pick(TAIL[T], rnd(i, 10));
+        return l + pick(V[M], rnd(i, 11)) + t;
+      }
+      return ch;
     }
-    return out;
+
+    // 캠브리지체: 세 글자 이상 낱말은 처음·끝만 두고 가운데를 섞어요
+    function cambridge(s) {
+      let n = 0;
+      return s.replace(/[가-힣]{3,}/g, w => {
+        const a = [...w], mid = a.slice(1, -1); n++;
+        for (let k = mid.length - 1; k > 0; k--) { const j = Math.floor(rnd(n * 31 + k, 20) * (k + 1)); [mid[k], mid[j]] = [mid[j], mid[k]]; }
+        if (mid.join("") === a.slice(1, -1).join("") && mid.length > 1) mid.reverse();
+        return a[0] + mid.join("") + a[a.length - 1];
+      });
+    }
+    // 채연 버전: 낱말마다 말줄임… 받침 없는 글자 일부만 살짝 바꿔요
+    function chaeyeon(s) {
+      let i = 0;
+      return s.split("\n").map(line => line.trim().split(/\s+/).filter(Boolean).map(w => {
+        const t = [...w].map(ch => one(ch, ++i, 1)).join("");
+        return /[.!?~…]$/.test(t) ? t.replace(/[.!?~…]+$/, "...") : t + "...";
+      }).join(" ")).join("\n");
+    }
+
+    function convert(s, mode) {
+      if (!mode || mode === "none") return s;
+      if (mode === "cam") return cambridge(s);
+      if (mode === "chae") return chaeyeon(s);
+      const lv = { base: 1, strong: 2, round: 3, best: 4 }[mode] || 1;
+      let i = 0, out = "";
+      for (const ch of s) out += one(ch, ++i, lv);
+      return out;
+    }
+    return { convert, setSeed: v => { seed = v; }, getSeed: () => seed };
   }
+
+  const CY = makeCy();
 
   // ── 상태
   let src = null, name = "haduri", fi = 1, photo = null, photoKey = "", job = 0;
@@ -312,7 +382,7 @@
   function compose() {
     if (!photo) return;
     const out = $("#out"), w = photo.width, h = photo.height;
-    const text = cyText($("#txt").value.replace(/\s+$/, ""), +val("cy"));
+    const text = CY.convert($("#txt").value.replace(/\s+$/, ""), $("#cy").value);
     $("#cyOut").textContent = $("#txt").value.trim() ? text : "";
     const pos = val("pos"), place = val("place"), align = val("align");
     $("#bgRow").hidden = place !== "pad";
@@ -402,10 +472,11 @@
   $("#txt").addEventListener("input", textChanged);
   ["#size", "#q"].forEach(s => $(s).addEventListener("input", render));
   ["#banner", "#stroke", "#font", "#fs"].forEach(s => $(s).addEventListener("input", compose));
-  document.querySelectorAll("input[name=cy],input[name=pos],input[name=place],input[name=align]").forEach(el => el.addEventListener("change", compose));
-  $("#shuffle").onclick = () => { seed = (seed * 48271 + 11) % 2147483647; if (val("cy") === "0") document.getElementById("cy1").checked = true; compose(); };
+  $("#cy").addEventListener("change", compose);
+  document.querySelectorAll("input[name=pos],input[name=place],input[name=align]").forEach(el => el.addEventListener("change", compose));
+  $("#shuffle").onclick = () => { CY.setSeed((CY.getSeed() * 48271 + 11) % 2147483647); if ($("#cy").value === "none") $("#cy").value = "base"; compose(); };
   $("#copyCy").onclick = async () => {
-    const t = cyText($("#txt").value, +val("cy"));
+    const t = CY.convert($("#txt").value, $("#cy").value);
     if (!t.trim()) { say("먼저 문구를 적어 주세요."); return; }
     try { await navigator.clipboard.writeText(t); say("바뀐 글을 복사했어요.", "ok"); } catch { say("복사하지 못했어요. 글을 직접 골라 복사해 주세요.", "err"); }
   };
